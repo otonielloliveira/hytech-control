@@ -13,6 +13,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
+use Firefly\FilamentBlog\Blog;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -61,6 +62,7 @@ class AdminPanelProvider extends PanelProvider
                 AuthUIEnhancerPlugin::make(),//Plugin permitindo customização da UI de autenticação do Filament Admin
                 ApiServicePlugin::make(),//Plugin que cria o serviço de API RESTful para o painel admin do Filament
                 FilamentNordThemePlugin::make(),//Plugin que aplica o tema Nord ao painel admin do Filament
-            ])->viteTheme('resources/css/filament/admin/theme.css'); //Não alterar essa linha
+                Blog::make(), //Plugin que adiciona funcionalidades de blog ao painel admin do Filament
+                ])->viteTheme('resources/css/filament/admin/theme.css'); //Não alterar essa linha
     }
 }
