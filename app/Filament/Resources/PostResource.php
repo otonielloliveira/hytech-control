@@ -113,17 +113,52 @@ class PostResource extends Resource
                                                 'strike',
                                                 'underline',
                                                 'undo',
-                                            ]),
+                                            ])
+                                            ->helperText('💡 **Shortcodes de Vídeo**: 
+• [video url="https://youtube.com/watch?v=ID"] - Para qualquer URL
+• [youtube id="VIDEO_ID"] - YouTube direto  
+• [vimeo id="VIDEO_ID"] - Vimeo direto'),
                                     ]),
                                 
-                                Section::make('Imagem e Tags')
+                                Section::make('Mídia')
                                     ->schema([
                                         Forms\Components\FileUpload::make('featured_image')
                                             ->label('Imagem Destacada')
                                             ->image()
                                             ->imageEditor()
                                             ->directory('blog/images')
-                                            ->visibility('public'),
+                                            ->visibility('public')
+                                            ->columnSpanFull(),
+                                        
+                                        Forms\Components\Select::make('video_type')
+                                            ->label('Tipo de Vídeo')
+                                            ->options([
+                                                'none' => 'Nenhum',
+                                                'youtube' => 'YouTube',
+                                                'vimeo' => 'Vimeo',
+                                                'custom' => 'Código Personalizado',
+                                            ])
+                                            ->default('none')
+                                            ->reactive(),
+                                        
+                                        Forms\Components\TextInput::make('video_url')
+                                            ->label('URL do Vídeo')
+                                            ->url()
+                                            ->placeholder('https://www.youtube.com/watch?v=...')
+                                            ->hidden(fn ($get) => $get('video_type') === 'none' || $get('video_type') === 'custom')
+                                            ->helperText('Cole a URL completa do YouTube ou Vimeo'),
+                                        
+                                        Forms\Components\Textarea::make('video_embed_code')
+                                            ->label('Código de Incorporação')
+                                            ->rows(4)
+                                            ->placeholder('<iframe src="..." ...></iframe>')
+                                            ->hidden(fn ($get) => $get('video_type') !== 'custom')
+                                            ->helperText('Cole o código iframe completo do vídeo'),
+                                        
+                                        Forms\Components\Toggle::make('show_video_in_content')
+                                            ->label('Exibir vídeo no conteúdo')
+                                            ->helperText('Se ativado, o vídeo será exibido automaticamente no início do conteúdo do post')
+                                            ->hidden(fn ($get) => $get('video_type') === 'none'),
                                         
                                         Forms\Components\TagsInput::make('tags')
                                             ->label('Tags')

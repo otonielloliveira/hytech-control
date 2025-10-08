@@ -29,8 +29,8 @@ class BlogConfig extends Model
     ];
 
     protected $casts = [
-        'social_links' => 'array',
         'meta_keywords' => 'array',
+        'social_links' => 'array',
     ];
 
     /**
@@ -71,19 +71,65 @@ class BlogConfig extends Model
         return $config;
     }
 
-    /**
-     * Obter URL do logo
+        /**
+     * Get the URL for the site logo
      */
-    public function getLogoUrlAttribute(): string
+    public function getLogoUrlAttribute(): ?string
     {
-        return $this->site_logo ? asset('storage/' . $this->site_logo) : asset('images/logo-default.png');
+        return $this->site_logo ? asset('storage/' . $this->site_logo) : null;
     }
 
     /**
-     * Obter URL do favicon
+     * Get the URL for the site favicon
      */
-    public function getFaviconUrlAttribute(): string
+    public function getFaviconUrlAttribute(): ?string
     {
-        return $this->site_favicon ? asset('storage/' . $this->site_favicon) : asset('images/favicon-default.ico');
+        return $this->site_favicon ? asset('storage/' . $this->site_favicon) : null;
+    }
+
+    /**
+     * Get social media URLs
+     */
+    public function getFacebookUrlAttribute(): ?string
+    {
+        return $this->social_links['facebook'] ?? null;
+    }
+
+    public function getInstagramUrlAttribute(): ?string
+    {
+        return $this->social_links['instagram'] ?? null;
+    }
+
+    public function getTwitterUrlAttribute(): ?string
+    {
+        return $this->social_links['twitter'] ?? null;
+    }
+
+    public function getYoutubeUrlAttribute(): ?string
+    {
+        return $this->social_links['youtube'] ?? null;
+    }
+
+    public function getLinkedinUrlAttribute(): ?string
+    {
+        return $this->social_links['linkedin'] ?? null;
+    }
+
+    /**
+     * Get configuration settings
+     */
+    public function getAllowCommentsAttribute(): bool
+    {
+        return true; // Default value
+    }
+
+    public function getModerateCommentsAttribute(): bool
+    {
+        return true; // Default value
+    }
+
+    public function getPostsPerPageAttribute(): int
+    {
+        return 12; // Default value
     }
 }

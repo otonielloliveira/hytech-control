@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -22,6 +23,10 @@ class Post extends Model
         'excerpt',
         'content',
         'featured_image',
+        'video_type',
+        'video_url',
+        'video_embed_code',
+        'show_video_in_content',
         'status',
         'published_at',
         'meta_title',
@@ -38,6 +43,7 @@ class Post extends Model
     protected $casts = [
         'published_at' => 'datetime',
         'is_featured' => 'boolean',
+        'show_video_in_content' => 'boolean',
         'tags' => 'array',
         'meta_keywords' => 'array',
         'views_count' => 'integer',
@@ -93,6 +99,15 @@ class Post extends Model
     public function seoMeta(): MorphMany
     {
         return $this->morphMany(SeoMeta::class, 'seoable');
+    }
+
+    /**
+     * Tags relacionadas ao post
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'post_tags', 'post_id', 'tag_id')
+                    ->withTimestamps();
     }
 
     // Scopes
@@ -152,6 +167,175 @@ class Post extends Model
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+    /**
+     * Get video embed HTML
+     */
+    public function getVideoEmbedAttribute(): ?string
+    {
+        if ($this->video_type === 'none' || empty($this->video_url)) {
+            return null;
+        }
+
+        switch ($this->video_type) {
+            case 'youtube':
+                return $this->getYouTubeEmbed();
+            case 'vimeo':
+                return $this->getVimeoEmbed();
+            case 'custom':
+                return $this->video_embed_code;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Get YouTube embed HTML
+     */
+    private function getYouTubeEmbed(): string
+    {
+        $videoId = $this->extractYouTubeId($this->video_url);
+        if (!$videoId) {
+            return '';
+        }
+
+        return '<div class="video-container">
+                    <iframe width="100%" height="400" 
+                            src="https://www.youtube.com/embed/' . $videoId . '" 
+                            title="' . htmlspecialchars($this->title) . '"
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                </div>';
+    }
+
+    /**
+     * Get Vimeo embed HTML
+     */
+    private function getVimeoEmbed(): string
+    {
+        $videoId = $this->extractVimeoId($this->video_url);
+        if (!$videoId) {
+            return '';
+        }
+
+        return '<div class="video-container">
+                    <iframe src="https://player.vimeo.com/video/' . $videoId . '" 
+                            width="100%" height="400" 
+                            frameborder="0" 
+                            allow="autoplay; fullscreen; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                </div>';
+    }
+
+    /**
+     * Extract YouTube video ID from URL
+     */
+    private function extractYouTubeId(string $url): ?string
+    {
+        preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $url, $matches);
+        return $matches[1] ?? null;
+    }
+
+    /**
+     * Extract Vimeo video ID from URL
+     */
+    private function extractVimeoId(string $url): ?string
+    {
+        preg_match('/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|)(\d+)(?:|\/\?)/', $url, $matches);
+        return $matches[1] ?? null;
+    }
+
+    /**
+     * Process content with video shortcodes
+     */
+    public function getProcessedContentAttribute(): string
+    {
+        $content = $this->content;
+        
+        // Processar shortcode [video url="..."]
+        $content = preg_replace_callback(
+            '/\[video\s+url="([^"]+)"\s*\]/i',
+            function ($matches) {
+                $url = $matches[1];
+                return $this->processVideoShortcode($url);
+            },
+            $content
+        );
+        
+        // Processar shortcode [youtube id="..."]
+        $content = preg_replace_callback(
+            '/\[youtube\s+id="([^"]+)"\s*\]/i',
+            function ($matches) {
+                $videoId = $matches[1];
+                return $this->generateYouTubeEmbed($videoId);
+            },
+            $content
+        );
+        
+        // Processar shortcode [vimeo id="..."]
+        $content = preg_replace_callback(
+            '/\[vimeo\s+id="([^"]+)"\s*\]/i',
+            function ($matches) {
+                $videoId = $matches[1];
+                return $this->generateVimeoEmbed($videoId);
+            },
+            $content
+        );
+        
+        return $content;
+    }
+
+    /**
+     * Process video shortcode with URL detection
+     */
+    private function processVideoShortcode(string $url): string
+    {
+        if (strpos($url, 'youtube.com') !== false || strpos($url, 'youtu.be') !== false) {
+            $videoId = $this->extractYouTubeId($url);
+            return $videoId ? $this->generateYouTubeEmbed($videoId) : $url;
+        }
+        
+        if (strpos($url, 'vimeo.com') !== false) {
+            $videoId = $this->extractVimeoId($url);
+            return $videoId ? $this->generateVimeoEmbed($videoId) : $url;
+        }
+        
+        return $url; // Return original URL if not recognized
+    }
+
+    /**
+     * Generate YouTube embed HTML
+     */
+    private function generateYouTubeEmbed(string $videoId): string
+    {
+        return '<div class="video-container">
+                    <iframe width="100%" height="400" 
+                            src="https://www.youtube.com/embed/' . $videoId . '" 
+                            title="YouTube video"
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                </div>';
+    }
+
+    /**
+     * Generate Vimeo embed HTML
+     */
+    private function generateVimeoEmbed(string $videoId): string
+    {
+        return '<div class="video-container">
+                    <iframe src="https://player.vimeo.com/video/' . $videoId . '" 
+                            width="100%" height="400" 
+                            frameborder="0" 
+                            allow="autoplay; fullscreen; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                </div>';
     }
 
     public function getUrl(): string
