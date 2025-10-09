@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\PollController;
 
 Route::get('/', [BlogController::class, 'index'])->name('blog.index');
 
@@ -17,6 +18,12 @@ Route::prefix('blog')->name('blog.')->group(function () {
     
     // Comments
     Route::post('/post/{post}/comment', [BlogController::class, 'storeComment'])->name('comment.store');
+});
+
+// Poll Routes
+Route::prefix('polls')->name('polls.')->group(function () {
+    Route::post('/{poll}/vote', [PollController::class, 'vote'])->name('vote');
+    Route::get('/{poll}/results', [PollController::class, 'results'])->name('results');
 });
 
 // Admin redirect
