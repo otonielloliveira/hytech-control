@@ -76,6 +76,26 @@
             color: var(--primary-color) !important;
         }
         
+        /* Badges de Notificação e Carrinho */
+        .navbar-nav .nav-link.position-relative {
+            padding: 0.5rem 0.75rem !important;
+        }
+        
+        .navbar-nav .nav-link .badge {
+            top: -5px !important;
+            right: -10px !important;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        
+        .navbar-nav .nav-link i {
+            font-size: 1.2rem;
+        }
+        
         /* Banner Carousel */
         .hero-carousel {
             margin-top: 76px; /* altura do navbar fixo */
@@ -518,6 +538,12 @@
                 border-radius: 5px;
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             }
+            
+            /* Badges responsivos em mobile */
+            .navbar-nav .nav-link .badge {
+                top: -3px !important;
+                right: -8px !important;
+            }
         }
     </style>
     
@@ -550,19 +576,56 @@
                             <i class="fas fa-home me-1"></i>Início
                         </a>
                     </li>
-                    
-                    @isset($categories)
-                        @foreach($categories as $category)
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('blog.category.show', $category->slug) }}">
-                                    {{ $category->name }}
-                                </a>
-                            </li>
-                        @endforeach
-                    @endisset
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/admin') }}">
-                            <i class="fas fa-cog me-1"></i>Admin
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-box me-1"></i>Produtos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-microphone me-1"></i>Palestras
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-camera me-1"></i>Fotos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-video me-1"></i>Vídeos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-download me-1"></i>Download
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-envelope me-1"></i>Contatos
+                        </a>
+                    </li>
+                    
+                    <!-- Badge de Notificação -->
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="#">
+                            <i class="fas fa-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">
+                                0
+                                <span class="visually-hidden">notificações não lidas</span>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <!-- Badge de Carrinho -->
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="#">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.7rem;">
+                                0
+                                <span class="visually-hidden">itens no carrinho</span>
+                            </span>
                         </a>
                     </li>
                 </ul>
@@ -659,6 +722,10 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     @yield('scripts')
     

@@ -80,15 +80,48 @@
                 <!-- Área de Login/Cadastro -->
                 <div class="col-lg-6 col-md-4 text-end">
                     <div class="auth-buttons">
-                        {{-- Será implementado quando criarmos o sistema de autenticação de clientes --}}
-                        <a href="#" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
-                            <i class="fas fa-sign-in-alt me-1"></i>
-                            Entrar
-                        </a>
-                        <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">
-                            <i class="fas fa-user-plus me-1"></i>
-                            Cadastrar
-                        </a>
+                        @auth('client')
+                            <!-- Cliente logado -->
+                            <div class="dropdown">
+                                <a href="#" class="btn btn-success btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-1"></i>
+                                    Olá, {{ auth('client')->user()->name }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{{ route('client.dashboard') }}">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Meu Painel
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('client.profile') }}">
+                                        <i class="fas fa-user-edit me-2"></i>Meu Perfil
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('client.addresses') }}">
+                                        <i class="fas fa-map-marker-alt me-2"></i>Endereços
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('client.preferences') }}">
+                                        <i class="fas fa-cog me-2"></i>Preferências
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form action="{{ route('client.logout') }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-sign-out-alt me-2"></i>Sair
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        @else
+                            <!-- Cliente não logado -->
+                            <a href="#" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                <i class="fas fa-sign-in-alt me-1"></i>
+                                Entrar
+                            </a>
+                            <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">
+                                <i class="fas fa-user-plus me-1"></i>
+                                Cadastrar
+                            </a>
+                        @endauth
                     </div>
                 </div>
             </div>
@@ -609,6 +642,139 @@
             @endif
         </div>
     </div>
+    
+    <!-- Modal de Login -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="loginModalLabel">
+                        <i class="fas fa-sign-in-alt me-2 text-primary"></i>
+                        Entrar na sua conta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <form id="loginForm" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="loginEmail" name="email" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Senha</label>
+                            <input type="password" class="form-control" id="loginPassword" name="password" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="rememberMe" name="remember">
+                            <label class="form-check-label" for="rememberMe">
+                                Lembrar de mim
+                            </label>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Entrar
+                            </button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p class="mb-0">
+                            Não tem uma conta? 
+                            <a href="#" onclick="switchToRegister()" class="text-primary text-decoration-none">
+                                Cadastre-se aqui
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Cadastro -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="registerModalLabel">
+                        <i class="fas fa-user-plus me-2 text-success"></i>
+                        Criar nova conta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <form id="registerForm" method="POST">
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="registerName" class="form-label">Nome completo *</label>
+                                <input type="text" class="form-control" id="registerName" name="name" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="registerEmail" class="form-label">E-mail *</label>
+                                <input type="email" class="form-control" id="registerEmail" name="email" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="registerPhone" class="form-label">Telefone</label>
+                                <input type="tel" class="form-control" id="registerPhone" name="phone" placeholder="(11) 99999-9999">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="registerPassword" class="form-label">Senha *</label>
+                                <input type="password" class="form-control" id="registerPassword" name="password" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="registerPasswordConfirmation" class="form-label">Confirmar senha *</label>
+                                <input type="password" class="form-control" id="registerPasswordConfirmation" name="password_confirmation" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="registerBirthDate" class="form-label">Data de nascimento</label>
+                                <input type="date" class="form-control" id="registerBirthDate" name="birth_date">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="registerGender" class="form-label">Gênero</label>
+                                <select class="form-select" id="registerGender" name="gender">
+                                    <option value="">Selecione</option>
+                                    <option value="masculino">Masculino</option>
+                                    <option value="feminino">Feminino</option>
+                                    <option value="outro">Outro</option>
+                                    <option value="nao_informar">Prefiro não informar</option>
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Criar conta
+                            </button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p class="mb-0">
+                            Já tem uma conta? 
+                            <a href="#" onclick="switchToLogin()" class="text-primary text-decoration-none">
+                                Faça login aqui
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('styles')
@@ -1004,4 +1170,143 @@
         100% { transform: scale(1); }
     }
 </style>
+@endsection
+
+@section('scripts')
+<script>
+    // Switch between login and register modals
+    function switchToRegister() {
+        $('#loginModal').modal('hide');
+        $('#registerModal').modal('show');
+    }
+
+    function switchToLogin() {
+        $('#registerModal').modal('hide');
+        $('#loginModal').modal('show');
+    }
+
+    // Handle login form submission
+    $('#loginForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = form.find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        
+        // Clear previous errors
+        form.find('.is-invalid').removeClass('is-invalid');
+        form.find('.invalid-feedback').text('');
+        
+        // Disable submit button
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Entrando...');
+        
+        $.ajax({
+            url: '{{ route("client.auth.login") }}',
+            type: 'POST',
+            data: form.serialize(),
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Login realizado!',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = response.redirect;
+                    });
+                }
+            },
+            error: function(xhr) {
+                if (xhr.status === 422) {
+                    const errors = xhr.responseJSON.errors;
+                    for (const field in errors) {
+                        const input = form.find(`[name="${field}"]`);
+                        input.addClass('is-invalid');
+                        input.siblings('.invalid-feedback').text(errors[field][0]);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: 'Ocorreu um erro. Tente novamente.'
+                    });
+                }
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+
+    // Handle register form submission
+    $('#registerForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = form.find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        
+        // Clear previous errors
+        form.find('.is-invalid').removeClass('is-invalid');
+        form.find('.invalid-feedback').text('');
+        
+        // Disable submit button
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Criando conta...');
+        
+        $.ajax({
+            url: '{{ route("client.auth.register") }}',
+            type: 'POST',
+            data: form.serialize(),
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Conta criada!',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = response.redirect;
+                    });
+                }
+            },
+            error: function(xhr) {
+                if (xhr.status === 422) {
+                    const errors = xhr.responseJSON.errors;
+                    for (const field in errors) {
+                        const input = form.find(`[name="${field}"]`);
+                        input.addClass('is-invalid');
+                        input.siblings('.invalid-feedback').text(errors[field][0]);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: 'Ocorreu um erro. Tente novamente.'
+                    });
+                }
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+
+    // Phone mask
+    $('#registerPhone').on('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+        value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+        this.value = value;
+    });
+</script>
 @endsection
