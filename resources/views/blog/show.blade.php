@@ -81,10 +81,23 @@
         @endif
 
         <!-- Post Content -->
-        <div class="container">
+        <div class="container-fluid">
+            @php
+                $sidebarConfig = App\Services\SidebarService::getSidebarConfig();
+                $showSidebar = $sidebarConfig['show_sidebar'];
+                $sidebarPosition = $sidebarConfig['position'] ?? 'right';
+            @endphp
+            
             <div class="row">
-                <div class="col-lg-8">
-                    <div class="post-content">
+                @if($showSidebar && $sidebarPosition === 'left')
+                    <div class="col-lg-3">
+                        @include('layouts.sidebar')
+                    </div>
+                @endif
+                
+                <div class="@if($showSidebar) col-lg-9 @else col-lg-12 @endif">
+                    <div class="container">
+                        <div class="post-content">
                         @if($post->excerpt)
                             <div class="post-excerpt">
                                 <p class="lead">{{ $post->excerpt }}</p>
@@ -254,9 +267,6 @@
                             </div>
                         @endif
 
-                        <!-- Newsletter -->
-                        @include('components.newsletter-widget')
-
                         <!-- Social Links -->
                         @if($config->facebook_url || $config->instagram_url || $config->twitter_url || $config->youtube_url)
                             <div class="sidebar-widget">
@@ -286,6 +296,14 @@
                             </div>
                         @endif
                     </div>
+                        </div>
+                    </div>
+                    
+                    @if($showSidebar && $sidebarPosition === 'right')
+                        <div class="col-lg-3">
+                            @include('layouts.sidebar')
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

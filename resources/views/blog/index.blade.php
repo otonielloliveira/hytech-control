@@ -54,10 +54,26 @@
         </div>
     @endif
 
-    <!-- Posts em Destaque -->
-    @if($featuredPosts->count() > 0)
-        <section class="section">
-            <div class="container">
+    <!-- Main Content with Sidebar -->
+    <div class="container-fluid mt-4">
+        @php
+            $sidebarConfig = App\Services\SidebarService::getSidebarConfig();
+            $showSidebar = $sidebarConfig['show_sidebar'];
+            $sidebarPosition = $sidebarConfig['position'] ?? 'right';
+        @endphp
+        
+        <div class="row">
+            @if($showSidebar && $sidebarPosition === 'left')
+                <div class="col-lg-3">
+                    @include('layouts.sidebar')
+                </div>
+            @endif
+            
+            <div class="@if($showSidebar) col-lg-9 @else col-lg-12 @endif">
+                <!-- Posts em Destaque -->
+                @if($featuredPosts->count() > 0)
+                    <section class="section">
+                        <div class="container-fluid">
                 <div class="section-title">
                     <h2>⭐ Posts em Destaque</h2>
                     <p>Confira nossos conteúdos mais importantes e relevantes</p>
@@ -208,6 +224,16 @@
             </div>
         </section>
     @endif
+    
+            </div>
+            
+            @if($showSidebar && $sidebarPosition === 'right')
+                <div class="col-lg-3">
+                    @include('layouts.sidebar')
+                </div>
+            @endif
+        </div>
+    </div>
 @endsection
 
 @section('styles')

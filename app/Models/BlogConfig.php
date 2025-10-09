@@ -26,11 +26,23 @@ class BlogConfig extends Model
         'facebook_pixel_id',
         'custom_head_code',
         'custom_footer_code',
+        // Sidebar fields
+        'youtube_channel_url',
+        'youtube_channel_name',
+        'show_youtube_widget',
+        'show_sidebar',
+        'sidebar_position',
+        'sidebar_width',
+        'default_widget_title_color',
+        'default_widget_background_color',
+        'default_widget_text_color',
     ];
 
     protected $casts = [
         'meta_keywords' => 'array',
         'social_links' => 'array',
+        'show_youtube_widget' => 'boolean',
+        'show_sidebar' => 'boolean',
     ];
 
     /**

@@ -154,6 +154,72 @@ class BlogConfigResource extends Resource
                                             ]),
                                     ]),
                             ]),
+                        
+                        Tabs\Tab::make('Sidebar')
+                            ->icon('heroicon-o-bars-3-bottom-right')
+                            ->schema([
+                                Section::make('Configurações da Sidebar')
+                                    ->schema([
+                                        Forms\Components\Toggle::make('show_sidebar')
+                                            ->label('Exibir Sidebar')
+                                            ->default(true)
+                                            ->reactive(),
+                                        
+                                        Forms\Components\Select::make('sidebar_position')
+                                            ->label('Posição da Sidebar')
+                                            ->options([
+                                                'right' => 'Direita',
+                                                'left' => 'Esquerda',
+                                            ])
+                                            ->default('right')
+                                            ->visible(fn (Forms\Get $get) => $get('show_sidebar')),
+                                        
+                                        Forms\Components\TextInput::make('sidebar_width')
+                                            ->label('Largura da Sidebar')
+                                            ->default('350px')
+                                            ->helperText('Ex: 300px, 25%')
+                                            ->visible(fn (Forms\Get $get) => $get('show_sidebar')),
+                                    ])
+                                    ->columns(3),
+                                
+                                Section::make('Cores Padrão dos Widgets')
+                                    ->schema([
+                                        Forms\Components\ColorPicker::make('default_widget_title_color')
+                                            ->label('Cor do Título')
+                                            ->default('#1e40af'),
+                                        
+                                        Forms\Components\ColorPicker::make('default_widget_background_color')
+                                            ->label('Cor de Fundo')
+                                            ->default('#ffffff'),
+                                        
+                                        Forms\Components\ColorPicker::make('default_widget_text_color')
+                                            ->label('Cor do Texto')
+                                            ->default('#1f2937'),
+                                    ])
+                                    ->columns(3)
+                                    ->visible(fn (Forms\Get $get) => $get('show_sidebar')),
+                                
+                                Section::make('YouTube Integration')
+                                    ->schema([
+                                        Forms\Components\Toggle::make('show_youtube_widget')
+                                            ->label('Exibir Widget do YouTube')
+                                            ->default(false)
+                                            ->reactive(),
+                                        
+                                        Forms\Components\TextInput::make('youtube_channel_name')
+                                            ->label('Nome do Canal')
+                                            ->placeholder('Meu Canal')
+                                            ->visible(fn (Forms\Get $get) => $get('show_youtube_widget')),
+                                        
+                                        Forms\Components\TextInput::make('youtube_channel_url')
+                                            ->label('URL do Canal')
+                                            ->url()
+                                            ->placeholder('https://www.youtube.com/@meucanal')
+                                            ->visible(fn (Forms\Get $get) => $get('show_youtube_widget')),
+                                    ])
+                                    ->columns(3)
+                                    ->visible(fn (Forms\Get $get) => $get('show_sidebar')),
+                            ]),
                     ])
                     ->columnSpanFull()
                     ->persistTabInQueryString()

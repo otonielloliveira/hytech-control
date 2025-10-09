@@ -550,13 +550,15 @@
                             <i class="fas fa-home me-1"></i>Início
                         </a>
                     </li>
-                    @foreach($categories as $category)
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('blog.category.show', $category->slug) }}">
-                                {{ $category->name }}
-                            </a>
-                        </li>
-                    @endforeach
+                    @isset($categories)
+                        @foreach($categories as $category)
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('blog.category.show', $category->slug) }}">
+                                    {{ $category->name }}
+                                </a>
+                            </li>
+                        @endforeach
+                    @endisset
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url('/admin') }}">
                             <i class="fas fa-cog me-1"></i>Admin
@@ -631,9 +633,11 @@
                 
                 <div class="col-lg-4 mb-4">
                     <h5>Categorias</h5>
-                    @foreach($categories->take(5) as $category)
-                        <p><a href="{{ route('blog.category.show', $category->slug) }}">{{ $category->name }}</a></p>
-                    @endforeach
+                    @isset($categories)
+                        @foreach($categories->take(5) as $category)
+                            <p><a href="{{ route('blog.category.show', $category->slug) }}">{{ $category->name }}</a></p>
+                        @endforeach
+                    @endisset
                 </div>
             </div>
             
