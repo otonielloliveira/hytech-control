@@ -7,6 +7,8 @@ use App\Filament\Resources\CommentResource\RelationManagers;
 use App\Models\Comment;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;

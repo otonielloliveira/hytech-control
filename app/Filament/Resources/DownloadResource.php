@@ -7,6 +7,8 @@ use App\Filament\Resources\DownloadResource\RelationManagers;
 use App\Models\Download;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -124,6 +126,111 @@ class DownloadResource extends Resource
                                     ->default(1)
                                     ->helperText('Número menor = maior prioridade'),
                             ]),
+                    ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informações do Arquivo')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('title')
+                                    ->label('Título')
+                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                                    ->weight('bold'),
+                                    
+                                Infolists\Components\TextEntry::make('file_name')
+                                    ->label('Nome do Arquivo')
+                                    ->copyable()
+                                    ->icon('heroicon-m-document-text'),
+                            ]),
+                            
+                        Infolists\Components\TextEntry::make('description')
+                            ->label('Descrição')
+                            ->prose()
+                            ->columnSpanFull()
+                            ->placeholder('Nenhuma descrição fornecida'),
+                    ])->columns(2),
+                    
+                Infolists\Components\Section::make('Detalhes Técnicos')
+                    ->schema([
+                        Infolists\Components\Grid::make(3)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('file_type')
+                                    ->label('Tipo')
+                                    ->badge()
+                                    ->color('info'),
+                                    
+                                Infolists\Components\TextEntry::make('formatted_file_size')
+                                    ->label('Tamanho')
+                                    ->icon('heroicon-m-scale'),
+                                    
+                                Infolists\Components\TextEntry::make('download_count')
+                                    ->label('Downloads')
+                                    ->badge()
+                                    ->color('success')
+                                    ->icon('heroicon-m-arrow-down-tray'),
+                            ]),
+                    ])->columns(3),
+                    
+                Infolists\Components\Section::make('Configurações')
+                    ->schema([
+                        Infolists\Components\Grid::make(3)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('category')
+                                    ->label('Categoria')
+                                    ->badge()
+                                    ->color('warning')
+                                    ->placeholder('Sem categoria'),
+                                    
+                                Infolists\Components\TextEntry::make('priority')
+                                    ->label('Prioridade')
+                                    ->badge()
+                                    ->color('primary'),
+                                    
+                                Infolists\Components\IconEntry::make('is_active')
+                                    ->label('Status')
+                                    ->boolean()
+                                    ->trueIcon('heroicon-o-check-circle')
+                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->trueColor('success')
+                                    ->falseColor('danger'),
+                            ]),
+                    ])->columns(3),
+                    
+                Infolists\Components\Section::make('Acesso e Segurança')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\IconEntry::make('requires_login')
+                                    ->label('Requer Login')
+                                    ->boolean()
+                                    ->trueIcon('heroicon-o-lock-closed')
+                                    ->falseIcon('heroicon-o-lock-open')
+                                    ->trueColor('warning')
+                                    ->falseColor('success'),
+                                    
+                                Infolists\Components\TextEntry::make('created_at')
+                                    ->label('Criado em')
+                                    ->dateTime('d/m/Y H:i')
+                                    ->icon('heroicon-m-calendar'),
+                            ]),
+                    ])->columns(2),
+                    
+                Infolists\Components\Section::make('Ações do Arquivo')
+                    ->schema([
+                        Infolists\Components\Actions::make([
+                            Infolists\Components\Actions\Action::make('download')
+                                ->label('Fazer Download')
+                                ->icon('heroicon-o-arrow-down-tray')
+                                ->color('success')
+                                ->url(fn ($record) => $record->file_url)
+                                ->openUrlInNewTab(),
+                        ]),
                     ]),
             ]);
     }

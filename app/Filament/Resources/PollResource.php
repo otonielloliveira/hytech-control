@@ -7,6 +7,8 @@ use App\Filament\Resources\PollResource\RelationManagers;
 use App\Models\Poll;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -247,6 +249,114 @@ class PollResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informações da Enquete')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('title')
+                                    ->label('Título')
+                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                                    ->weight('bold')
+                                    ->columnSpanFull(),
+                                
+                                Infolists\Components\TextEntry::make('type')
+                                    ->label('Tipo')
+                                    ->badge()
+                                    ->color(fn ($state) => match($state) {
+                                        'single' => 'primary',
+                                        'multiple' => 'success',
+                                        'rating' => 'warning',
+                                        default => 'gray'
+                                    }),
+                                
+                                Infolists\Components\IconEntry::make('is_active')
+                                    ->label('Ativo')
+                                    ->boolean()
+                                    ->trueIcon('heroicon-o-check-circle')
+                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->trueColor('success')
+                                    ->falseColor('danger'),
+                                
+                                Infolists\Components\TextEntry::make('start_date')
+                                    ->label('Data de Início')
+                                    ->dateTime('d/m/Y H:i')
+                                    ->placeholder('Não definida'),
+                                
+                                Infolists\Components\TextEntry::make('end_date')
+                                    ->label('Data de Término')
+                                    ->dateTime('d/m/Y H:i')
+                                    ->placeholder('Não definida'),
+                                
+                                Infolists\Components\TextEntry::make('priority')
+                                    ->label('Prioridade')
+                                    ->numeric()
+                                    ->badge()
+                                    ->color(fn ($state) => match (true) {
+                                        $state >= 80 => 'success',
+                                        $state >= 50 => 'warning',
+                                        default => 'danger',
+                                    }),
+                            ]),
+                    ]),
+                
+                Infolists\Components\Section::make('Descrição')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('description')
+                            ->label('')
+                            ->html()
+                            ->placeholder('Nenhuma descrição fornecida'),
+                    ])
+                    ->collapsible(),
+                
+                Infolists\Components\Section::make('Estatísticas')
+                    ->schema([
+                        Infolists\Components\Grid::make(3)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('total_votes')
+                                    ->label('Total de Votos')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->badge()
+                                    ->color('success'),
+                                
+                                Infolists\Components\TextEntry::make('options_count')
+                                    ->label('Opções')
+                                    ->state(fn ($record) => $record->options()->count())
+                                    ->numeric()
+                                    ->badge()
+                                    ->color('info'),
+                                
+                                Infolists\Components\TextEntry::make('status')
+                                    ->label('Status')
+                                    ->state(fn ($record) => $record->end_date && $record->end_date->isPast() ? 'Encerrada' : 'Ativa')
+                                    ->badge()
+                                    ->color(fn ($state) => $state === 'Ativa' ? 'success' : 'danger'),
+                            ]),
+                    ])
+                    ->collapsible(),
+                
+                Infolists\Components\Section::make('Informações do Sistema')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('created_at')
+                                    ->label('Criado em')
+                                    ->dateTime('d/m/Y H:i'),
+                                
+                                Infolists\Components\TextEntry::make('updated_at')
+                                    ->label('Atualizado em')
+                                    ->dateTime('d/m/Y H:i'),
+                            ]),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
+            ]);
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -259,6 +369,7 @@ class PollResource extends Resource
         return [
             'index' => Pages\ListPolls::route('/'),
             'create' => Pages\CreatePoll::route('/create'),
+            'view' => Pages\ViewPoll::route('/{record}'),
             'edit' => Pages\EditPoll::route('/{record}/edit'),
         ];
     }

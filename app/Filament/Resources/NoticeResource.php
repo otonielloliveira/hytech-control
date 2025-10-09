@@ -7,6 +7,8 @@ use App\Filament\Resources\NoticeResource\RelationManagers;
 use App\Models\Notice;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -190,46 +192,12 @@ class NoticeResource extends Resource
             ->recordAction('edit')
             ->recordUrl(fn (Model $record): string => static::getUrl('edit', ['record' => $record]))
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make()
-                        ->icon('heroicon-o-pencil')
-                        ->color('warning'),
-                    Tables\Actions\Action::make('duplicate')
-                        ->label('Duplicar')
-                        ->icon('heroicon-o-document-duplicate')
-                        ->color('gray')
-                        ->action(function ($record) {
-                            $newNotice = $record->replicate();
-                            $newNotice->title = $record->title . ' (Cópia)';
-                            $newNotice->is_active = false;
-                            $newNotice->save();
-                            
-                            \Filament\Notifications\Notification::make()
-                                ->title('Aviso duplicado com sucesso!')
-                                ->success()
-                                ->send();
-                        }),
-                    Tables\Actions\Action::make('toggle_status')
-                        ->label(fn ($record) => $record->is_active ? 'Desativar' : 'Ativar')
-                        ->icon(fn ($record) => $record->is_active ? 'heroicon-o-eye-slash' : 'heroicon-o-eye')
-                        ->color(fn ($record) => $record->is_active ? 'warning' : 'success')
-                        ->action(function ($record) {
-                            $record->is_active = !$record->is_active;
-                            $record->save();
-                            
-                            \Filament\Notifications\Notification::make()
-                                ->title('Status alterado com sucesso!')
-                                ->success()
-                                ->send();
-                        }),
-                    Tables\Actions\DeleteAction::make()
-                        ->icon('heroicon-o-trash'),
-                ])
-                ->tooltip('Ações')
-                ->icon('heroicon-m-ellipsis-vertical')
-                ->size('sm')
-                ->color('gray')
-                ->button()
+                Tables\Actions\ViewAction::make()
+                    ->label('Visualizar')
+                    ->icon('heroicon-o-eye')
+                    ->color('info'),
+                Tables\Actions\EditAction::make()->label('Editar')->icon('heroicon-o-pencil'),
+                Tables\Actions\DeleteAction::make()->label('Excluir')->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -237,6 +205,63 @@ class NoticeResource extends Resource
                 ]),
             ])
             ->defaultSort('priority', 'desc');
+    }
+
+    
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informações do Recado')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('title')
+                                    ->label('Título')
+                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                                    ->weight('bold')
+                                    ->columnSpanFull(),
+                                
+                                Infolists\Components\TextEntry::make('type')
+                                    ->label('Tipo')
+                                    ->badge()
+                                    ->color(fn ($state) => match($state) {
+                                        'info' => 'info',
+                                        'warning' => 'warning',
+                                        'danger' => 'danger',
+                                        'success' => 'success',
+                                        default => 'gray'
+                                    }),
+                                
+                                Infolists\Components\IconEntry::make('is_active')
+                                    ->label('Ativo')
+                                    ->boolean()
+                                    ->trueIcon('heroicon-o-check-circle')
+                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->trueColor('success')
+                                    ->falseColor('danger'),
+                                
+                                Infolists\Components\TextEntry::make('priority')
+                                    ->label('Prioridade')
+                                    ->numeric()
+                                    ->badge()
+                                    ->color(fn ($state) => match (true) {
+                                        $state >= 80 => 'success',
+                                        $state >= 50 => 'warning',
+                                        default => 'danger',
+                                    }),
+                            ]),
+                    ]),
+                
+                Infolists\Components\Section::make('Conteúdo')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('content')
+                            ->label('')
+                            ->html()
+                            ->placeholder('Nenhum conteúdo fornecido'),
+                    ])
+                    ->collapsible(),
+            ]);
     }
 
     public static function getRelations(): array
@@ -251,6 +276,7 @@ class NoticeResource extends Resource
         return [
             'index' => Pages\ListNotices::route('/'),
             'create' => Pages\CreateNotice::route('/create'),
+            'view' => Pages\ViewNotice::route('/{record}'),
             'edit' => Pages\EditNotice::route('/{record}/edit'),
         ];
     }

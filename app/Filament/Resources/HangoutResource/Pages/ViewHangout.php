@@ -4,17 +4,20 @@ namespace App\Filament\Resources\HangoutResource\Pages;
 
 use App\Filament\Resources\HangoutResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ViewRecord;
 
-class ListHangouts extends ListRecords
+class ViewHangout extends ViewRecord
 {
     protected static string $resource = HangoutResource::class;
-
+    
+    protected static ?string $title = 'Visualizar Hangout';
+    
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo Hangout'),
+            Actions\EditAction::make()
+                ->label('Editar Hangout')
+                ->icon('heroicon-o-pencil'),
         ];
     }
 }

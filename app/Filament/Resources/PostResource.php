@@ -8,6 +8,8 @@ use App\Models\Post;
 use App\Models\Category;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Tabs;
 use Filament\Resources\Resource;
@@ -472,6 +474,70 @@ class PostResource extends Resource
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informações do Post')
+                    ->schema([
+                        Infolists\Components\Split::make([
+                            Infolists\Components\Grid::make(2)
+                                ->schema([
+                                    Infolists\Components\TextEntry::make('title')
+                                        ->label('Título')
+                                        ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                                        ->weight('bold')
+                                        ->columnSpanFull(),
+                                    
+                                    Infolists\Components\TextEntry::make('category.name')
+                                        ->label('Categoria')
+                                        ->badge()
+                                        ->color('primary'),
+                                    
+                                    Infolists\Components\IconEntry::make('is_published')
+                                        ->label('Publicado')
+                                        ->boolean()
+                                        ->trueIcon('heroicon-o-check-circle')
+                                        ->falseIcon('heroicon-o-x-circle')
+                                        ->trueColor('success')
+                                        ->falseColor('danger'),
+                                    
+                                    Infolists\Components\TextEntry::make('created_at')
+                                        ->label('Criado em')
+                                        ->dateTime('d/m/Y H:i'),
+                                    
+                                    Infolists\Components\TextEntry::make('updated_at')
+                                        ->label('Atualizado em')
+                                        ->dateTime('d/m/Y H:i'),
+                                ]),
+                            
+                            Infolists\Components\ImageEntry::make('featured_image')
+                                ->label('Imagem Destacada')
+                                ->size(200)
+                                ->grow(false),
+                        ])->from('lg'),
+                    ]),
+                
+                Infolists\Components\Section::make('Conteúdo')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('content')
+                            ->label('')
+                            ->html()
+                            ->placeholder('Nenhum conteúdo fornecido'),
+                    ])
+                    ->collapsible(),
+                
+                Infolists\Components\Section::make('Resumo')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('excerpt')
+                            ->label('')
+                            ->placeholder('Nenhum resumo fornecido'),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
+            ]);
     }
 
     public static function getRelations(): array

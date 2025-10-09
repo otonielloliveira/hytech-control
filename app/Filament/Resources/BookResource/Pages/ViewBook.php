@@ -4,19 +4,20 @@ namespace App\Filament\Resources\BookResource\Pages;
 
 use App\Filament\Resources\BookResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ViewRecord;
 
-class ListBooks extends ListRecords
+class ViewBook extends ViewRecord
 {
     protected static string $resource = BookResource::class;
-
+    
+    protected static ?string $title = 'Visualizar Livro';
+    
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo Livro')
-                ->icon('heroicon-o-plus')
-                ->button(),
+            Actions\EditAction::make()
+                ->label('Editar Livro')
+                ->icon('heroicon-o-pencil'),
         ];
     }
 }

@@ -7,6 +7,8 @@ use App\Filament\Resources\LectureResource\RelationManagers;
 use App\Models\Lecture;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -140,8 +142,16 @@ class LectureResource extends Resource
                     ->label('Status'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label('Visualizar')
+                    ->icon('heroicon-o-eye')
+                    ->color('info'),
+                Tables\Actions\EditAction::make()
+                    ->label('Editar')
+                    ->icon('heroicon-o-pencil'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Excluir')
+                    ->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -149,6 +159,90 @@ class LectureResource extends Resource
                 ]),
             ])
             ->defaultSort('priority', 'desc');
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informações da Palestra')
+                    ->schema([
+                        Infolists\Components\Split::make([
+                            Infolists\Components\Grid::make(2)
+                                ->schema([
+                                    Infolists\Components\TextEntry::make('title')
+                                        ->label('Título')
+                                        ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                                        ->weight('bold')
+                                        ->columnSpanFull(),
+                                    
+                                    Infolists\Components\TextEntry::make('speaker')
+                                        ->label('Palestrante')
+                                        ->placeholder('Não informado')
+                                        ->icon('heroicon-o-microphone'),
+                                    
+                                    Infolists\Components\TextEntry::make('date_time')
+                                        ->label('Data e Hora')
+                                        ->dateTime('d/m/Y H:i')
+                                        ->placeholder('Não definida')
+                                        ->icon('heroicon-o-calendar'),
+                                    
+                                    Infolists\Components\TextEntry::make('location')
+                                        ->label('Local')
+                                        ->placeholder('Não informado')
+                                        ->icon('heroicon-o-map-pin'),
+                                    
+                                    Infolists\Components\TextEntry::make('priority')
+                                        ->label('Prioridade')
+                                        ->numeric()
+                                        ->badge()
+                                        ->color(fn ($state) => match (true) {
+                                            $state >= 80 => 'success',
+                                            $state >= 50 => 'warning',
+                                            default => 'danger',
+                                        }),
+                                    
+                                    Infolists\Components\IconEntry::make('is_active')
+                                        ->label('Status')
+                                        ->boolean()
+                                        ->trueIcon('heroicon-o-check-circle')
+                                        ->falseIcon('heroicon-o-x-circle')
+                                        ->trueColor('success')
+                                        ->falseColor('danger'),
+                                ]),
+                            
+                            Infolists\Components\ImageEntry::make('image')
+                                ->label('Imagem')
+                                ->size(200)
+                                ->grow(false),
+                        ])->from('lg'),
+                    ]),
+                
+                Infolists\Components\Section::make('Descrição')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('description')
+                            ->label('')
+                            ->html()
+                            ->placeholder('Nenhuma descrição fornecida'),
+                    ])
+                    ->collapsible(),
+                
+                Infolists\Components\Section::make('Informações do Sistema')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('created_at')
+                                    ->label('Criado em')
+                                    ->dateTime('d/m/Y H:i'),
+                                
+                                Infolists\Components\TextEntry::make('updated_at')
+                                    ->label('Atualizado em')
+                                    ->dateTime('d/m/Y H:i'),
+                            ]),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
+            ]);
     }
 
     public static function getRelations(): array
@@ -163,6 +257,7 @@ class LectureResource extends Resource
         return [
             'index' => Pages\ListLectures::route('/'),
             'create' => Pages\CreateLecture::route('/create'),
+            'view' => Pages\ViewLecture::route('/{record}'),
             'edit' => Pages\EditLecture::route('/{record}/edit'),
         ];
     }

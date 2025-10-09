@@ -4,19 +4,20 @@ namespace App\Filament\Resources\SidebarConfigResource\Pages;
 
 use App\Filament\Resources\SidebarConfigResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ViewRecord;
 
-class ListSidebarConfigs extends ListRecords
+class ViewSidebarConfig extends ViewRecord
 {
     protected static string $resource = SidebarConfigResource::class;
-
+    
+    protected static ?string $title = 'Visualizar Widget';
+    
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo Widget')
-                ->icon('heroicon-o-plus')
-                ->button(),
+            Actions\EditAction::make()
+                ->label('Editar Widget')
+                ->icon('heroicon-o-pencil'),
         ];
     }
 }

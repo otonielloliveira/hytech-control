@@ -7,6 +7,8 @@ use App\Filament\Resources\SidebarConfigResource\RelationManagers;
 use App\Models\SidebarConfig;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -155,14 +157,88 @@ class SidebarConfigResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('Editar')->icon('heroicon-o-pencil'),
+                Tables\Actions\DeleteAction::make()->label('Excluir')->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label('Excluir')->icon('heroicon-o-trash'),
                 ]),
             ])
             ->defaultSort('sort_order', 'asc');
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informações do Widget')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('name')
+                                    ->label('Nome')
+                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                                    ->weight('bold')
+                                    ->columnSpanFull(),
+                                
+                                Infolists\Components\TextEntry::make('type')
+                                    ->label('Tipo')
+                                    ->badge()
+                                    ->color(fn ($state) => match($state) {
+                                        'banner' => 'primary',
+                                        'notice' => 'warning',
+                                        'lecture' => 'success',
+                                        'post' => 'info',
+                                        default => 'gray'
+                                    }),
+                                
+                                Infolists\Components\IconEntry::make('is_active')
+                                    ->label('Ativo')
+                                    ->boolean()
+                                    ->trueIcon('heroicon-o-check-circle')
+                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->trueColor('success')
+                                    ->falseColor('danger'),
+                                
+                                Infolists\Components\TextEntry::make('sort_order')
+                                    ->label('Ordem')
+                                    ->numeric()
+                                    ->badge()
+                                    ->color('gray'),
+                                
+                                Infolists\Components\TextEntry::make('max_items')
+                                    ->label('Máximo de Itens')
+                                    ->numeric()
+                                    ->placeholder('Ilimitado'),
+                            ]),
+                    ]),
+                
+                Infolists\Components\Section::make('Configurações')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('config')
+                            ->label('Configuração JSON')
+                            ->placeholder('Nenhuma configuração específica'),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
+                
+                Infolists\Components\Section::make('Informações do Sistema')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('created_at')
+                                    ->label('Criado em')
+                                    ->dateTime('d/m/Y H:i'),
+                                
+                                Infolists\Components\TextEntry::make('updated_at')
+                                    ->label('Atualizado em')
+                                    ->dateTime('d/m/Y H:i'),
+                            ]),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
+            ]);
     }
 
     public static function getRelations(): array
