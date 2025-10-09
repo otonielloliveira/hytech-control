@@ -4,17 +4,20 @@ namespace App\Filament\Resources\DownloadResource\Pages;
 
 use App\Filament\Resources\DownloadResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ViewRecord;
 
-class ListDownloads extends ListRecords
+class ViewDownload extends ViewRecord
 {
     protected static string $resource = DownloadResource::class;
-
+    
+    protected static ?string $title = 'Visualizar Download';
+    
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo Download'),
+            Actions\EditAction::make()
+                ->label('Editar Download')
+                ->icon('heroicon-o-pencil'),
         ];
     }
 }

@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->darkMode(false)
+            ->brandName('Admin Foro do Brasil')
             ->colors([
                 'primary' => Color::Amber,
             ])

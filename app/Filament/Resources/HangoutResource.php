@@ -6,6 +6,8 @@ use App\Filament\Resources\HangoutResource\Pages;
 use App\Models\Hangout;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -161,6 +163,158 @@ class HangoutResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informações do Hangout')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('title')
+                                    ->label('Título')
+                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                                    ->weight('bold'),
+                                    
+                                Infolists\Components\TextEntry::make('platform')
+                                    ->label('Plataforma')
+                                    ->badge()
+                                    ->color('info')
+                                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                                        'zoom' => 'Zoom',
+                                        'teams' => 'Microsoft Teams',
+                                        'meet' => 'Google Meet',
+                                        'discord' => 'Discord',
+                                        'jitsi' => 'Jitsi Meet',
+                                        'webex' => 'Cisco Webex',
+                                        default => $state
+                                    }),
+                            ]),
+                            
+                        Infolists\Components\TextEntry::make('description')
+                            ->label('Descrição')
+                            ->prose()
+                            ->columnSpanFull()
+                            ->placeholder('Nenhuma descrição fornecida'),
+                    ])->columns(2),
+                    
+                Infolists\Components\Section::make('Agendamento')
+                    ->schema([
+                        Infolists\Components\Grid::make(3)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('scheduled_at')
+                                    ->label('Data e Hora')
+                                    ->dateTime('d/m/Y H:i')
+                                    ->icon('heroicon-m-calendar'),
+                                    
+                                Infolists\Components\TextEntry::make('duration')
+                                    ->label('Duração')
+                                    ->suffix(' minutos')
+                                    ->icon('heroicon-m-clock'),
+                                    
+                                Infolists\Components\TextEntry::make('max_participants')
+                                    ->label('Máx. Participantes')
+                                    ->icon('heroicon-m-users')
+                                    ->placeholder('Ilimitado'),
+                            ]),
+                    ])->columns(3),
+                    
+                Infolists\Components\Section::make('Status e Configurações')
+                    ->schema([
+                        Infolists\Components\Grid::make(4)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('status')
+                                    ->label('Status')
+                                    ->badge()
+                                    ->color(fn (string $state): string => match ($state) {
+                                        'scheduled' => 'warning',
+                                        'live' => 'success',
+                                        'ended' => 'gray',
+                                        'cancelled' => 'danger',
+                                        default => 'gray'
+                                    })
+                                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                                        'scheduled' => 'Agendado',
+                                        'live' => 'Ao Vivo',
+                                        'ended' => 'Finalizado',
+                                        'cancelled' => 'Cancelado',
+                                        default => $state
+                                    }),
+                                    
+                                Infolists\Components\IconEntry::make('is_public')
+                                    ->label('Público')
+                                    ->boolean()
+                                    ->trueIcon('heroicon-o-globe-alt')
+                                    ->falseIcon('heroicon-o-lock-closed')
+                                    ->trueColor('success')
+                                    ->falseColor('warning'),
+                                    
+                                Infolists\Components\IconEntry::make('requires_registration')
+                                    ->label('Requer Inscrição')
+                                    ->boolean()
+                                    ->trueIcon('heroicon-o-user-plus')
+                                    ->falseIcon('heroicon-o-users')
+                                    ->trueColor('info')
+                                    ->falseColor('gray'),
+                                    
+                                Infolists\Components\IconEntry::make('is_active')
+                                    ->label('Ativo')
+                                    ->boolean()
+                                    ->trueIcon('heroicon-o-check-circle')
+                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->trueColor('success')
+                                    ->falseColor('danger'),
+                            ]),
+                    ])->columns(4),
+                    
+                Infolists\Components\Section::make('Acesso ao Hangout')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('meeting_link')
+                            ->label('Link da Reunião')
+                            ->copyable()
+                            ->icon('heroicon-m-link')
+                            ->placeholder('Link não configurado'),
+                            
+                        Infolists\Components\Actions::make([
+                            Infolists\Components\Actions\Action::make('join')
+                                ->label('Entrar no Hangout')
+                                ->icon('heroicon-o-video-camera')
+                                ->color('success')
+                                ->url(fn ($record) => $record->meeting_link)
+                                ->openUrlInNewTab()
+                                ->visible(fn ($record) => !empty($record->meeting_link)),
+                        ]),
+                    ]),
+                    
+                Infolists\Components\Section::make('Mídia')
+                    ->schema([
+                        Infolists\Components\ImageEntry::make('cover_image')
+                            ->label('Imagem de Capa')
+                            ->disk('public')
+                            ->width(400)
+                            ->height(200)
+                            ->placeholder('Nenhuma imagem definida'),
+                    ])
+                    ->visible(fn ($record) => !empty($record->cover_image)),
+                    
+                Infolists\Components\Section::make('Informações Adicionais')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('created_at')
+                                    ->label('Criado em')
+                                    ->dateTime('d/m/Y H:i')
+                                    ->icon('heroicon-m-calendar'),
+                                    
+                                Infolists\Components\TextEntry::make('updated_at')
+                                    ->label('Atualizado em')
+                                    ->dateTime('d/m/Y H:i')
+                                    ->icon('heroicon-m-pencil'),
+                            ]),
+                    ])->columns(2),
+            ]);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -271,6 +425,10 @@ class HangoutResource extends Resource
                     ->label('Requer Inscrição'),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Visualizar')
+                    ->icon('heroicon-o-eye')
+                    ->color('info'),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('join')
@@ -301,6 +459,7 @@ class HangoutResource extends Resource
         return [
             'index' => Pages\ListHangouts::route('/'),
             'create' => Pages\CreateHangout::route('/create'),
+            'view' => Pages\ViewHangout::route('/{record}'),
             'edit' => Pages\EditHangout::route('/{record}/edit'),
         ];
     }

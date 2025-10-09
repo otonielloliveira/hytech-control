@@ -7,6 +7,8 @@ use App\Filament\Resources\CategoryResource\RelationManagers;
 use App\Models\Category;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -172,6 +174,66 @@ class CategoryResource extends Resource
             ])
             ->defaultSort('sort_order', 'asc')
             ->reorderable('sort_order');
+    }
+
+    
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informações da Categoria')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('name')
+                                    ->label('Nome')
+                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                                    ->weight('bold'),
+                                
+                                Infolists\Components\TextEntry::make('slug')
+                                    ->label('Slug')
+                                    ->badge()
+                                    ->color('gray'),
+                                
+                                Infolists\Components\IconEntry::make('is_visible')
+                                    ->label('Visível')
+                                    ->boolean()
+                                    ->trueIcon('heroicon-o-check-circle')
+                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->trueColor('success')
+                                    ->falseColor('danger'),
+                                
+                                Infolists\Components\TextEntry::make('sort')
+                                    ->label('Ordem')
+                                    ->numeric(),
+                            ]),
+                    ]),
+                
+                Infolists\Components\Section::make('Descrição')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('description')
+                            ->label('')
+                            ->placeholder('Nenhuma descrição fornecida'),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
+                
+                Infolists\Components\Section::make('Informações do Sistema')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('created_at')
+                                    ->label('Criado em')
+                                    ->dateTime('d/m/Y H:i'),
+                                
+                                Infolists\Components\TextEntry::make('updated_at')
+                                    ->label('Atualizado em')
+                                    ->dateTime('d/m/Y H:i'),
+                            ]),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
+            ]);
     }
 
     public static function getRelations(): array

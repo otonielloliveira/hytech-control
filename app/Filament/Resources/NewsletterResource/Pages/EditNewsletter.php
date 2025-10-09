@@ -10,6 +10,8 @@ class EditNewsletter extends EditRecord
 {
     protected static string $resource = NewsletterResource::class;
 
+    protected static ?string $title = 'Editar Newsletter';
+
     protected function getHeaderActions(): array
     {
         return [

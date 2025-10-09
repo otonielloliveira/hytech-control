@@ -4,18 +4,20 @@ namespace App\Filament\Resources\LectureResource\Pages;
 
 use App\Filament\Resources\LectureResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ViewRecord;
 
-class ListLectures extends ListRecords
+class ViewLecture extends ViewRecord
 {
     protected static string $resource = LectureResource::class;
-
+    
+    protected static ?string $title = 'Visualizar Palestra';
+    
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Nova Palestra')->icon('heroicon-o-plus')->button(),
+            Actions\EditAction::make()
+                ->label('Editar Palestra')
+                ->icon('heroicon-o-pencil'),
         ];
-
-        
     }
 }

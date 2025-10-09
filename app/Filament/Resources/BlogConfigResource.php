@@ -6,6 +6,8 @@ use App\Filament\Resources\BlogConfigResource\Pages;
 use App\Models\BlogConfig;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -346,6 +348,10 @@ class BlogConfigResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Visualizar')
+                    ->icon('heroicon-o-eye')
+                    ->color('info'),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

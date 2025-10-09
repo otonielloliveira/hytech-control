@@ -7,6 +7,8 @@ use App\Filament\Resources\NoticeResource\RelationManagers;
 use App\Models\Notice;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -175,8 +177,12 @@ class NoticeResource extends Resource
                     ->label('Status'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label('Visualizar')
+                    ->icon('heroicon-o-eye')
+                    ->color('info'),
+                Tables\Actions\EditAction::make()->label('Editar')->icon('heroicon-o-pencil'),
+                Tables\Actions\DeleteAction::make()->label('Excluir')->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -184,6 +190,63 @@ class NoticeResource extends Resource
                 ]),
             ])
             ->defaultSort('priority', 'desc');
+    }
+
+    
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informações do Recado')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('title')
+                                    ->label('Título')
+                                    ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                                    ->weight('bold')
+                                    ->columnSpanFull(),
+                                
+                                Infolists\Components\TextEntry::make('type')
+                                    ->label('Tipo')
+                                    ->badge()
+                                    ->color(fn ($state) => match($state) {
+                                        'info' => 'info',
+                                        'warning' => 'warning',
+                                        'danger' => 'danger',
+                                        'success' => 'success',
+                                        default => 'gray'
+                                    }),
+                                
+                                Infolists\Components\IconEntry::make('is_active')
+                                    ->label('Ativo')
+                                    ->boolean()
+                                    ->trueIcon('heroicon-o-check-circle')
+                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->trueColor('success')
+                                    ->falseColor('danger'),
+                                
+                                Infolists\Components\TextEntry::make('priority')
+                                    ->label('Prioridade')
+                                    ->numeric()
+                                    ->badge()
+                                    ->color(fn ($state) => match (true) {
+                                        $state >= 80 => 'success',
+                                        $state >= 50 => 'warning',
+                                        default => 'danger',
+                                    }),
+                            ]),
+                    ]),
+                
+                Infolists\Components\Section::make('Conteúdo')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('content')
+                            ->label('')
+                            ->html()
+                            ->placeholder('Nenhum conteúdo fornecido'),
+                    ])
+                    ->collapsible(),
+            ]);
     }
 
     public static function getRelations(): array
@@ -198,6 +261,7 @@ class NoticeResource extends Resource
         return [
             'index' => Pages\ListNotices::route('/'),
             'create' => Pages\CreateNotice::route('/create'),
+            'view' => Pages\ViewNotice::route('/{record}'),
             'edit' => Pages\EditNotice::route('/{record}/edit'),
         ];
     }

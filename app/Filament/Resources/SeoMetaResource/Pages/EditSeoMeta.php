@@ -10,6 +10,8 @@ class EditSeoMeta extends EditRecord
 {
     protected static string $resource = SeoMetaResource::class;
 
+    protected static ?string $title = 'Editar SEO Meta';
+
     protected function getHeaderActions(): array
     {
         return [

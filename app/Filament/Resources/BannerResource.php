@@ -7,6 +7,8 @@ use App\Filament\Resources\BannerResource\RelationManagers;
 use App\Models\Banner;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -190,6 +192,64 @@ class BannerResource extends Resource
             ->reorderable('sort_order');
     }
 
+    
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informações do Banner')
+                    ->schema([
+                        Infolists\Components\Split::make([
+                            Infolists\Components\Grid::make(2)
+                                ->schema([
+                                    Infolists\Components\TextEntry::make('title')
+                                        ->label('Título')
+                                        ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                                        ->weight('bold')
+                                        ->columnSpanFull(),
+                                    
+                                    Infolists\Components\TextEntry::make('type')
+                                        ->label('Tipo')
+                                        ->badge()
+                                        ->color('primary'),
+                                    
+                                    Infolists\Components\IconEntry::make('is_active')
+                                        ->label('Ativo')
+                                        ->boolean()
+                                        ->trueIcon('heroicon-o-check-circle')
+                                        ->falseIcon('heroicon-o-x-circle')
+                                        ->trueColor('success')
+                                        ->falseColor('danger'),
+                                    
+                                    Infolists\Components\TextEntry::make('priority')
+                                        ->label('Prioridade')
+                                        ->numeric()
+                                        ->badge()
+                                        ->color(fn ($state) => match (true) {
+                                            $state >= 80 => 'success',
+                                            $state >= 50 => 'warning',
+                                            default => 'danger',
+                                        }),
+                                ]),
+                            
+                            Infolists\Components\ImageEntry::make('image')
+                                ->label('Imagem')
+                                ->size(200)
+                                ->grow(false),
+                        ])->from('lg'),
+                    ]),
+                
+                Infolists\Components\Section::make('Conteúdo')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('content')
+                            ->label('')
+                            ->html()
+                            ->placeholder('Nenhum conteúdo fornecido'),
+                    ])
+                    ->collapsible(),
+            ]);
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -202,6 +262,7 @@ class BannerResource extends Resource
         return [
             'index' => Pages\ListBanners::route('/'),
             'create' => Pages\CreateBanner::route('/create'),
+            'view' => Pages\ViewBanner::route('/{record}'),
             'edit' => Pages\EditBanner::route('/{record}/edit'),
         ];
     }

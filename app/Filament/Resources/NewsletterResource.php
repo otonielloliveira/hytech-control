@@ -7,6 +7,8 @@ use App\Filament\Resources\NewsletterResource\RelationManagers;
 use App\Models\Newsletter;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;

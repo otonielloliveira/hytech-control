@@ -10,6 +10,8 @@ class EditBlogConfig extends EditRecord
 {
     protected static string $resource = BlogConfigResource::class;
 
+    protected static ?string $title = 'Editar Configuração do Blog';
+
     protected function getHeaderActions(): array
     {
         return [

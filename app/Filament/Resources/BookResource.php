@@ -6,6 +6,8 @@ use App\Filament\Resources\BookResource\Pages;
 use App\Models\Book;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -218,8 +220,12 @@ class BookResource extends Resource
                     ->label('Ativo'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label('Visualizar')
+                    ->icon('heroicon-o-eye')
+                    ->color('info'),
+                Tables\Actions\EditAction::make()->label('Editar')->icon('heroicon-o-pencil'),
+                Tables\Actions\DeleteAction::make()->label('Excluir')->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -227,6 +233,134 @@ class BookResource extends Resource
                 ]),
             ])
             ->defaultSort('priority', 'asc');
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informações do Livro')
+                    ->schema([
+                        Infolists\Components\Split::make([
+                            Infolists\Components\Grid::make(2)
+                                ->schema([
+                                    Infolists\Components\TextEntry::make('title')
+                                        ->label('Título')
+                                        ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
+                                        ->weight('bold')
+                                        ->columnSpanFull(),
+                                    
+                                    Infolists\Components\TextEntry::make('author')
+                                        ->label('Autor')
+                                        ->icon('heroicon-o-user'),
+                                    
+                                    Infolists\Components\TextEntry::make('isbn')
+                                        ->label('ISBN')
+                                        ->placeholder('Não informado')
+                                        ->copyable()
+                                        ->icon('heroicon-o-identification'),
+                                    
+                                    Infolists\Components\TextEntry::make('publisher')
+                                        ->label('Editora')
+                                        ->placeholder('Não informada')
+                                        ->icon('heroicon-o-building-library'),
+                                    
+                                    Infolists\Components\TextEntry::make('year')
+                                        ->label('Ano de Publicação')
+                                        ->numeric()
+                                        ->placeholder('Não informado')
+                                        ->icon('heroicon-o-calendar'),
+                                    
+                                    Infolists\Components\TextEntry::make('pages')
+                                        ->label('Páginas')
+                                        ->numeric()
+                                        ->suffix(' páginas')
+                                        ->placeholder('Não informado'),
+                                    
+                                    Infolists\Components\TextEntry::make('language')
+                                        ->label('Idioma')
+                                        ->placeholder('Não informado')
+                                        ->badge()
+                                        ->color('primary'),
+                                    
+                                    Infolists\Components\TextEntry::make('genre')
+                                        ->label('Gênero')
+                                        ->placeholder('Não informado')
+                                        ->badge()
+                                        ->color('success'),
+                                    
+                                    Infolists\Components\TextEntry::make('priority')
+                                        ->label('Prioridade')
+                                        ->numeric()
+                                        ->badge()
+                                        ->color(fn ($state) => match (true) {
+                                            $state >= 80 => 'success',
+                                            $state >= 50 => 'warning',
+                                            default => 'danger',
+                                        }),
+                                    
+                                    Infolists\Components\IconEntry::make('is_active')
+                                        ->label('Ativo')
+                                        ->boolean()
+                                        ->trueIcon('heroicon-o-check-circle')
+                                        ->falseIcon('heroicon-o-x-circle')
+                                        ->trueColor('success')
+                                        ->falseColor('danger'),
+                                ]),
+                            
+                            Infolists\Components\ImageEntry::make('cover_image')
+                                ->label('Capa')
+                                ->size(200)
+                                ->grow(false),
+                        ])->from('lg'),
+                    ]),
+                
+                Infolists\Components\Section::make('Links e Recursos')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('download_url')
+                                    ->label('URL de Download')
+                                    ->placeholder('Não disponível')
+                                    ->url(fn ($state) => $state)
+                                    ->openUrlInNewTab()
+                                    ->icon('heroicon-o-arrow-down-tray'),
+                                
+                                Infolists\Components\TextEntry::make('external_url')
+                                    ->label('Link Externo')
+                                    ->placeholder('Não disponível')
+                                    ->url(fn ($state) => $state)
+                                    ->openUrlInNewTab()
+                                    ->icon('heroicon-o-link'),
+                            ]),
+                    ])
+                    ->collapsible(),
+                
+                Infolists\Components\Section::make('Descrição')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('description')
+                            ->label('')
+                            ->html()
+                            ->placeholder('Nenhuma descrição fornecida'),
+                    ])
+                    ->collapsible(),
+                
+                Infolists\Components\Section::make('Informações do Sistema')
+                    ->schema([
+                        Infolists\Components\Grid::make(2)
+                            ->schema([
+                                Infolists\Components\TextEntry::make('created_at')
+                                    ->label('Criado em')
+                                    ->dateTime('d/m/Y H:i'),
+                                
+                                Infolists\Components\TextEntry::make('updated_at')
+                                    ->label('Atualizado em')
+                                    ->dateTime('d/m/Y H:i'),
+                            ]),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
+            ]);
     }
 
     public static function getRelations(): array
@@ -241,6 +375,7 @@ class BookResource extends Resource
         return [
             'index' => Pages\ListBooks::route('/'),
             'create' => Pages\CreateBook::route('/create'),
+            'view' => Pages\ViewBook::route('/{record}'),
             'edit' => Pages\EditBook::route('/{record}/edit'),
         ];
     }

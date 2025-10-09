@@ -4,19 +4,20 @@ namespace App\Filament\Resources\NoticeResource\Pages;
 
 use App\Filament\Resources\NoticeResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ViewRecord;
 
-class ListNotices extends ListRecords
+class ViewNotice extends ViewRecord
 {
     protected static string $resource = NoticeResource::class;
-
+    
+    protected static ?string $title = 'Visualizar Recado';
+    
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo Recado')
-                ->icon('heroicon-o-plus')
-                ->button(),
+            Actions\EditAction::make()
+                ->label('Editar Recado')
+                ->icon('heroicon-o-pencil'),
         ];
     }
 }

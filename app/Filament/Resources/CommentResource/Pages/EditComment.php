@@ -10,6 +10,8 @@ class EditComment extends EditRecord
 {
     protected static string $resource = CommentResource::class;
 
+    protected static ?string $title = 'Editar Comentário';
+
     protected function getHeaderActions(): array
     {
         return [
