@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\LectureController;
+use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\VideoController;
 use App\Http\Controllers\Client\AuthController;
 use App\Http\Controllers\Client\DashboardController;
 
@@ -40,6 +43,24 @@ Route::prefix('downloads')->name('downloads.')->group(function () {
     Route::get('/categoria/{category}', [DownloadController::class, 'category'])->name('category');
     Route::get('/{download}/download', [DownloadController::class, 'download'])->name('download');
     Route::get('/{download}', [DownloadController::class, 'show'])->name('show');
+});
+
+// Lecture Routes (Palestras)
+Route::prefix('palestras')->name('lectures.')->group(function () {
+    Route::get('/', [LectureController::class, 'index'])->name('index');
+    Route::get('/{lecture}', [LectureController::class, 'show'])->name('show');
+});
+
+// Album Routes (Álbuns de Fotos)
+Route::prefix('albuns')->name('albums.')->group(function () {
+    Route::get('/', [AlbumController::class, 'index'])->name('index');
+    Route::get('/{album}', [AlbumController::class, 'show'])->name('show');
+});
+
+// Video Routes (Vídeos)
+Route::prefix('videos')->name('videos.')->group(function () {
+    Route::get('/', [VideoController::class, 'index'])->name('index');
+    Route::get('/{video}', [VideoController::class, 'show'])->name('show');
 });
 
 // Client Routes

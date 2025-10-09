@@ -99,6 +99,13 @@ class SidebarService
                 'default_active' => false,
                 'default_order' => 8,
             ],
+            'quick-links' => [
+                'title' => 'Acesso Rápido',
+                'component' => 'sidebar.quick-links',
+                'description' => 'Links rápidos para seções principais',
+                'default_active' => true,
+                'default_order' => 9,
+            ],
         ];
     }
 

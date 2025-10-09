@@ -82,8 +82,8 @@
         }
         
         .navbar-nav .nav-link .badge {
-            top: -5px !important;
-            right: -10px !important;
+            top: 8px !important;
+            right: 2px !important;
             min-width: 18px;
             height: 18px;
             display: flex;
@@ -99,12 +99,33 @@
         /* Banner Carousel */
         .hero-carousel {
             margin-top: 76px; /* altura do navbar fixo */
+            height: 500px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Layout com Sidebar */
+        .main-content {
+            padding: 2rem 0;
+            min-height: calc(100vh - 200px);
+        }
+        
+        .main-content .container {
+            margin-top: 0;
+        }
+        
+        @media (max-width: 991.98px) {
+            .main-content .col-lg-4 {
+                margin-top: 2rem;
+            }
         }
         
         .carousel-item {
             height: 500px;
             background-size: cover;
             background-position: center;
+            background-repeat: no-repeat;
             position: relative;
         }
         
@@ -122,6 +143,8 @@
         .carousel-content {
             color: white;
             max-width: 600px;
+            z-index: 2;
+            position: relative;
         }
         
         .carousel-content h1 {
@@ -153,108 +176,15 @@
             text-decoration: none;
             display: inline-block;
             transition: all 0.3s ease;
-        }
-        
-        .btn-hero:hover {
-            background: var(--secondary-color);
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        /* Seções */
-        .section {
-            padding: 4rem 0;
-        }
-        
-        .section-title {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .section-title h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text-color);
-            margin-bottom: 1rem;
-        }
-        
-        .section-title p {
-            font-size: 1.1rem;
-            color: #6b7280;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        /* Cards de Posts */
-                /* Hero Carousel */
-        .hero-carousel {
-            height: 500px;
-            margin-bottom: 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .carousel-item {
-            height: 500px;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            position: relative;
-        }
-        
-        .carousel-overlay {
-            background: linear-gradient(45deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 100%);
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-        }
-        
-        .carousel-content {
-            color: white;
-            z-index: 2;
-            position: relative;
-        }
-        
-        .carousel-content h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        
-        .carousel-content h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            opacity: 0.9;
-        }
-        
-        .carousel-content p {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            opacity: 0.8;
-        }
-        
-        .btn-hero {
-            display: inline-block;
-            padding: 1rem 2rem;
-            background: var(--primary-color);
-            color: white;
-            text-decoration: none;
             border-radius: 30px;
-            font-weight: 600;
-            transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         
         .btn-hero:hover {
             background: var(--secondary-color);
+            color: white;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            color: white;
         }
         
         .carousel-indicators {
@@ -284,6 +214,31 @@
             background-size: 20px 20px;
             width: 20px;
             height: 20px;
+        }
+
+                
+        /* Seções */
+        .section {
+            padding: 4rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+        
+        .section-title p {
+            font-size: 1.1rem;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         /* Additional Blog Styles */
@@ -449,6 +404,7 @@
             
             .hero-carousel {
                 height: 300px;
+                margin-top: 70px;
             }
             
             .carousel-item {
@@ -469,62 +425,6 @@
             
             .section {
                 padding: 2rem 0;
-            }
-        }
-        
-        /* Footer */
-        .footer {
-            background: #1f2937;
-            color: white;
-            padding: 3rem 0 1rem;
-        }
-        
-        .footer h5 {
-            color: white;
-            margin-bottom: 1rem;
-        }
-        
-        .footer a {
-            color: #d1d5db;
-            text-decoration: none;
-        }
-        
-        .footer a:hover {
-            color: white;
-        }
-        
-        .social-links a {
-            display: inline-block;
-            margin-right: 1rem;
-            font-size: 1.5rem;
-            transition: color 0.3s ease;
-        }
-        
-        .social-links a:hover {
-            color: var(--primary-color);
-        }
-        
-        /* Newsletter */
-        .newsletter-form {
-            background: var(--light-bg);
-            padding: 3rem 0;
-        }
-        
-        .newsletter-form .form-control {
-            border-radius: 5px;
-            border: 2px solid var(--border-color);
-            padding: 12px 15px;
-        }
-        
-        .newsletter-form .btn {
-            border-radius: 5px;
-            padding: 12px 30px;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .carousel-content h1 {
-                font-size: 2rem;
             }
             
             .section-title h2 {
@@ -549,6 +449,399 @@
     
     @yield('styles')
     
+    <style>
+    .category-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    }
+    
+    /* Estilos para Petições */
+    .petition-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+    
+    .petition-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+    
+    .petition-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .petition-card-body {
+        padding: 1.5rem;
+    }
+    
+    .petition-category {
+        display: inline-block;
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .petition-title {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+    
+    .petition-title a {
+        color: #2d3748;
+        text-decoration: none;
+    }
+    
+    .petition-title a:hover {
+        color: #dc3545;
+    }
+    
+    .petition-excerpt {
+        color: #6c757d;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+    
+    .whatsapp-preview {
+        background: #f8f9fa;
+        padding: 0.5rem;
+        border-radius: 8px;
+        border-left: 3px solid #25d366;
+    }
+    
+    /* Estilos para Notícias */
+    .news-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+    
+    .news-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    
+    .news-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+    
+    .news-card-body {
+        padding: 1.2rem;
+    }
+    
+    .breaking-badge {
+        background: #dc3545;
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        margin-right: 0.5rem;
+        animation: pulse 2s infinite;
+    }
+    
+    .news-category {
+        display: inline-block;
+        color: white;
+        padding: 0.3rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+    }
+    
+    .news-title {
+        font-size: 1rem;
+        margin-bottom: 0.8rem;
+        line-height: 1.4;
+    }
+    
+    .news-title a {
+        color: #2d3748;
+        text-decoration: none;
+    }
+    
+    .news-title a:hover {
+        color: #0984e3;
+    }
+    
+    .news-excerpt {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .news-meta {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    /* Colunas de Notícias */
+    .news-column {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+    
+    .column-title {
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.8rem;
+        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
+    }
+    
+    .news-item {
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #f1f3f4;
+    }
+    
+    .news-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .news-item h5 {
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .news-item a {
+        color: #2d3748;
+        text-decoration: none;
+    }
+    
+    .news-item a:hover {
+        color: #0984e3;
+    }
+    
+    .news-excerpt-small {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    /* Seções Compactas (Política/Economia) */
+    .section-title-inline {
+        border-bottom: 3px solid #e9ecef;
+        padding-bottom: 0.8rem;
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+    }
+    
+    .compact-card {
+        display: flex;
+        gap: 1rem;
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+    
+    .compact-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .compact-card img {
+        width: 80px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+        flex-shrink: 0;
+    }
+    
+    .compact-content h6 {
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+        line-height: 1.3;
+    }
+    
+    .compact-content a {
+        color: #2d3748;
+        text-decoration: none;
+    }
+    
+    .compact-content a:hover {
+        color: #0984e3;
+    }
+    
+    /* Amigos e Apoiadores Carousel */
+    .amigos-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        height: 100%;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .amigos-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    
+    .amigos-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    .amigos-content h5 {
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+        color: #2d3748;
+    }
+    
+    .amigos-content h5 a {
+        color: #2d3748;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .amigos-content h5 a:hover {
+        color: #667eea;
+    }
+    
+    .amigos-content p {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 0.8rem;
+        line-height: 1.4;
+    }
+    
+    #amigosCarousel .carousel-control-prev,
+    #amigosCarousel .carousel-control-next {
+        width: 5%;
+        color: white;
+    }
+    
+    #amigosCarousel .carousel-control-prev-icon,
+    #amigosCarousel .carousel-control-next-icon {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Search and Login Bar */
+    .search-login-bar {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .search-form .input-group {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-radius: 25px;
+        overflow: hidden;
+    }
+
+    .search-input {
+        border: none;
+        padding: 12px 20px;
+        font-size: 1rem;
+        background: white;
+    }
+
+    .search-input:focus {
+        box-shadow: none;
+        border-color: transparent;
+    }
+
+    .btn-search {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 12px 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-search:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .auth-buttons .btn {
+        border-radius: 20px;
+        padding: 8px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .auth-buttons .btn-outline-primary {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .auth-buttons .btn-outline-primary:hover {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .auth-buttons .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+    .auth-buttons .btn-primary:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .search-login-bar .col-lg-6 {
+            text-align: center !important;
+        }
+        
+        .auth-buttons {
+            justify-content: center;
+            display: flex;
+        }
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+</style>
+
     @if($config->custom_head_code)
         {!! $config->custom_head_code !!}
     @endif
@@ -582,22 +875,22 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="{{ route('lectures.index') }}">
                             <i class="fas fa-microphone me-1"></i>Palestras
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-camera me-1"></i>Fotos
+                        <a class="nav-link" href="{{ route('albums.index') }}">
+                            <i class="fas fa-camera me-1"></i>Álbuns
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="{{ route('videos.index') }}">
                             <i class="fas fa-video me-1"></i>Vídeos
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="{{ route('downloads.index') }}">
                             <i class="fas fa-download me-1"></i>Download
                         </a>
                     </li>
@@ -633,6 +926,7 @@
         </div>
     </nav>
 
+    <!-- Conteúdo principal -->
     @yield('content')
 
     <!-- Newsletter -->
@@ -695,14 +989,7 @@
                     @endif
                 </div>
                 
-                <div class="col-lg-4 mb-4">
-                    <h5>Categorias</h5>
-                    @isset($categories)
-                        @foreach($categories->take(5) as $category)
-                            <p><a href="{{ route('blog.category.show', $category->slug) }}">{{ $category->name }}</a></p>
-                        @endforeach
-                    @endisset
-                </div>
+                
             </div>
             
             <hr style="border-color: #374151;">

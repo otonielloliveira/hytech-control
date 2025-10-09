@@ -48,6 +48,13 @@ class Download extends Model
         return $query->where('category', $category);
     }
 
+    public function scopePopular($query, $limit = 10)
+    {
+        return $query->where('download_count', '>', 0)
+                    ->orderBy('download_count', 'desc')
+                    ->take($limit);
+    }
+
     public function getFileUrlAttribute()
     {
         return Storage::url($this->file_path);
@@ -105,6 +112,13 @@ class Download extends Model
         return self::active()
                    ->byPriority()
                    ->limit($limit)
+                   ->get();
+    }
+
+    public static function popular($limit = 3)
+    {
+        return self::active()
+                   ->popular($limit)
                    ->get();
     }
 

@@ -6,6 +6,7 @@ use App\Models\Download;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class DownloadController extends Controller
 {
@@ -33,7 +34,7 @@ class DownloadController extends Controller
     {
         Log::info('Download request for: ' . $download->id);
         
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             Log::info('User not authenticated for download: ' . $download->id);
             return redirect()->route('login')->with('error', 'Você precisa estar logado para fazer download.');
         }
@@ -54,7 +55,7 @@ class DownloadController extends Controller
         $fileName = $download->title . '.' . pathinfo($filePath, PATHINFO_EXTENSION);
         Log::info('Downloading file with name: ' . $fileName);
 
-        return Storage::disk('public')->download($filePath, $fileName);
+        return response()->download(storage_path('app/public/' . $filePath), $fileName);
     }
 
     public function category($category)

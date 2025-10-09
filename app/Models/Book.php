@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Book extends Model
 {
@@ -96,12 +97,12 @@ class Book extends Model
 
     public function getShortDescriptionAttribute()
     {
-        return $this->description ? \Str::limit($this->description, 100) : '';
+        return $this->description ? Str::limit($this->description, 100) : '';
     }
 
     public function getShortReviewAttribute()
     {
-        return $this->review ? \Str::limit($this->review, 150) : '';
+        return $this->review ? Str::limit($this->review, 150) : '';
     }
 
     public function hasAmazonLink()

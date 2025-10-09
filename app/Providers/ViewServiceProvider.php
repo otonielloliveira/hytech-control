@@ -22,10 +22,6 @@ class ViewServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Compartilhar $config com todas as views do blog
-        View::composer([
-            'layouts.blog',
-            'blog.*',
-            'client.*'
-        ], ConfigComposer::class);
+        View::composer('*', ConfigComposer::class);
     }
 }

@@ -60,6 +60,25 @@ class Tag extends Model
     }
 
     /**
+     * Scope para tags populares (com mais posts)
+     */
+    public function scopePopular($query, $limit = 10)
+    {
+        return $query->has('publishedPosts')
+                    ->withCount('publishedPosts')
+                    ->orderByDesc('published_posts_count')
+                    ->take($limit);
+    }
+
+    /**
+     * Método estático para tags populares
+     */
+    public static function popular($limit = 10)
+    {
+        return static::query()->popular($limit)->get();
+    }
+
+    /**
      * Get the route key for the model.
      */
     public function getRouteKeyName(): string

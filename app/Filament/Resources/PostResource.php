@@ -15,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Filament\Support\Enums\FontWeight;
@@ -81,7 +82,9 @@ class PostResource extends Resource
                                         Forms\Components\Select::make('user_id')
                                             ->label('Autor')
                                             ->relationship('user', 'name')
-                                            ->default(auth()->id())
+                                            ->default(function () {
+                                                return Auth::id();
+                                            })
                                             ->required()
                                             ->searchable()
                                             ->preload(),

@@ -41,16 +41,35 @@ class Lecture extends Model
         return $query->orderBy('priority', 'desc')->orderBy('date_time', 'asc');
     }
 
+    public function scopeUpcoming($query)
+    {
+        return $query->where('date_time', '>=', now())
+                    ->orderBy('date_time', 'asc');
+    }
+
     // Methods
     public function getImageUrlAttribute(): ?string
     {
         return $this->image ? asset('storage/' . $this->image) : null;
     }
 
+    public function getFormattedStartDateAttribute(): ?string
+    {
+        return $this->date_time ? $this->date_time->format('d/m/Y H:i') : null;
+    }
+
     public static function getActiveLectures(int $limit = 3)
     {
         return static::active()
             ->ordered()
+            ->take($limit)
+            ->get();
+    }
+
+    public static function upcoming(int $limit = 3)
+    {
+        return static::active()
+            ->upcoming()
             ->take($limit)
             ->get();
     }
