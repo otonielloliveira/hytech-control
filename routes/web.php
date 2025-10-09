@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
-use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\DownloadController;
 
@@ -20,18 +19,9 @@ Route::prefix('blog')->name('blog.')->group(function () {
     
     // Comments
     Route::post('/post/{post}/comment', [BlogController::class, 'storeComment'])->name('comment.store');
-});
-
-// Destination Routes
-Route::prefix('destino')->name('destination.')->group(function () {
-    Route::get('/artigos', [DestinationController::class, 'artigos'])->name('artigos');
-    Route::get('/peticoes', [DestinationController::class, 'peticoes'])->name('peticoes');
-    Route::get('/ultimas-noticias', [DestinationController::class, 'ultimasNoticias'])->name('ultimas-noticias');
-    Route::get('/noticias-mundiais', [DestinationController::class, 'noticiasMundiais'])->name('noticias-mundiais');
-    Route::get('/noticias-nacionais', [DestinationController::class, 'noticiasNacionais'])->name('noticias-nacionais');
-    Route::get('/noticias-regionais', [DestinationController::class, 'noticiasRegionais'])->name('noticias-regionais');
-    Route::get('/politica', [DestinationController::class, 'politica'])->name('politica');
-    Route::get('/economia', [DestinationController::class, 'economia'])->name('economia');
+    
+    // Petition Signatures
+    Route::post('/post/{post}/petition-signature', [BlogController::class, 'storePetitionSignature'])->name('petition.signature.store');
 });
 
 // Poll Routes

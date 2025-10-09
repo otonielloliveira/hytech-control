@@ -551,25 +551,6 @@
                         </a>
                     </li>
                     
-                    <!-- Dropdown para Destinos -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="destinosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-compass me-1"></i>Destinos
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="destinosDropdown">
-                            <li><a class="dropdown-item" href="{{ route('destination.artigos') }}">📝 Artigos</a></li>
-                            <li><a class="dropdown-item" href="{{ route('destination.peticoes') }}">✊ Petições</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ route('destination.ultimas-noticias') }}">📰 Últimas Notícias</a></li>
-                            <li><a class="dropdown-item" href="{{ route('destination.noticias-mundiais') }}">🌍 Notícias Mundiais</a></li>
-                            <li><a class="dropdown-item" href="{{ route('destination.noticias-nacionais') }}">🇧🇷 Notícias Nacionais</a></li>
-                            <li><a class="dropdown-item" href="{{ route('destination.noticias-regionais') }}">🏙️ Notícias Regionais</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ route('destination.politica') }}">🏛️ Política</a></li>
-                            <li><a class="dropdown-item" href="{{ route('destination.economia') }}">💰 Economia</a></li>
-                        </ul>
-                    </li>
-                    
                     @isset($categories)
                         @foreach($categories as $category)
                             <li class="nav-item">

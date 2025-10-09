@@ -9,6 +9,7 @@ use App\Models\Banner;
 use App\Models\BlogConfig;
 use App\Models\Newsletter;
 use App\Models\Comment;
+use App\Models\PetitionSignature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,22 +19,97 @@ class BlogController extends Controller
     {
         $config = BlogConfig::current();
         $banners = Banner::active()->ordered()->get();
+        
+        // Posts em destaque (is_featured = true)
         $featuredPosts = Post::published()
             ->featured()
             ->with(['category', 'user', 'tags'])
             ->take(3)
             ->get();
+        
+        // Posts por destino para diferentes seções
+        $artigosPosts = Post::published()
+            ->artigos()
+            ->with(['category', 'user'])
+            ->latest('published_at')
+            ->take(6)
+            ->get();
+            
+        $peticoesPosts = Post::published()
+            ->peticoes()
+            ->with(['category', 'user'])
+            ->latest('published_at')
+            ->take(4)
+            ->get();
+            
+        $ultimasNoticiasPosts = Post::published()
+            ->ultimasNoticias()
+            ->with(['category', 'user'])
+            ->latest('published_at')
+            ->take(6)
+            ->get();
+            
+        $noticiasMundiaisPosts = Post::published()
+            ->noticiasMundiais()
+            ->with(['category', 'user'])
+            ->latest('published_at')
+            ->take(4)
+            ->get();
+            
+        $noticiasNacionaisPosts = Post::published()
+            ->noticiasNacionais()
+            ->with(['category', 'user'])
+            ->latest('published_at')
+            ->take(4)
+            ->get();
+            
+        $noticiasRegionaisPosts = Post::published()
+            ->noticiasRegionais()
+            ->with(['category', 'user'])
+            ->latest('published_at')
+            ->take(4)
+            ->get();
+            
+        $politicaPosts = Post::published()
+            ->politica()
+            ->with(['category', 'user'])
+            ->latest('published_at')
+            ->take(4)
+            ->get();
+            
+        $economiaPosts = Post::published()
+            ->economia()
+            ->with(['category', 'user'])
+            ->latest('published_at')
+            ->take(4)
+            ->get();
+        
+        // Posts mais recentes (fallback para quando não há posts suficientes por destino)
         $latestPosts = Post::published()
             ->with(['category', 'user', 'tags'])
             ->latest('published_at')
             ->take(6)
             ->get();
         
+        // Categorias
+        $categories = Category::withCount(['posts' => function ($query) {
+            $query->where('status', 'published');
+        }])->get();
+        
         return view('blog.index', compact(
             'config',
             'banners', 
             'featuredPosts', 
-            'latestPosts'
+            'latestPosts',
+            'artigosPosts',
+            'peticoesPosts',
+            'ultimasNoticiasPosts',
+            'noticiasMundiaisPosts',
+            'noticiasNacionaisPosts',
+            'noticiasRegionaisPosts',
+            'politicaPosts',
+            'economiaPosts',
+            'categories'
         ));
     }
 
@@ -159,5 +235,50 @@ class BlogController extends Controller
         Comment::create($commentData);
 
         return back()->with('success', 'Comentário enviado! Será analisado pela moderação.');
+    }
+
+    public function storePetitionSignature(Request $request, Post $post)
+    {
+        // Verificar se o post é uma petição
+        if ($post->destination !== 'peticoes') {
+            abort(404, 'Esta funcionalidade está disponível apenas para petições.');
+        }
+
+        $request->validate([
+            'nome' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'tel_whatsapp' => 'required|string|max:20',
+            'estado' => 'required|string|max:100',
+            'cidade' => 'required|string|max:100',
+            'link_facebook' => 'nullable|url|max:500',
+            'link_instagram' => 'nullable|url|max:500',
+            'observacao' => 'nullable|string|max:1000',
+        ]);
+
+        // Verificar se o email já assinou esta petição
+        $existingSignature = PetitionSignature::where('post_id', $post->id)
+            ->where('email', $request->email)
+            ->first();
+
+        if ($existingSignature) {
+            return back()->with('error', 'Você já assinou esta petição com este e-mail.');
+        }
+
+        PetitionSignature::create([
+            'post_id' => $post->id,
+            'nome' => $request->nome,
+            'email' => $request->email,
+            'tel_whatsapp' => $request->tel_whatsapp,
+            'estado' => $request->estado,
+            'cidade' => $request->cidade,
+            'link_facebook' => $request->link_facebook,
+            'link_instagram' => $request->link_instagram,
+            'observacao' => $request->observacao,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'signed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Obrigado! Sua assinatura foi registrada com sucesso na petição.');
     }
 }

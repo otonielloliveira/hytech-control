@@ -189,14 +189,14 @@ class PostResource extends Resource
                                             ->label('Destino da Postagem')
                                             ->required()
                                             ->options([
-                                                'artigos' => 'Artigos - Página Principal',
-                                                'peticoes' => 'Petições - Bloco especial',
+                                                'artigos' => 'Artigos - Seção Principal',
+                                                'peticoes' => 'Petições - Bloco especial com vídeos',
                                                 'ultimas_noticias' => 'Últimas Notícias - Destaque',
-                                                'confira_mais_destaque_1' => 'Confira Mais Destaque 1',
-                                                'ultimos_destaques' => 'Últimos Destaques',
-                                                'faixa_titulo' => 'Faixa Título - Widget mais vista',
-                                                'nos_apoiamos' => 'Nós Apoiamos',
-                                                'amigos_parceiros' => 'Amigos e Parceiros - Footer'
+                                                'noticias_mundiais' => 'Notícias Mundiais - Coluna',
+                                                'noticias_nacionais' => 'Notícias Nacionais - Coluna',
+                                                'noticias_regionais' => 'Notícias Regionais - Coluna',
+                                                'politica' => 'Política - Seção compacta',
+                                                'economia' => 'Economia - Seção compacta'
                                             ])
                                             ->default('artigos')
                                             ->live()
@@ -316,11 +316,12 @@ class PostResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('featured_image')
-                    ->label('Img')
-                    ->size(40)
-                    ->circular()
-                    ->defaultImageUrl(asset('images/default-no-image.png')),
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->searchable()
+                    ->sortable()
+                    ->size('sm')
+                    ->alignCenter(),
                 
                 Tables\Columns\TextColumn::make('title')
                     ->label('Título')
@@ -369,24 +370,32 @@ class PostResource extends Resource
                         'artigos' => 'blue',
                         'peticoes' => 'red',
                         'ultimas_noticias' => 'green',
-                        'confira_mais_destaque_1' => 'yellow',
-                        'ultimos_destaques' => 'purple',
-                        'faixa_titulo' => 'orange',
-                        'nos_apoiamos' => 'pink',
-                        'amigos_parceiros' => 'gray',
+                        'noticias_mundiais' => 'cyan',
+                        'noticias_nacionais' => 'indigo',
+                        'noticias_regionais' => 'violet',
+                        'politica' => 'orange',
+                        'economia' => 'emerald',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'artigos' => 'Artigos',
                         'peticoes' => 'Petições',
                         'ultimas_noticias' => 'Últimas Notícias',
-                        'confira_mais_destaque_1' => 'Destaque 1',
-                        'ultimos_destaques' => 'Últimos Destaques',
-                        'faixa_titulo' => 'Faixa Título',
-                        'nos_apoiamos' => 'Nós Apoiamos',
-                        'amigos_parceiros' => 'Amigos/Parceiros',
+                        'noticias_mundiais' => 'Notícias Mundiais',
+                        'noticias_nacionais' => 'Notícias Nacionais',
+                        'noticias_regionais' => 'Notícias Regionais',
+                        'politica' => 'Política',
+                        'economia' => 'Economia',
                         default => $state,
                     }),
+                
+                Tables\Columns\TextColumn::make('petition_signatures_count')
+                    ->label('Assinaturas')
+                    ->counts('petitionSignatures')
+                    ->alignCenter()
+                    ->color('success')
+                    ->visible(fn ($record) => $record && $record->destination === 'peticoes')
+                    ->badge(),
                 
                 Tables\Columns\IconColumn::make('is_featured')
                     ->label('')
@@ -437,40 +446,20 @@ class PostResource extends Resource
             ->recordAction(fn (Model $record): string => "view")
             ->recordUrl(fn (Model $record): string => static::getUrl('view', ['record' => $record]))
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make()
-                        ->icon('heroicon-o-eye')
-                        ->color('info'),
-                    Tables\Actions\EditAction::make()
-                        ->icon('heroicon-o-pencil')
-                        ->color('warning'),
-                    Tables\Actions\Action::make('duplicate')
-                        ->label('Duplicar')
-                        ->icon('heroicon-o-document-duplicate')
-                        ->color('gray')
-                        ->action(function ($record) {
-                            $newPost = $record->replicate();
-                            $newPost->title = $record->title . ' (Cópia)';
-                            $newPost->slug = $record->slug . '-copia';
-                            $newPost->status = 'draft';
-                            $newPost->published_at = null;
-                            $newPost->save();
-                            
-                            \Filament\Notifications\Notification::make()
-                                ->title('Post duplicado com sucesso!')
-                                ->success()
-                                ->send();
-                        }),
-                    Tables\Actions\DeleteAction::make()
-                        ->icon('heroicon-o-trash'),
-                    Tables\Actions\RestoreAction::make()
-                        ->icon('heroicon-o-arrow-path'),
-                ])
-                ->tooltip('Ações')
-                ->icon('heroicon-m-ellipsis-vertical')
-                ->size('sm')
-                ->color('gray')
-                ->button()
+                Tables\Actions\ViewAction::make()
+                    ->icon('heroicon-o-eye')
+                    ->color('info'),
+                Tables\Actions\EditAction::make()
+                    ->icon('heroicon-o-pencil')
+                    ->color('warning'),
+                Tables\Actions\Action::make('signatures')
+                    ->label('Assinaturas')
+                    ->icon('heroicon-o-document-text')
+                    ->color('success')
+                    ->url(fn ($record) => static::getUrl('view', ['record' => $record, 'activeRelationManager' => 1]))
+                    ->visible(fn ($record) => $record && $record->destination === 'peticoes'),
+                Tables\Actions\DeleteAction::make()
+                    ->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -486,7 +475,19 @@ class PostResource extends Resource
     {
         return [
             RelationManagers\CommentsRelationManager::class,
+            RelationManagers\PetitionSignaturesRelationManager::class,
         ];
+    }
+    
+    public static function getRelationsForRecord($record): array
+    {
+        $relations = [RelationManagers\CommentsRelationManager::class];
+        
+        if ($record->destination === 'peticoes') {
+            $relations[] = RelationManagers\PetitionSignaturesRelationManager::class;
+        }
+        
+        return $relations;
     }
 
     public static function getPages(): array

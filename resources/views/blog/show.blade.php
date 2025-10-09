@@ -170,6 +170,312 @@
                             {!! $post->processed_content !!}
                         </div>
 
+                        <!-- Seção Especial para Petições -->
+                        @if($post->destination === 'peticoes')
+                            <!-- Vídeos da Petição -->
+                            @if($post->petition_videos && count($post->petition_videos) > 0)
+                                <div class="petition-videos-section mt-5">
+                                    <h4 class="section-title">
+                                        <i class="fas fa-video text-danger me-2"></i>
+                                        Vídeos da Campanha
+                                    </h4>
+                                    <div class="row">
+                                        @foreach($post->petition_videos as $video)
+                                            <div class="col-lg-6 mb-4">
+                                                <div class="video-card">
+                                                    <h5 class="video-title">{{ $video['titulo'] }}</h5>
+                                                    @if($video['tipo'] === 'youtube')
+                                                        @php
+                                                            $videoId = '';
+                                                            if (strpos($video['url'], 'youtube.com/watch?v=') !== false) {
+                                                                $videoId = substr($video['url'], strpos($video['url'], 'v=') + 2, 11);
+                                                            } elseif (strpos($video['url'], 'youtu.be/') !== false) {
+                                                                $videoId = substr($video['url'], strpos($video['url'], 'youtu.be/') + 9, 11);
+                                                            }
+                                                        @endphp
+                                                        @if($videoId)
+                                                            <div class="video-embed">
+                                                                <iframe 
+                                                                    width="100%" 
+                                                                    height="315" 
+                                                                    src="https://www.youtube.com/embed/{{ $videoId }}" 
+                                                                    frameborder="0" 
+                                                                    allowfullscreen
+                                                                    class="rounded">
+                                                                </iframe>
+                                                            </div>
+                                                        @endif
+                                                    @elseif($video['tipo'] === 'vimeo')
+                                                        @php
+                                                            $videoId = substr($video['url'], strrpos($video['url'], '/') + 1);
+                                                        @endphp
+                                                        <div class="video-embed">
+                                                            <iframe 
+                                                                src="https://player.vimeo.com/video/{{ $videoId }}" 
+                                                                width="100%" 
+                                                                height="315" 
+                                                                frameborder="0" 
+                                                                allowfullscreen
+                                                                class="rounded">
+                                                            </iframe>
+                                                        </div>
+                                                    @else
+                                                        <div class="video-embed">
+                                                            <video controls width="100%" height="315" class="rounded">
+                                                                <source src="{{ $video['url'] }}" type="video/mp4">
+                                                                Seu navegador não suporta vídeos.
+                                                            </video>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Formulário de Assinatura da Petição -->
+                            <div class="petition-form-section mt-5">
+                                <div class="petition-form-card">
+                                    <!-- Contador de Assinaturas -->
+                                    <div class="signatures-counter text-center mb-4">
+                                        <div class="counter-box">
+                                            <h5 class="counter-number text-primary mb-1">
+                                                <i class="fas fa-users me-2"></i>
+                                                {{ $post->petitionSignatures()->count() }}
+                                            </h5>
+                                            <p class="counter-text text-muted mb-0">
+                                                {{ $post->petitionSignatures()->count() == 1 ? 'pessoa assinou' : 'pessoas assinaram' }} esta petição
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <h4 class="form-title text-center">
+                                        <i class="fas fa-hand-fist text-danger me-2"></i>
+                                        Assine esta Petição
+                                    </h4>
+                                    <p class="text-center text-muted mb-4">
+                                        Junte-se à nossa causa e faça a diferença!
+                                    </p>
+                                    
+                                    <!-- Feedback Messages -->
+                                    @if (session('success'))
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            {{ session('success') }}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                                    @endif
+                                    
+                                    @if (session('error'))
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            {{ session('error') }}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                                    @endif
+                                    
+                                    @if ($errors->any())
+                                        <div class="alert alert-danger">
+                                            <h6><i class="fas fa-exclamation-triangle me-2"></i>Por favor, corrija os seguintes erros:</h6>
+                                            <ul class="mb-0">
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+                                    
+                                    <form action="{{ route('blog.petition.signature.store', $post) }}" method="POST" class="petition-form">
+                                        @csrf
+                                        
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
+                                                <label for="nome" class="form-label">Nome *</label>
+                                                <input type="text" name="nome" id="nome" class="form-control @error('nome') is-invalid @enderror" 
+                                                       value="{{ old('nome') }}" required>
+                                                @error('nome')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-3">
+                                                <label for="email" class="form-label">Email *</label>
+                                                <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" 
+                                                       value="{{ old('email') }}" required>
+                                                @error('email')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-3">
+                                                <label for="tel_whatsapp" class="form-label">Tel WhatsApp *</label>
+                                                <input type="tel" name="tel_whatsapp" id="tel_whatsapp" class="form-control @error('tel_whatsapp') is-invalid @enderror" 
+                                                       value="{{ old('tel_whatsapp') }}" placeholder="(11) 99999-9999" required>
+                                                @error('tel_whatsapp')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-3">
+                                                <label for="estado" class="form-label">Estado *</label>
+                                                <select name="estado" id="estado" class="form-select @error('estado') is-invalid @enderror" required>
+                                                    <option value="">Selecione um estado</option>
+                                                    <option value="AC" {{ old('estado') == 'AC' ? 'selected' : '' }}>Acre</option>
+                                                    <option value="AL" {{ old('estado') == 'AL' ? 'selected' : '' }}>Alagoas</option>
+                                                    <option value="AP" {{ old('estado') == 'AP' ? 'selected' : '' }}>Amapá</option>
+                                                    <option value="AM" {{ old('estado') == 'AM' ? 'selected' : '' }}>Amazonas</option>
+                                                    <option value="BA" {{ old('estado') == 'BA' ? 'selected' : '' }}>Bahia</option>
+                                                    <option value="CE" {{ old('estado') == 'CE' ? 'selected' : '' }}>Ceará</option>
+                                                    <option value="DF" {{ old('estado') == 'DF' ? 'selected' : '' }}>Distrito Federal</option>
+                                                    <option value="ES" {{ old('estado') == 'ES' ? 'selected' : '' }}>Espírito Santo</option>
+                                                    <option value="GO" {{ old('estado') == 'GO' ? 'selected' : '' }}>Goiás</option>
+                                                    <option value="MA" {{ old('estado') == 'MA' ? 'selected' : '' }}>Maranhão</option>
+                                                    <option value="MT" {{ old('estado') == 'MT' ? 'selected' : '' }}>Mato Grosso</option>
+                                                    <option value="MS" {{ old('estado') == 'MS' ? 'selected' : '' }}>Mato Grosso do Sul</option>
+                                                    <option value="MG" {{ old('estado') == 'MG' ? 'selected' : '' }}>Minas Gerais</option>
+                                                    <option value="PA" {{ old('estado') == 'PA' ? 'selected' : '' }}>Pará</option>
+                                                    <option value="PB" {{ old('estado') == 'PB' ? 'selected' : '' }}>Paraíba</option>
+                                                    <option value="PR" {{ old('estado') == 'PR' ? 'selected' : '' }}>Paraná</option>
+                                                    <option value="PE" {{ old('estado') == 'PE' ? 'selected' : '' }}>Pernambuco</option>
+                                                    <option value="PI" {{ old('estado') == 'PI' ? 'selected' : '' }}>Piauí</option>
+                                                    <option value="RJ" {{ old('estado') == 'RJ' ? 'selected' : '' }}>Rio de Janeiro</option>
+                                                    <option value="RN" {{ old('estado') == 'RN' ? 'selected' : '' }}>Rio Grande do Norte</option>
+                                                    <option value="RS" {{ old('estado') == 'RS' ? 'selected' : '' }}>Rio Grande do Sul</option>
+                                                    <option value="RO" {{ old('estado') == 'RO' ? 'selected' : '' }}>Rondônia</option>
+                                                    <option value="RR" {{ old('estado') == 'RR' ? 'selected' : '' }}>Roraima</option>
+                                                    <option value="SC" {{ old('estado') == 'SC' ? 'selected' : '' }}>Santa Catarina</option>
+                                                    <option value="SP" {{ old('estado') == 'SP' ? 'selected' : '' }}>São Paulo</option>
+                                                    <option value="SE" {{ old('estado') == 'SE' ? 'selected' : '' }}>Sergipe</option>
+                                                    <option value="TO" {{ old('estado') == 'TO' ? 'selected' : '' }}>Tocantins</option>
+                                                </select>
+                                                @error('estado')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-3">
+                                                <label for="cidade" class="form-label">Cidade *</label>
+                                                <input type="text" name="cidade" id="cidade" class="form-control @error('cidade') is-invalid @enderror" 
+                                                       value="{{ old('cidade') }}" placeholder="Digite sua cidade" required>
+                                                @error('cidade')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-3">
+                                                <label for="link_facebook" class="form-label">Link Facebook</label>
+                                                <input type="url" name="link_facebook" id="link_facebook" class="form-control @error('link_facebook') is-invalid @enderror" 
+                                                       value="{{ old('link_facebook') }}" placeholder="https://facebook.com/seuperfil">
+                                                @error('link_facebook')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-3">
+                                                <label for="link_instagram" class="form-label">Link Instagram</label>
+                                                <input type="url" name="link_instagram" id="link_instagram" class="form-control @error('link_instagram') is-invalid @enderror" 
+                                                       value="{{ old('link_instagram') }}" placeholder="https://instagram.com/seuperfil">
+                                                @error('link_instagram')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            
+                                            <div class="col-md-12 mb-4">
+                                                <label for="observacao" class="form-label">Observação</label>
+                                                <textarea name="observacao" id="observacao" class="form-control @error('observacao') is-invalid @enderror" 
+                                                          rows="4" placeholder="Deixe uma mensagem sobre sua participação na petição (opcional)">{{ old('observacao') }}</textarea>
+                                                @error('observacao')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                                <i class="fas fa-pen-fancy me-2"></i>
+                                                CONFIRMAR ASSINATURA
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Grupos WhatsApp -->
+                            @if($post->whatsapp_groups && count($post->whatsapp_groups) > 0)
+                                <div class="whatsapp-groups-section mt-5">
+                                    <h4 class="section-title">
+                                        <i class="fab fa-whatsapp text-success me-2"></i>
+                                        Grupos WhatsApp por Região
+                                    </h4>
+                                    <p class="text-muted mb-4">
+                                        Participe dos grupos regionais para se organizar com pessoas da sua região
+                                    </p>
+                                    
+                                    <div class="row">
+                                        @foreach($post->whatsapp_groups as $group)
+                                            <div class="col-lg-4 col-md-6 mb-3">
+                                                @if($group['status'] === 'ativo')
+                                                    <a href="{{ $group['link_grupo'] }}" 
+                                                       target="_blank" 
+                                                       class="btn btn-success btn-lg w-100 whatsapp-group-btn">
+                                                        <i class="fab fa-whatsapp me-2"></i>
+                                                        <div>
+                                                            <strong>{{ $group['estado'] }}</strong><br>
+                                                            <small>{{ $group['nome_grupo'] }}</small>
+                                                        </div>
+                                                    </a>
+                                                @elseif($group['status'] === 'cheio')
+                                                    <button class="btn btn-secondary btn-lg w-100 whatsapp-group-btn" disabled>
+                                                        <i class="fas fa-users me-2"></i>
+                                                        <div>
+                                                            <strong>{{ $group['estado'] }}</strong><br>
+                                                            <small>Grupo Cheio</small>
+                                                        </div>
+                                                    </button>
+                                                @else
+                                                    <button class="btn btn-outline-secondary btn-lg w-100 whatsapp-group-btn" disabled>
+                                                        <i class="fas fa-pause me-2"></i>
+                                                        <div>
+                                                            <strong>{{ $group['estado'] }}</strong><br>
+                                                            <small>Inativo</small>
+                                                        </div>
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        @endif
+
+                        <!-- Share Buttons -->
+                        <div class="share-buttons mt-4 pt-4 border-top">
+                            <h6>Compartilhar este post:</h6>
+                            <div class="share-icons d-flex gap-2 flex-wrap">
+                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->fullUrl()) }}" 
+                                   target="_blank" class="btn btn-facebook btn-sm">
+                                    <i class="fab fa-facebook-f me-1"></i> Facebook
+                                </a>
+                                <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->fullUrl()) }}&text={{ urlencode($post->title) }}" 
+                                   target="_blank" class="btn btn-twitter btn-sm">
+                                    <i class="fab fa-twitter me-1"></i> Twitter
+                                </a>
+                                <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(request()->fullUrl()) }}" 
+                                   target="_blank" class="btn btn-linkedin btn-sm">
+                                    <i class="fab fa-linkedin-in me-1"></i> LinkedIn
+                                </a>
+                                <a href="https://api.whatsapp.com/send?text={{ urlencode($post->title . ' ' . request()->fullUrl()) }}" 
+                                   target="_blank" class="btn btn-whatsapp btn-sm">
+                                    <i class="fab fa-whatsapp me-1"></i> WhatsApp
+                                </a>
+                                <button onclick="copyToClipboard('{{ request()->fullUrl() }}')" 
+                                        class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-link me-1"></i> Copiar Link
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Tags -->
                         @if($post->tags && $post->tags->count() > 0)
                             <div class="post-tags mt-4">
@@ -182,29 +488,6 @@
                                 @endforeach
                             </div>
                         @endif
-
-                        <!-- Share Buttons -->
-                        <div class="share-buttons mt-4 pt-4 border-top">
-                            <h6>Compartilhar:</h6>
-                            <div class="share-icons">
-                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->fullUrl()) }}" 
-                                   target="_blank" class="btn btn-facebook">
-                                    <i class="fab fa-facebook-f"></i> Facebook
-                                </a>
-                                <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->fullUrl()) }}&text={{ urlencode($post->title) }}" 
-                                   target="_blank" class="btn btn-twitter">
-                                    <i class="fab fa-twitter"></i> Twitter
-                                </a>
-                                <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(request()->fullUrl()) }}" 
-                                   target="_blank" class="btn btn-linkedin">
-                                    <i class="fab fa-linkedin-in"></i> LinkedIn
-                                </a>
-                                <a href="https://api.whatsapp.com/send?text={{ urlencode($post->title . ' ' . request()->fullUrl()) }}" 
-                                   target="_blank" class="btn btn-whatsapp">
-                                    <i class="fab fa-whatsapp"></i> WhatsApp
-                                </a>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Comments Section -->
@@ -295,64 +578,7 @@
                 <!-- Sidebar -->
                 <div class="col-lg-4">
                     <div class="sidebar">
-                        <!-- Posts Relacionados -->
-                        @if($relatedPosts->count() > 0)
-                            <div class="sidebar-widget">
-                                <h5 class="widget-title">📰 Posts Relacionados</h5>
-                                <div class="related-posts">
-                                    @foreach($relatedPosts as $relatedPost)
-                                        <article class="related-post">
-                                            @if($relatedPost->featured_image)
-                                                <img src="{{ asset('storage/' . $relatedPost->featured_image) }}" 
-                                                     alt="{{ $relatedPost->title }}">
-                                            @else
-                                                <img src="{{ asset('images/default-no-image.png') }}" 
-                                                     alt="{{ $relatedPost->title }}">
-                                            @endif
-                                            <div class="related-post-content">
-                                                <h6>
-                                                    <a href="{{ route('blog.post.show', $relatedPost->slug) }}">
-                                                        {{ $relatedPost->title }}
-                                                    </a>
-                                                </h6>
-                                                <small class="text-muted">
-                                                    {{ $relatedPost->published_at->format('d/m/Y') }}
-                                                </small>
-                                            </div>
-                                        </article>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Social Links -->
-                        @if($config->facebook_url || $config->instagram_url || $config->twitter_url || $config->youtube_url)
-                            <div class="sidebar-widget">
-                                <h5 class="widget-title">🌐 Siga-nos</h5>
-                                <div class="social-links">
-                                    @if($config->facebook_url)
-                                        <a href="{{ $config->facebook_url }}" target="_blank" class="btn btn-facebook">
-                                            <i class="fab fa-facebook-f"></i> Facebook
-                                        </a>
-                                    @endif
-                                    @if($config->instagram_url)
-                                        <a href="{{ $config->instagram_url }}" target="_blank" class="btn btn-instagram">
-                                            <i class="fab fa-instagram"></i> Instagram
-                                        </a>
-                                    @endif
-                                    @if($config->twitter_url)
-                                        <a href="{{ $config->twitter_url }}" target="_blank" class="btn btn-twitter">
-                                            <i class="fab fa-twitter"></i> Twitter
-                                        </a>
-                                    @endif
-                                    @if($config->youtube_url)
-                                        <a href="{{ $config->youtube_url }}" target="_blank" class="btn btn-youtube">
-                                            <i class="fab fa-youtube"></i> YouTube
-                                        </a>
-                                    @endif
-                                </div>
-                            </div>
-                        @endif
+                
                     </div>
                         </div>
                     </div>
@@ -365,6 +591,120 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Posts Relacionados - Carousel Fullwidth -->
+        @if($relatedPosts->count() > 0)
+            <div class="related-posts-carousel py-5">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="section-header text-center mb-4">
+                                <h3 class="section-title">
+                                    <i class="fas fa-newspaper me-2"></i>
+                                    Posts Relacionados
+                                </h3>
+                                <p class="section-subtitle text-muted">
+                                    Outras publicações que podem interessar você
+                                </p>
+                            </div>
+                            
+                            <div id="relatedPostsCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    @php
+                                        $chunks = $relatedPosts->chunk(3); // 3 posts por slide
+                                    @endphp
+                                    
+                                    @foreach($chunks as $chunk)
+                                        <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
+                                            <div class="row g-4">
+                                                @foreach($chunk as $relatedPost)
+                                                    <div class="col-md-4">
+                                                        <article class="related-post-card h-100">
+                                                            <div class="card h-100 shadow-sm border-0">
+                                                                <div class="post-image-container">
+                                                                    @if($relatedPost->featured_image)
+                                                                        <img src="{{ asset('storage/' . $relatedPost->featured_image) }}" 
+                                                                             alt="{{ $relatedPost->title }}"
+                                                                             class="card-img-top">
+                                                                    @else
+                                                                        <img src="{{ asset('images/default-no-image.png') }}" 
+                                                                             alt="{{ $relatedPost->title }}"
+                                                                             class="card-img-top">
+                                                                    @endif
+                                                                    @if($relatedPost->category)
+                                                                        <span class="category-badge" style="background-color: {{ $relatedPost->category->color ?? '#007bff' }}">
+                                                                            {{ $relatedPost->category->name }}
+                                                                        </span>
+                                                                    @endif
+                                                                </div>
+                                                                
+                                                                <div class="card-body d-flex flex-column">
+                                                                    <h5 class="card-title">
+                                                                        <a href="{{ route('blog.post.show', $relatedPost->slug) }}" 
+                                                                           class="text-decoration-none text-dark">
+                                                                            {{ Str::limit($relatedPost->title, 70) }}
+                                                                        </a>
+                                                                    </h5>
+                                                                    
+                                                                    @if($relatedPost->excerpt)
+                                                                        <p class="card-text text-muted flex-grow-1">
+                                                                            {{ Str::limit($relatedPost->excerpt, 100) }}
+                                                                        </p>
+                                                                    @endif
+                                                                    
+                                                                    <div class="post-meta mt-auto">
+                                                                        <div class="d-flex justify-content-between align-items-center">
+                                                                            <small class="text-muted">
+                                                                                <i class="fas fa-calendar-alt me-1"></i>
+                                                                                {{ $relatedPost->published_at->format('d/m/Y') }}
+                                                                            </small>
+                                                                            <small class="text-muted">
+                                                                                <i class="fas fa-eye me-1"></i>
+                                                                                {{ number_format($relatedPost->views_count ?? 0) }}
+                                                                            </small>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </article>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                
+                                @if($chunks->count() > 1)
+                                    <!-- Carousel Controls -->
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#relatedPostsCarousel" data-bs-slide="prev">
+                                        <div class="carousel-control-icon">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </div>
+                                        <span class="visually-hidden">Anterior</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#relatedPostsCarousel" data-bs-slide="next">
+                                        <div class="carousel-control-icon">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </div>
+                                        <span class="visually-hidden">Próximo</span>
+                                    </button>
+                                    
+                                    <!-- Carousel Indicators -->
+                                    <div class="carousel-indicators">
+                                        @foreach($chunks as $index => $chunk)
+                                            <button type="button" data-bs-target="#relatedPostsCarousel" 
+                                                    data-bs-slide-to="{{ $index }}" 
+                                                    class="{{ $index === 0 ? 'active' : '' }}"
+                                                    aria-label="Slide {{ $index + 1 }}"></button>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
     </article>
 @endsection
 
@@ -427,6 +767,354 @@
         color: white;
         font-size: 2.5rem;
         margin-bottom: 1rem;
+    }
+    
+    /* Estilos para Seções de Petição */
+    .petition-videos-section {
+        background: #f8f9fa;
+        padding: 2rem;
+        border-radius: 15px;
+        border-left: 4px solid #dc3545;
+    }
+    
+    .petition-videos-section .section-title {
+        color: #dc3545;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .video-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+    
+    .video-title {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        color: #2d3748;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.5rem;
+    }
+    
+    .video-embed {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .video-embed iframe {
+        border-radius: 10px;
+    }
+    
+    /* Formulário de Petição */
+    .petition-form-section {
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+    
+    .petition-form-card {
+        padding: 3rem;
+        background: white;
+        margin: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        border: 2px solid #e9ecef;
+    }
+    
+    .signatures-counter {
+        margin-bottom: 2rem;
+    }
+    
+    .counter-box {
+        display: inline-block;
+        padding: 1.5rem 3rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        border: 2px solid #dee2e6;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .counter-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #0d6efd;
+    }
+    
+    .counter-text {
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    
+    /* Share Buttons */
+    .share-buttons h6 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .share-icons .btn {
+        border: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-facebook { background-color: #1877f2; color: white; }
+    .btn-facebook:hover { background-color: #166fe5; color: white; transform: translateY(-2px); }
+    
+    .btn-twitter { background-color: #1da1f2; color: white; }
+    .btn-twitter:hover { background-color: #1a91da; color: white; transform: translateY(-2px); }
+    
+    .btn-linkedin { background-color: #0077b5; color: white; }
+    .btn-linkedin:hover { background-color: #006fa6; color: white; transform: translateY(-2px); }
+    
+    .btn-whatsapp { background-color: #25d366; color: white; }
+    .btn-whatsapp:hover { background-color: #22c55e; color: white; transform: translateY(-2px); }
+    
+    /* Related Posts Carousel */
+    .related-posts-carousel {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        margin-top: 2rem;
+    }
+    
+    .related-posts-carousel .section-title {
+        color: #2d3748;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .related-posts-carousel .section-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 0;
+    }
+    
+    .related-post-card .card {
+        transition: all 0.3s ease;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .related-post-card .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+    }
+    
+    .post-image-container {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .post-image-container .card-img-top {
+        height: 200px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .related-post-card .card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+    
+    .category-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+    
+    .related-post-card .card-title a {
+        color: #2d3748;
+        font-weight: 600;
+        transition: color 0.3s ease;
+        line-height: 1.3;
+    }
+    
+    .related-post-card .card-title a:hover {
+        color: #667eea;
+    }
+    
+    .related-post-card .card-text {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    .related-post-card .post-meta {
+        border-top: 1px solid #e2e8f0;
+        padding-top: 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Carousel Controls Custom */
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 50px;
+        height: 50px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(102, 126, 234, 0.9);
+        border-radius: 50%;
+        border: none;
+        opacity: 0.8;
+        transition: all 0.3s ease;
+    }
+    
+    .carousel-control-prev:hover,
+    .carousel-control-next:hover {
+        opacity: 1;
+        background: rgba(102, 126, 234, 1);
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    .carousel-control-prev {
+        left: -25px;
+    }
+    
+    .carousel-control-next {
+        right: -25px;
+    }
+    
+    .carousel-control-icon {
+        width: 20px;
+        height: 20px;
+        color: white;
+        font-size: 1rem;
+    }
+    
+    .carousel-indicators {
+        bottom: -50px;
+    }
+    
+    .carousel-indicators button {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: none;
+        background-color: #cbd5e0;
+        opacity: 0.5;
+        transition: all 0.3s ease;
+    }
+    
+    .carousel-indicators button.active,
+    .carousel-indicators button:hover {
+        background-color: #667eea;
+        opacity: 1;
+        transform: scale(1.2);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .related-posts-carousel .section-title {
+            font-size: 1.5rem;
+        }
+        
+        .carousel-control-prev,
+        .carousel-control-next {
+            display: none;
+        }
+        
+        .share-icons {
+            justify-content: center;
+        }
+        
+        .share-icons .btn {
+            margin: 0.25rem;
+        }
+    }
+    
+    .form-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+    
+    .petition-form .form-label {
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+    }
+    
+    .petition-form .form-control,
+    .petition-form .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .petition-form .form-control:focus,
+    .petition-form .form-select:focus {
+        border-color: #4299e1;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        outline: none;
+    }
+    
+    .petition-form .btn-success {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+    }
+    
+    .petition-form .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+    }
+    
+    /* Grupos WhatsApp */
+    .whatsapp-groups-section {
+        background: #f0fff4;
+        padding: 2rem;
+        border-radius: 15px;
+        border-left: 4px solid #25d366;
+    }
+    
+    .whatsapp-groups-section .section-title {
+        color: #25d366;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    .whatsapp-group-btn {
+        border-radius: 12px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-height: 80px;
+    }
+    
+    .whatsapp-group-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.3);
+    }
+    
+    .whatsapp-group-btn i {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .whatsapp-group-btn div {
+        text-align: left;
+        line-height: 1.2;
     }
     
     .post-hero-content .post-meta {
@@ -593,4 +1281,41 @@
         }
     }
 </style>
+@endsection
+
+@section('scripts')
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            // Feedback visual
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check me-1"></i> Copiado!';
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-success');
+            
+            setTimeout(function() {
+                btn.innerHTML = originalText;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-secondary');
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Erro ao copiar: ', err);
+            alert('Erro ao copiar o link');
+        });
+    }
+    
+    // Auto-play carousel pause on hover
+    document.addEventListener('DOMContentLoaded', function() {
+        const carousel = document.getElementById('relatedPostsCarousel');
+        if (carousel) {
+            carousel.addEventListener('mouseenter', function() {
+                bootstrap.Carousel.getInstance(carousel).pause();
+            });
+            carousel.addEventListener('mouseleave', function() {
+                bootstrap.Carousel.getInstance(carousel).cycle();
+            });
+        }
+    });
+</script>
 @endsection

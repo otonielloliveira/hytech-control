@@ -115,6 +115,14 @@ class Post extends Model
                     ->withTimestamps();
     }
 
+    /**
+     * Assinaturas da petição (apenas para posts com destination = 'peticoes')
+     */
+    public function petitionSignatures(): HasMany
+    {
+        return $this->hasMany(PetitionSignature::class);
+    }
+
     // Scopes
     public function scopePublished($query)
     {
