@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PollController;
+use App\Http\Controllers\DownloadController;
 
 Route::get('/', [BlogController::class, 'index'])->name('blog.index');
 
@@ -24,6 +25,14 @@ Route::prefix('blog')->name('blog.')->group(function () {
 Route::prefix('polls')->name('polls.')->group(function () {
     Route::post('/{poll}/vote', [PollController::class, 'vote'])->name('vote');
     Route::get('/{poll}/results', [PollController::class, 'results'])->name('results');
+});
+
+// Download Routes
+Route::prefix('downloads')->name('downloads.')->group(function () {
+    Route::get('/', [DownloadController::class, 'index'])->name('index');
+    Route::get('/categoria/{category}', [DownloadController::class, 'category'])->name('category');
+    Route::get('/{download}/download', [DownloadController::class, 'download'])->name('download');
+    Route::get('/{download}', [DownloadController::class, 'show'])->name('show');
 });
 
 // Admin redirect

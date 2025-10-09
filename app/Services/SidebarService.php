@@ -81,21 +81,21 @@ class SidebarService
             'hangouts' => [
                 'title' => 'Hangouts',
                 'component' => 'sidebar.hangouts',
-                'description' => 'Exibe hangouts ativos',
+                'description' => 'Exibe hangouts e reuniões agendados',
                 'default_active' => false,
                 'default_order' => 6,
-            ],
-            'books' => [
-                'title' => 'Livros Recomendados',
-                'component' => 'sidebar.books',
-                'description' => 'Exibe livros e materiais recomendados',
-                'default_active' => false,
-                'default_order' => 7,
             ],
             'downloads' => [
                 'title' => 'Downloads',
                 'component' => 'sidebar.downloads',
                 'description' => 'Exibe arquivos para download',
+                'default_active' => false,
+                'default_order' => 7,
+            ],
+            'books' => [
+                'title' => 'Livros Recomendados',
+                'component' => 'sidebar.books',
+                'description' => 'Exibe livros e materiais recomendados',
                 'default_active' => false,
                 'default_order' => 8,
             ],
@@ -138,5 +138,13 @@ class SidebarService
             'default_background_color' => $config->default_widget_background_color,
             'default_text_color' => $config->default_widget_text_color,
         ];
+    }
+
+    /**
+     * Get books for sidebar display
+     */
+    public static function getBooks(): \Illuminate\Support\Collection
+    {
+        return \App\Models\Book::getFeaturedBooks(3);
     }
 }

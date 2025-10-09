@@ -29,6 +29,10 @@ class BlogConfig extends Model
         // Sidebar fields
         'youtube_channel_url',
         'youtube_channel_name',
+        'youtube_api_key',
+        'youtube_channel_id',
+        'youtube_channel_data',
+        'youtube_data_last_update',
         'show_youtube_widget',
         'show_sidebar',
         'sidebar_position',
@@ -41,6 +45,8 @@ class BlogConfig extends Model
     protected $casts = [
         'meta_keywords' => 'array',
         'social_links' => 'array',
+        'youtube_channel_data' => 'array',
+        'youtube_data_last_update' => 'datetime',
         'show_youtube_widget' => 'boolean',
         'show_sidebar' => 'boolean',
     ];

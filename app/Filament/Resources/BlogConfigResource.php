@@ -206,18 +206,113 @@ class BlogConfigResource extends Resource
                                             ->default(false)
                                             ->reactive(),
                                         
-                                        Forms\Components\TextInput::make('youtube_channel_name')
-                                            ->label('Nome do Canal')
-                                            ->placeholder('Meu Canal')
-                                            ->visible(fn (Forms\Get $get) => $get('show_youtube_widget')),
+                                        Forms\Components\TextInput::make('youtube_api_key')
+                                            ->label('API Key do YouTube')
+                                            ->password()
+                                            ->placeholder('Sua chave da API do YouTube Data API v3')
+                                            ->helperText('Obtenha sua API key em: https://console.developers.google.com/')
+                                            ->visible(fn (Forms\Get $get) => $get('show_youtube_widget'))
+                                            ->columnSpanFull(),
                                         
                                         Forms\Components\TextInput::make('youtube_channel_url')
                                             ->label('URL do Canal')
                                             ->url()
                                             ->placeholder('https://www.youtube.com/@meucanal')
+                                            ->helperText('Cole a URL completa do seu canal do YouTube')
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(function ($state, callable $set, $livewire) {
+                                                if ($state) {
+                                                    // Auto-detectar channel ID e buscar dados
+                                                    $youtubeService = app(\App\Services\YouTubeService::class);
+                                                    $channelId = $youtubeService->extractChannelId($state);
+                                                    
+                                                    if ($channelId) {
+                                                        $set('youtube_channel_id', $channelId);
+                                                        
+                                                        // Buscar dados do canal se tem API key
+                                                        $channelData = $youtubeService->getChannelData($channelId);
+                                                        if ($channelData) {
+                                                            $set('youtube_channel_name', $channelData['title']);
+                                                        }
+                                                    }
+                                                }
+                                            })
                                             ->visible(fn (Forms\Get $get) => $get('show_youtube_widget')),
+                                        
+                                        Forms\Components\TextInput::make('youtube_channel_name')
+                                            ->label('Nome do Canal')
+                                            ->placeholder('Nome será preenchido automaticamente')
+                                            ->disabled()
+                                            ->dehydrated()
+                                            ->visible(fn (Forms\Get $get) => $get('show_youtube_widget')),
+                                        
+                                        Forms\Components\TextInput::make('youtube_channel_id')
+                                            ->label('Channel ID')
+                                            ->placeholder('Será detectado automaticamente')
+                                            ->disabled()
+                                            ->dehydrated()
+                                            ->visible(fn (Forms\Get $get) => $get('show_youtube_widget')),
+                                        
+                                        Forms\Components\Actions::make([
+                                            Forms\Components\Actions\Action::make('test_api')
+                                                ->label('Testar API Key')
+                                                ->icon('heroicon-o-play')
+                                                ->color('success')
+                                                ->action(function (array $data) {
+                                                    $youtubeService = new \App\Services\YouTubeService();
+                                                    
+                                                    // Atualizar temporariamente a config para teste
+                                                    $config = \App\Models\BlogConfig::current();
+                                                    $oldApiKey = $config->youtube_api_key;
+                                                    $config->update(['youtube_api_key' => $data['youtube_api_key']]);
+                                                    
+                                                    $isValid = $youtubeService->validateApiKey();
+                                                    
+                                                    // Restaurar API key anterior
+                                                    $config->update(['youtube_api_key' => $oldApiKey]);
+                                                    
+                                                    if ($isValid) {
+                                                        \Filament\Notifications\Notification::make()
+                                                            ->title('API Key válida!')
+                                                            ->body('A conexão com a API do YouTube foi estabelecida com sucesso.')
+                                                            ->success()
+                                                            ->send();
+                                                    } else {
+                                                        \Filament\Notifications\Notification::make()
+                                                            ->title('API Key inválida')
+                                                            ->body('Verifique se a API key está correta e se o YouTube Data API v3 está habilitado.')
+                                                            ->danger()
+                                                            ->send();
+                                                    }
+                                                })
+                                                ->visible(fn (Forms\Get $get) => $get('show_youtube_widget')),
+                                                
+                                            Forms\Components\Actions\Action::make('update_channel_data')
+                                                ->label('Atualizar Dados do Canal')
+                                                ->icon('heroicon-o-arrow-path')
+                                                ->color('info')
+                                                ->action(function () {
+                                                    $youtubeService = new \App\Services\YouTubeService();
+                                                    
+                                                    if ($youtubeService->updateChannelData()) {
+                                                        \Filament\Notifications\Notification::make()
+                                                            ->title('Dados atualizados!')
+                                                            ->body('Os dados do canal foram atualizados com sucesso.')
+                                                            ->success()
+                                                            ->send();
+                                                    } else {
+                                                        \Filament\Notifications\Notification::make()
+                                                            ->title('Erro ao atualizar')
+                                                            ->body('Verifique se a API key e URL do canal estão corretas.')
+                                                            ->warning()
+                                                            ->send();
+                                                    }
+                                                })
+                                                ->visible(fn (Forms\Get $get) => $get('show_youtube_widget')),
+                                        ])
+                                        ->visible(fn (Forms\Get $get) => $get('show_youtube_widget')),
                                     ])
-                                    ->columns(3)
+                                    ->columns(2)
                                     ->visible(fn (Forms\Get $get) => $get('show_sidebar')),
                             ]),
                     ])
