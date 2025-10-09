@@ -55,6 +55,46 @@
         </div>
     @endif
 
+    <!-- Barra de Pesquisa e Login -->
+    <section class="search-login-bar">
+        <div class="container-fluid">
+            <div class="row align-items-center py-3">
+                <!-- Campo de Pesquisa -->
+                <div class="col-lg-6 col-md-8 mb-2 mb-md-0">
+                    <form action="{{ route('blog.search') }}" method="GET" class="search-form">
+                        <div class="input-group">
+                            <input type="text" 
+                                   name="q" 
+                                   class="form-control search-input" 
+                                   placeholder="🔍 Pesquisar posts, notícias, petições..." 
+                                   value="{{ request('q') }}"
+                                   autocomplete="off">
+                            <button class="btn btn-search" type="submit">
+                                <i class="fas fa-search"></i>
+                                Buscar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Área de Login/Cadastro -->
+                <div class="col-lg-6 col-md-4 text-end">
+                    <div class="auth-buttons">
+                        {{-- Será implementado quando criarmos o sistema de autenticação de clientes --}}
+                        <a href="#" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            <i class="fas fa-sign-in-alt me-1"></i>
+                            Entrar
+                        </a>
+                        <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">
+                            <i class="fas fa-user-plus me-1"></i>
+                            Cadastrar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Main Content with Sidebar -->
     <div class="container-fluid mt-4">
         @php
@@ -462,6 +502,58 @@
                     </section>
                 @endif
 
+                <!-- Amigos e Apoiadores -->
+                @if($amigosApoiadoresPosts->count() > 0)
+                    <section class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="container-fluid">
+                            <div class="section-title text-center text-white">
+                                <h2>🤝 Amigos e Apoiadores</h2>
+                                <p>Conheça nossos parceiros e apoiadores</p>
+                            </div>
+                            
+                            <div id="amigosCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+                                <div class="carousel-inner">
+                                    @foreach($amigosApoiadoresPosts->chunk(4) as $chunkIndex => $chunk)
+                                        <div class="carousel-item {{ $chunkIndex === 0 ? 'active' : '' }}">
+                                            <div class="row">
+                                                @foreach($chunk as $post)
+                                                    <div class="col-lg-3 col-md-6 mb-4">
+                                                        <article class="amigos-card">
+                                                            @if($post->featured_image)
+                                                                <img src="{{ asset('storage/' . $post->featured_image) }}" 
+                                                                     alt="{{ $post->title }}" loading="lazy">
+                                                            @else
+                                                                <img src="{{ asset('images/default-no-image.png') }}" 
+                                                                     alt="{{ $post->title }}" loading="lazy">
+                                                            @endif
+                                                            <div class="amigos-content">
+                                                                <h5><a href="{{ route('blog.post.show', $post->slug) }}">{{ $post->title }}</a></h5>
+                                                                <p>{{ Str::limit(strip_tags($post->excerpt ?: $post->content), 100) }}</p>
+                                                                <small class="text-muted">{{ $post->published_at->diffForHumans() }}</small>
+                                                            </div>
+                                                        </article>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                
+                                @if($amigosApoiadoresPosts->count() > 4)
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#amigosCarousel" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon"></span>
+                                        <span class="visually-hidden">Anterior</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#amigosCarousel" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon"></span>
+                                        <span class="visually-hidden">Próximo</span>
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                    </section>
+                @endif
+
                 <!-- Categorias -->
                 @if($categories->count() > 0)
                     <section class="section">
@@ -764,6 +856,148 @@
         color: #0984e3;
     }
     
+    /* Amigos e Apoiadores Carousel */
+    .amigos-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        height: 100%;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .amigos-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    
+    .amigos-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    .amigos-content h5 {
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+        color: #2d3748;
+    }
+    
+    .amigos-content h5 a {
+        color: #2d3748;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .amigos-content h5 a:hover {
+        color: #667eea;
+    }
+    
+    .amigos-content p {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 0.8rem;
+        line-height: 1.4;
+    }
+    
+    #amigosCarousel .carousel-control-prev,
+    #amigosCarousel .carousel-control-next {
+        width: 5%;
+        color: white;
+    }
+    
+    #amigosCarousel .carousel-control-prev-icon,
+    #amigosCarousel .carousel-control-next-icon {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Search and Login Bar */
+    .search-login-bar {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .search-form .input-group {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-radius: 25px;
+        overflow: hidden;
+    }
+
+    .search-input {
+        border: none;
+        padding: 12px 20px;
+        font-size: 1rem;
+        background: white;
+    }
+
+    .search-input:focus {
+        box-shadow: none;
+        border-color: transparent;
+    }
+
+    .btn-search {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 12px 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-search:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .auth-buttons .btn {
+        border-radius: 20px;
+        padding: 8px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .auth-buttons .btn-outline-primary {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .auth-buttons .btn-outline-primary:hover {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .auth-buttons .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+    .auth-buttons .btn-primary:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .search-login-bar .col-lg-6 {
+            text-align: center !important;
+        }
+        
+        .auth-buttons {
+            justify-content: center;
+            display: flex;
+        }
+    }
+
     @keyframes pulse {
         0% { transform: scale(1); }
         50% { transform: scale(1.05); }

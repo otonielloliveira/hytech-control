@@ -9,6 +9,7 @@ Route::get('/', [BlogController::class, 'index'])->name('blog.index');
 
 // Blog Routes
 Route::prefix('blog')->name('blog.')->group(function () {
+    Route::get('/pesquisar', [BlogController::class, 'search'])->name('search');
     Route::get('/categoria/{category:slug}', [BlogController::class, 'category'])->name('category.show');
     Route::get('/tag/{tag}', [BlogController::class, 'tag'])->name('tag.show');
     Route::get('/{post:slug}', [BlogController::class, 'show'])->name('post.show');
@@ -27,6 +28,7 @@ Route::prefix('blog')->name('blog.')->group(function () {
 // Poll Routes
 Route::prefix('polls')->name('polls.')->group(function () {
     Route::post('/{poll}/vote', [PollController::class, 'vote'])->name('vote');
+    Route::post('/{poll}/revote', [PollController::class, 'revote'])->name('revote');
     Route::get('/{poll}/results', [PollController::class, 'results'])->name('results');
 });
 

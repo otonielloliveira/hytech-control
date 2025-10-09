@@ -368,6 +368,7 @@ class Post extends Model
             'noticias_regionais' => 'Notícias Regionais',
             'politica' => 'Política',
             'economia' => 'Economia',
+            'amigos_apoiadores' => 'Amigos e Apoiadores',
         ];
     }
     
@@ -416,6 +417,11 @@ class Post extends Model
     public function scopeEconomia($query)
     {
         return $query->where('destination', 'economia');
+    }
+    
+    public function scopeAmigosApoiadores($query)
+    {
+        return $query->where('destination', 'amigos_apoiadores');
     }
     
     public function isPetition(): bool

@@ -63,6 +63,16 @@ if ($activePoll && request()->ip()) {
                         </div>
                     @endforeach
                     
+                    {{-- Botão para refazer voto --}}
+                    <div class="poll-revote-section mb-3">
+                        <button type="button" 
+                                class="btn btn-outline-secondary btn-sm w-100 revote-btn"
+                                onclick="showRevoteForm({{ $activePoll->id }})"
+                                style="border-color: {{ $widgetConfig?->title_color ?? '#1e40af' }}; color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
+                            <i class="fas fa-redo me-2"></i>REFAZER VOTO
+                        </button>
+                    </div>
+                    
                     <div class="poll-stats text-center pt-3 mt-3 border-top">
                         <div class="total-votes text-muted small">
                             <i class="fas fa-users me-1"></i>
@@ -73,6 +83,48 @@ if ($activePoll && request()->ip()) {
                             @endif
                         </div>
                     </div>
+                </div>
+                
+                {{-- Formulário de revotação (oculto inicialmente) --}}
+                <div id="revote-form-{{ $activePoll->id }}" class="poll-revote-form" style="display: none;">
+                    <div class="alert alert-warning py-2 px-3 mb-3 small">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Selecione uma nova opção para alterar seu voto
+                    </div>
+                    
+                    <form id="revote-form" action="{{ route('polls.revote', $activePoll->id) }}" method="POST">
+                        @csrf
+                        <div class="poll-options mb-3">
+                            @foreach($activePoll->options()->byPriority()->get() as $option)
+                                <label class="poll-option-label d-flex align-items-center p-2 rounded mb-2" 
+                                       style="border: 1px solid #e5e7eb; cursor: pointer; transition: all 0.2s ease;">
+                                    <input type="radio" 
+                                           name="option_id" 
+                                           value="{{ $option->id }}" 
+                                           class="form-check-input me-3"
+                                           style="accent-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};"
+                                           required>
+                                    <span class="option-text small" 
+                                          style="color: {{ $widgetConfig?->text_color ?? '#1f2937' }};">
+                                        {{ $option->option_text }}
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                        
+                        <div class="revote-actions d-flex gap-2">
+                            <button type="submit" 
+                                    class="btn btn-sm flex-fill poll-revote-submit-btn"
+                                    style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }}; border-color: {{ $widgetConfig?->title_color ?? '#1e40af' }}; color: white;">
+                                <i class="fas fa-vote-yea me-2"></i>CONFIRMAR
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-outline-secondary btn-sm flex-fill"
+                                    onclick="hideRevoteForm({{ $activePoll->id }})">
+                                <i class="fas fa-times me-2"></i>CANCELAR
+                            </button>
+                        </div>
+                    </form>
                 </div>
             @else
                 {{-- Formulário de votação --}}
@@ -151,6 +203,31 @@ if ($activePoll && request()->ip()) {
     border-radius: 4px;
     transition: width 0.3s ease;
 }
+
+.polls-widget .revote-btn:hover {
+    background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};
+    color: white !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.polls-widget .poll-revote-form {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+.polls-widget .poll-revote-submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.polls-widget .revote-actions .btn {
+    font-size: 12px;
+    font-weight: 600;
+}
 </style>
 
 @if($activePoll && !$hasVoted)
@@ -198,6 +275,79 @@ document.getElementById('poll-form').addEventListener('submit', function(e) {
         alert('Erro ao votar. Tente novamente.');
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-vote-yea me-2"></i>VOTAR';
+    });
+});
+</script>
+@endif
+
+@if($activePoll && $hasVoted)
+<script>
+// Função para mostrar o formulário de revotação
+function showRevoteForm(pollId) {
+    const resultsDiv = document.querySelector('.poll-results');
+    const revoteForm = document.getElementById('revote-form-' + pollId);
+    
+    if (resultsDiv && revoteForm) {
+        resultsDiv.style.display = 'none';
+        revoteForm.style.display = 'block';
+    }
+}
+
+// Função para esconder o formulário de revotação
+function hideRevoteForm(pollId) {
+    const resultsDiv = document.querySelector('.poll-results');
+    const revoteForm = document.getElementById('revote-form-' + pollId);
+    
+    if (resultsDiv && revoteForm) {
+        revoteForm.style.display = 'none';
+        resultsDiv.style.display = 'block';
+    }
+}
+
+// Manipular envio do formulário de revotação
+document.getElementById('revote-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const selectedOption = formData.get('option_id');
+    const submitBtn = this.querySelector('.poll-revote-submit-btn');
+    
+    if (!selectedOption) {
+        alert('Por favor, selecione uma opção antes de confirmar.');
+        return;
+    }
+    
+    // Desabilitar botão durante o envio
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>ALTERANDO...';
+    
+    fetch(this.action, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            option_id: selectedOption
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Recarregar a página para mostrar os novos resultados
+            window.location.reload();
+        } else {
+            alert(data.message || 'Erro ao alterar voto. Tente novamente.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-vote-yea me-2"></i>CONFIRMAR';
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao alterar voto. Tente novamente.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-vote-yea me-2"></i>CONFIRMAR';
     });
 });
 </script>

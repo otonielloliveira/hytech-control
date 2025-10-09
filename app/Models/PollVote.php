@@ -39,4 +39,18 @@ class PollVote extends Model
             $query->where('poll_id', $pollId);
         })->where('ip_address', $ipAddress)->exists();
     }
+
+    public static function removeVoteFromPoll($pollId, $ipAddress)
+    {
+        return self::whereHas('pollOption', function ($query) use ($pollId) {
+            $query->where('poll_id', $pollId);
+        })->where('ip_address', $ipAddress)->delete();
+    }
+
+    public static function getUserVoteInPoll($pollId, $ipAddress)
+    {
+        return self::whereHas('pollOption', function ($query) use ($pollId) {
+            $query->where('poll_id', $pollId);
+        })->where('ip_address', $ipAddress)->with('pollOption')->first();
+    }
 }

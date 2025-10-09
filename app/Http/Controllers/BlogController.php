@@ -83,6 +83,13 @@ class BlogController extends Controller
             ->latest('published_at')
             ->take(4)
             ->get();
+            
+        $amigosApoiadoresPosts = Post::published()
+            ->amigosApoiadores()
+            ->with(['category', 'user'])
+            ->latest('published_at')
+            ->take(4)
+            ->get();
         
         // Posts mais recentes (fallback para quando não há posts suficientes por destino)
         $latestPosts = Post::published()
@@ -109,6 +116,7 @@ class BlogController extends Controller
             'noticiasRegionaisPosts',
             'politicaPosts',
             'economiaPosts',
+            'amigosApoiadoresPosts',
             'categories'
         ));
     }
@@ -138,6 +146,30 @@ class BlogController extends Controller
             ->paginate(10);
 
         return view('blog.show', compact('config', 'post', 'relatedPosts', 'comments'));
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->get('q');
+        $config = BlogConfig::current();
+        
+        if (!$query) {
+            return redirect()->route('blog.index');
+        }
+
+        $posts = Post::published()
+            ->where(function ($q) use ($query) {
+                $q->where('title', 'like', "%{$query}%")
+                  ->orWhere('excerpt', 'like', "%{$query}%")
+                  ->orWhere('content', 'like', "%{$query}%");
+            })
+            ->with(['category', 'user', 'tags'])
+            ->latest('published_at')
+            ->paginate(12);
+
+        $resultsCount = $posts->total();
+
+        return view('blog.search', compact('config', 'posts', 'query', 'resultsCount'));
     }
 
     public function category(Category $category)

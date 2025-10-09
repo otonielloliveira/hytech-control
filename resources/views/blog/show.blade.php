@@ -101,8 +101,44 @@
             </div>
         @else
             <div class="container">
-                <div class="post-header py-5">
-                    <h1 class="post-title">{{ $post->title }}</h1>
+                <div class="post-header py-5 enhanced-header" data-destination="{{ $post->destination }}">
+                    <div class="destination-badge mb-3">
+                        <span class="badge destination-{{ $post->destination }}">
+                            @switch($post->destination)
+                                @case('artigos')
+                                    📄 Artigo
+                                    @break
+                                @case('peticoes')
+                                    ✊ Petição
+                                    @break
+                                @case('ultimas_noticias')
+                                    📰 Últimas Notícias
+                                    @break
+                                @case('noticias_mundiais')
+                                    🌍 Notícias Mundiais
+                                    @break
+                                @case('noticias_nacionais')
+                                    🇧🇷 Notícias Nacionais
+                                    @break
+                                @case('noticias_regionais')
+                                    📍 Notícias Regionais
+                                    @break
+                                @case('politica')
+                                    🏛️ Política
+                                    @break
+                                @case('economia')
+                                    💰 Economia
+                                    @break
+                                @case('amigos_apoiadores')
+                                    🤝 Amigos e Apoiadores
+                                    @break
+                                @default
+                                    📝 Conteúdo
+                            @endswitch
+                        </span>
+                    </div>
+                    
+                    <h1 class="post-title enhanced-title">{{ $post->title }}</h1>
                     
                     <div class="post-meta">
                         @if($post->category)
@@ -767,6 +803,78 @@
         color: white;
         font-size: 2.5rem;
         margin-bottom: 1rem;
+    }
+    
+    /* Enhanced Header for Posts without Featured Image */
+    .enhanced-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        margin: 2rem 0;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+        color: white;
+    }
+    
+    .enhanced-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="0.8" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+        z-index: 1;
+    }
+    
+    .enhanced-header > * {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .destination-badge {
+        margin-bottom: 1rem;
+    }
+    
+    .destination-badge .badge {
+        font-size: 1rem;
+        padding: 0.6rem 1.2rem;
+        border-radius: 25px;
+        font-weight: 500;
+        border: 2px solid rgba(255,255,255,0.3);
+        backdrop-filter: blur(10px);
+    }
+    
+    .enhanced-title {
+        font-size: 2.8rem;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    /* Destination-specific badge colors */
+    .destination-artigos { background: rgba(52, 152, 219, 0.9); }
+    .destination-peticoes { background: rgba(231, 76, 60, 0.9); }
+    .destination-ultimas_noticias { background: rgba(46, 204, 113, 0.9); }
+    .destination-noticias_mundiais { background: rgba(155, 89, 182, 0.9); }
+    .destination-noticias_nacionais { background: rgba(26, 188, 156, 0.9); }
+    .destination-noticias_regionais { background: rgba(241, 196, 15, 0.9); }
+    .destination-politica { background: rgba(230, 126, 34, 0.9); }
+    .destination-economia { background: rgba(39, 174, 96, 0.9); }
+    .destination-amigos_apoiadores { background: rgba(142, 68, 173, 0.9); }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .enhanced-title {
+            font-size: 2rem;
+        }
+        
+        .enhanced-header {
+            padding: 2rem 1rem;
+        }
     }
     
     /* Estilos para Seções de Petição */
