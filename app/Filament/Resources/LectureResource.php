@@ -104,7 +104,8 @@ class LectureResource extends Resource
                 
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Imagem')
-                    ->size(50),
+                    ->size(50)
+                    ->defaultImageUrl(asset('images/default-no-image.png')),
                 
                 Tables\Columns\TextColumn::make('date_time')
                     ->label('Data/Hora')

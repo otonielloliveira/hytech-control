@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PollResource extends Resource
@@ -103,40 +104,60 @@ class PollResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')
-                    ->label('Título')
-                    ->searchable()
-                    ->sortable(),
+                Tables\Columns\Layout\Stack::make([
+                    Tables\Columns\TextColumn::make('title')
+                        ->weight('semibold')
+                        ->searchable()
+                        ->sortable()
+                        ->limit(40)
+                        ->tooltip(function (Model $record): ?string {
+                            return strlen($record->title) > 40 ? $record->title : null;
+                        }),
                     
-                Tables\Columns\TextColumn::make('description')
-                    ->label('Descrição')
-                    ->limit(50)
-                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
-                        $state = $column->getState();
-                        if (strlen($state) <= 50) {
-                            return null;
-                        }
-                        return $state;
-                    }),
+                    Tables\Columns\TextColumn::make('description')
+                        ->color('gray')
+                        ->size('sm')
+                        ->limit(60)
+                        ->tooltip(function (Model $record): ?string {
+                            return $record->description && strlen($record->description) > 60 ? $record->description : null;
+                        }),
+                ])->space(1),
+                
+                Tables\Columns\Layout\Split::make([
+                    Tables\Columns\TextColumn::make('options_count')
+                        ->label('Opções')
+                        ->counts('options')
+                        ->badge()
+                        ->color('info')
+                        ->size('sm')
+                        ->suffix(' opções'),
                     
-                Tables\Columns\TextColumn::make('options_count')
-                    ->label('Opções')
-                    ->counts('options')
-                    ->badge()
-                    ->color('info'),
-                    
-                Tables\Columns\TextColumn::make('total_votes')
-                    ->label('Votos')
-                    ->badge()
-                    ->color('success'),
+                    Tables\Columns\TextColumn::make('total_votes')
+                        ->label('Votos')
+                        ->badge()
+                        ->color('success')
+                        ->size('sm')
+                        ->suffix(' votos'),
+                ])->from('sm'),
+                
+                Tables\Columns\TextColumn::make('expires_at')
+                    ->label('Expira')
+                    ->dateTime('d/m/Y')
+                    ->sortable()
+                    ->placeholder('Sem prazo')
+                    ->color('warning')
+                    ->size('sm')
+                    ->alignCenter(),
                     
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Status')
                     ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueIcon('heroicon-s-check-circle')
+                    ->falseIcon('heroicon-s-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
+                    ->alignCenter()
+                    ->alignCenter()
                     ->action(function ($record) {
                         if ($record->is_active) {
                             $record->update(['is_active' => false]);
@@ -145,26 +166,13 @@ class PollResource extends Resource
                             \App\Models\Poll::query()->update(['is_active' => false]);
                             $record->update(['is_active' => true]);
                         }
+                        
+                        \Filament\Notifications\Notification::make()
+                            ->title('Status alterado com sucesso!')
+                            ->success()
+                            ->send();
                     })
                     ->tooltip('Clique para ativar/desativar'),
-                    
-                Tables\Columns\TextColumn::make('expires_at')
-                    ->label('Expira em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->placeholder('Sem prazo'),
-                    
-                Tables\Columns\TextColumn::make('priority')
-                    ->label('Prioridade')
-                    ->sortable()
-                    ->badge()
-                    ->color('warning'),
-                    
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('priority', 'asc')
             ->filters([
@@ -179,34 +187,57 @@ class PollResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->where('expires_at', '<', now()))
                     ->toggle(),
             ])
+            ->recordAction('edit')
+            ->recordUrl(fn (Model $record): string => static::getUrl('edit', ['record' => $record]))
             ->actions([
-                Tables\Actions\Action::make('activate')
-                    ->label('Ativar')
-                    ->icon('heroicon-o-play')
-                    ->color('success')
-                    ->visible(fn ($record) => !$record->is_active)
-                    ->action(function ($record) {
-                        \App\Models\Poll::query()->update(['is_active' => false]);
-                        $record->update(['is_active' => true]);
-                    })
-                    ->requiresConfirmation()
-                    ->modalHeading('Ativar Enquete')
-                    ->modalDescription('Isto irá desativar todas as outras enquetes. Apenas uma enquete pode estar ativa por vez.')
-                    ->modalSubmitActionLabel('Sim, ativar'),
-                    
-                Tables\Actions\Action::make('deactivate')
-                    ->label('Desativar')
-                    ->icon('heroicon-o-pause')
-                    ->color('warning')
-                    ->visible(fn ($record) => $record->is_active)
-                    ->action(fn ($record) => $record->update(['is_active' => false])),
-                    
-                Tables\Actions\ViewAction::make()
-                    ->label('Ver Resultados'),
-                Tables\Actions\EditAction::make()
-                    ->label('Editar'),
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir'),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->label('Ver Resultados')
+                        ->icon('heroicon-o-chart-bar')
+                        ->color('info'),
+                    Tables\Actions\EditAction::make()
+                        ->icon('heroicon-o-pencil')
+                        ->color('warning'),
+                    Tables\Actions\Action::make('activate')
+                        ->label('Ativar')
+                        ->icon('heroicon-o-play')
+                        ->color('success')
+                        ->visible(fn ($record) => !$record->is_active)
+                        ->action(function ($record) {
+                            \App\Models\Poll::query()->update(['is_active' => false]);
+                            $record->update(['is_active' => true]);
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Enquete ativada com sucesso!')
+                                ->success()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Ativar Enquete')
+                        ->modalDescription('Isto irá desativar todas as outras enquetes. Apenas uma enquete pode estar ativa por vez.')
+                        ->modalSubmitActionLabel('Sim, ativar'),
+                        
+                    Tables\Actions\Action::make('deactivate')
+                        ->label('Desativar')
+                        ->icon('heroicon-o-pause')
+                        ->color('warning')
+                        ->visible(fn ($record) => $record->is_active)
+                        ->action(function ($record) {
+                            $record->update(['is_active' => false]);
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Enquete desativada!')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\DeleteAction::make()
+                        ->icon('heroicon-o-trash'),
+                ])
+                ->tooltip('Ações')
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray')
+                ->button()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

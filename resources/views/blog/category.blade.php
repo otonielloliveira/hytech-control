@@ -4,6 +4,61 @@
 @section('description', $category->meta_description ?? $category->description)
 
 @section('content')
+    <!-- Banner Carousel - Fixo em todas as telas -->
+    @php
+        $banners = App\Models\Banner::where('is_active', true)->orderBy('sort_order')->get();
+    @endphp
+    @if($banners->count() > 0)
+        <div class="blog-banner">
+            <div id="heroCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    @foreach($banners as $index => $banner)
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ $index }}" 
+                                class="{{ $index === 0 ? 'active' : '' }}"></button>
+                    @endforeach
+                </div>
+                
+                <div class="carousel-inner">
+                    @foreach($banners as $index => $banner)
+                        <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" 
+                             style="background-image: url('{{ $banner->image_url }}');">
+                            <div class="carousel-overlay">
+                                <div class="container">
+                                    <div class="carousel-content">
+                                        <h1>{{ $banner->title }}</h1>
+                                        @if($banner->subtitle)
+                                            <h2>{{ $banner->subtitle }}</h2>
+                                        @endif
+                                        @if($banner->description)
+                                            <p>{{ $banner->description }}</p>
+                                        @endif
+                                        @if($banner->link_url)
+                                            <a href="{{ $banner->link_url }}" class="btn-hero" 
+                                               target="{{ $banner->target }}">
+                                                {{ $banner->button_text }}
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                
+                @if($banners->count() > 1)
+                    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                        <span class="visually-hidden">Próximo</span>
+                    </button>
+                @endif
+            </div>
+        </div>
+    @endif
+
     <!-- Category Header -->
     <div class="category-header">
         <div class="container">
@@ -15,9 +70,9 @@
                                  alt="{{ $category->name }}" 
                                  class="category-image">
                         @else
-                            <div class="category-icon" style="background-color: {{ $category->color }};">
-                                <i class="fas fa-tag"></i>
-                            </div>
+                            <img src="{{ asset('images/default-no-image.png') }}" 
+                                 alt="{{ $category->name }}" 
+                                 class="category-image">
                         @endif
                         
                         <div class="category-details">
@@ -61,7 +116,7 @@
                                     <img src="{{ asset('storage/' . $post->featured_image) }}" 
                                          alt="{{ $post->title }}" loading="lazy">
                                 @else
-                                    <img src="https://via.placeholder.com/400x200?text=Blog+Post" 
+                                    <img src="{{ asset('images/default-no-image.png') }}" 
                                          alt="{{ $post->title }}" loading="lazy">
                                 @endif
                                 
@@ -153,10 +208,10 @@
                                                  class="rounded-circle mb-3" 
                                                  style="width: 60px; height: 60px; object-fit: cover;">
                                         @else
-                                            <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                                                 style="width: 60px; height: 60px; background-color: {{ $otherCategory->color }};">
-                                                <i class="fas fa-tag text-white"></i>
-                                            </div>
+                                            <img src="{{ asset('images/default-no-image.png') }}" 
+                                                 alt="{{ $otherCategory->name }}" 
+                                                 class="rounded-circle mb-3" 
+                                                 style="width: 60px; height: 60px; object-fit: cover;">
                                         @endif
                                         
                                         <h6 class="card-title" style="color: {{ $otherCategory->color }};">

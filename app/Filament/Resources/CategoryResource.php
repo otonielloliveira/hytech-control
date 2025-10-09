@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 
@@ -106,7 +107,7 @@ class CategoryResource extends Resource
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Imagem')
                     ->size(50)
-                    ->defaultImageUrl(asset('images/placeholder-category.png')),
+                    ->defaultImageUrl(asset('images/default-no-image.png')),
                 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nome')
@@ -157,11 +158,41 @@ class CategoryResource extends Resource
                 
                 Tables\Filters\TrashedFilter::make(),
             ])
+            ->recordAction(fn (Model $record): string => "view")
+            ->recordUrl(fn (Model $record): string => static::getUrl('view', ['record' => $record]))
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->icon('heroicon-o-eye')
+                        ->color('info'),
+                    Tables\Actions\EditAction::make()
+                        ->icon('heroicon-o-pencil')
+                        ->color('warning'),
+                    Tables\Actions\Action::make('duplicate')
+                        ->label('Duplicar')
+                        ->icon('heroicon-o-document-duplicate')
+                        ->color('gray')
+                        ->action(function ($record) {
+                            $newCategory = $record->replicate();
+                            $newCategory->name = $record->name . ' (Cópia)';
+                            $newCategory->slug = $record->slug . '-copia';
+                            $newCategory->save();
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Categoria duplicada com sucesso!')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\DeleteAction::make()
+                        ->icon('heroicon-o-trash'),
+                    Tables\Actions\RestoreAction::make()
+                        ->icon('heroicon-o-arrow-path'),
+                ])
+                ->tooltip('Ações')
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray')
+                ->button()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

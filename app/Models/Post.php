@@ -28,6 +28,9 @@ class Post extends Model
         'video_embed_code',
         'show_video_in_content',
         'status',
+        'destination',
+        'petition_videos',
+        'whatsapp_groups',
         'published_at',
         'meta_title',
         'meta_description',
@@ -46,6 +49,8 @@ class Post extends Model
         'show_video_in_content' => 'boolean',
         'tags' => 'array',
         'meta_keywords' => 'array',
+        'petition_videos' => 'array',
+        'whatsapp_groups' => 'array',
         'views_count' => 'integer',
         'reading_time' => 'integer',
     ];
@@ -341,5 +346,72 @@ class Post extends Model
     public function getUrl(): string
     {
         return route('blog.post.show', $this->slug);
+    }
+    
+    // Métodos para destinos das postagens
+    public static function getDestinationOptions(): array
+    {
+        return [
+            'artigos' => 'Artigos',
+            'peticoes' => 'Petições',
+            'ultimas_noticias' => 'Últimas Notícias',
+            'noticias_mundiais' => 'Notícias Mundiais',
+            'noticias_nacionais' => 'Notícias Nacionais',
+            'noticias_regionais' => 'Notícias Regionais',
+            'politica' => 'Política',
+            'economia' => 'Economia',
+        ];
+    }
+    
+    public function getDestinationLabelAttribute(): string
+    {
+        $options = self::getDestinationOptions();
+        return $options[$this->destination] ?? 'Não definido';
+    }
+    
+    // Scope para diferentes destinos
+    public function scopeArtigos($query)
+    {
+        return $query->where('destination', 'artigos');
+    }
+    
+    public function scopePeticoes($query)
+    {
+        return $query->where('destination', 'peticoes');
+    }
+    
+    public function scopeUltimasNoticias($query)
+    {
+        return $query->where('destination', 'ultimas_noticias');
+    }
+    
+    public function scopeNoticiasMundiais($query)
+    {
+        return $query->where('destination', 'noticias_mundiais');
+    }
+    
+    public function scopeNoticiasNacionais($query)
+    {
+        return $query->where('destination', 'noticias_nacionais');
+    }
+    
+    public function scopeNoticiasRegionais($query)
+    {
+        return $query->where('destination', 'noticias_regionais');
+    }
+    
+    public function scopePolitica($query)
+    {
+        return $query->where('destination', 'politica');
+    }
+    
+    public function scopeEconomia($query)
+    {
+        return $query->where('destination', 'economia');
+    }
+    
+    public function isPetition(): bool
+    {
+        return $this->destination === 'peticoes';
     }
 }

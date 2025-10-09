@@ -115,7 +115,8 @@ class BannerResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Imagem')
-                    ->size(80),
+                    ->size(80)
+                    ->defaultImageUrl(asset('images/default-no-image.png')),
                 
                 Tables\Columns\TextColumn::make('title')
                     ->label('Título')

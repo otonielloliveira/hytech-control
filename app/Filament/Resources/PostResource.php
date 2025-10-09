@@ -15,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Filament\Support\Enums\FontWeight;
 
@@ -184,6 +185,23 @@ class PostResource extends Resource
                                             ->default('draft')
                                             ->live(),
                                         
+                                        Forms\Components\Select::make('destination')
+                                            ->label('Destino da Postagem')
+                                            ->required()
+                                            ->options([
+                                                'artigos' => 'Artigos - Página Principal',
+                                                'peticoes' => 'Petições - Bloco especial',
+                                                'ultimas_noticias' => 'Últimas Notícias - Destaque',
+                                                'confira_mais_destaque_1' => 'Confira Mais Destaque 1',
+                                                'ultimos_destaques' => 'Últimos Destaques',
+                                                'faixa_titulo' => 'Faixa Título - Widget mais vista',
+                                                'nos_apoiamos' => 'Nós Apoiamos',
+                                                'amigos_parceiros' => 'Amigos e Parceiros - Footer'
+                                            ])
+                                            ->default('artigos')
+                                            ->live()
+                                            ->helperText('Define onde esta postagem será exibida no site'),
+                                        
                                         Forms\Components\DateTimePicker::make('published_at')
                                             ->label('Data de Publicação')
                                             ->visible(fn (callable $get) => in_array($get('status'), ['published', 'scheduled']))
@@ -199,6 +217,71 @@ class PostResource extends Resource
                                             ->default(1)
                                             ->hint('Será calculado automaticamente se deixar vazio'),
                                     ])->columns(2),
+                            ]),
+                        
+                        Tabs\Tab::make('Petições')
+                            ->icon('heroicon-o-document-text')
+                            ->visible(fn ($get) => $get('destination') === 'peticoes')
+                            ->schema([
+                                Section::make('Vídeos da Petição')
+                                    ->description('Adicione URLs de vídeos relacionados à petição')
+                                    ->schema([
+                                        Forms\Components\Repeater::make('petition_videos')
+                                            ->label('Vídeos')
+                                            ->schema([
+                                                Forms\Components\TextInput::make('title')
+                                                    ->label('Título do Vídeo')
+                                                    ->required(),
+                                                Forms\Components\TextInput::make('url')
+                                                    ->label('URL do Vídeo')
+                                                    ->url()
+                                                    ->required()
+                                                    ->placeholder('https://www.youtube.com/watch?v=...'),
+                                                Forms\Components\Textarea::make('description')
+                                                    ->label('Descrição (opcional)')
+                                                    ->rows(2),
+                                            ])
+                                            ->columns(3)
+                                            ->defaultItems(0)
+                                            ->addActionLabel('Adicionar Vídeo')
+                                            ->collapsible(),
+                                    ]),
+                                
+                                Section::make('Grupos WhatsApp')
+                                    ->description('Configure grupos WhatsApp por região')
+                                    ->schema([
+                                        Forms\Components\Repeater::make('whatsapp_groups')
+                                            ->label('Grupos WhatsApp')
+                                            ->schema([
+                                                Forms\Components\TextInput::make('cidade')
+                                                    ->label('Cidade')
+                                                    ->required(),
+                                                Forms\Components\TextInput::make('estado')
+                                                    ->label('Estado')
+                                                    ->required(),
+                                                Forms\Components\TextInput::make('nome_grupo')
+                                                    ->label('Nome do Grupo')
+                                                    ->required(),
+                                                Forms\Components\TextInput::make('link_grupo')
+                                                    ->label('Link do WhatsApp')
+                                                    ->url()
+                                                    ->required()
+                                                    ->placeholder('https://chat.whatsapp.com/...'),
+                                                Forms\Components\Select::make('status')
+                                                    ->label('Status')
+                                                    ->options([
+                                                        'ativo' => 'Ativo',
+                                                        'inativo' => 'Inativo',
+                                                        'cheio' => 'Grupo Cheio',
+                                                    ])
+                                                    ->default('ativo')
+                                                    ->required(),
+                                            ])
+                                            ->columns(5)
+                                            ->defaultItems(0)
+                                            ->addActionLabel('Adicionar Grupo WhatsApp')
+                                            ->collapsible(),
+                                    ]),
                             ]),
                         
                         Tabs\Tab::make('SEO')
@@ -234,31 +317,37 @@ class PostResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('featured_image')
-                    ->label('Imagem')
-                    ->size(60)
-                    ->defaultImageUrl(asset('images/placeholder-image.png')),
+                    ->label('Img')
+                    ->size(40)
+                    ->circular()
+                    ->defaultImageUrl(asset('images/default-no-image.png')),
                 
                 Tables\Columns\TextColumn::make('title')
                     ->label('Título')
                     ->searchable()
                     ->sortable()
                     ->weight(FontWeight::SemiBold)
-                    ->limit(50),
+                    ->limit(40)
+                    ->tooltip(fn ($record) => $record->title)
+                    ->description(fn ($record) => Str::limit($record->excerpt ?? '', 60)),
                 
                 Tables\Columns\TextColumn::make('category.name')
                     ->label('Categoria')
                     ->badge()
                     ->color(fn ($record) => $record->category?->color ?? 'gray')
-                    ->sortable(),
+                    ->size('sm'),
                 
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Autor')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->limit(15)
+                    ->tooltip(fn ($record) => $record->user?->name),
                 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
+                    ->size('sm')
                     ->color(fn (string $state): string => match ($state) {
                         'draft' => 'gray',
                         'published' => 'success',
@@ -272,31 +361,57 @@ class PostResource extends Resource
                         'archived' => 'Arquivado',
                     }),
                 
+                Tables\Columns\TextColumn::make('destination')
+                    ->label('Destino')
+                    ->badge()
+                    ->size('sm')
+                    ->color(fn (string $state): string => match ($state) {
+                        'artigos' => 'blue',
+                        'peticoes' => 'red',
+                        'ultimas_noticias' => 'green',
+                        'confira_mais_destaque_1' => 'yellow',
+                        'ultimos_destaques' => 'purple',
+                        'faixa_titulo' => 'orange',
+                        'nos_apoiamos' => 'pink',
+                        'amigos_parceiros' => 'gray',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'artigos' => 'Artigos',
+                        'peticoes' => 'Petições',
+                        'ultimas_noticias' => 'Últimas Notícias',
+                        'confira_mais_destaque_1' => 'Destaque 1',
+                        'ultimos_destaques' => 'Últimos Destaques',
+                        'faixa_titulo' => 'Faixa Título',
+                        'nos_apoiamos' => 'Nós Apoiamos',
+                        'amigos_parceiros' => 'Amigos/Parceiros',
+                        default => $state,
+                    }),
+                
                 Tables\Columns\IconColumn::make('is_featured')
-                    ->label('Destaque')
+                    ->label('')
                     ->boolean()
                     ->trueIcon('heroicon-o-star')
-                    ->falseIcon('heroicon-o-star')
+                    ->falseIcon('')
                     ->trueColor('warning')
-                    ->falseColor('gray'),
-                
-                Tables\Columns\TextColumn::make('views_count')
-                    ->label('Visualizações')
-                    ->numeric()
-                    ->sortable()
                     ->alignCenter(),
                 
-                Tables\Columns\TextColumn::make('published_at')
-                    ->label('Publicado em')
-                    ->dateTime('d/m/Y H:i')
+                Tables\Columns\TextColumn::make('views_count')
+                    ->label('Views')
+                    ->numeric()
                     ->sortable()
-                    ->placeholder('—'),
+                    ->alignCenter()
+                    ->formatStateUsing(fn ($state) => number_format($state))
+                    ->color('gray')
+                    ->size('sm'),
                 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime('d/m/Y H:i')
+                Tables\Columns\TextColumn::make('published_at')
+                    ->label('Publicado')
+                    ->date('d/m/Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->placeholder('—')
+                    ->color('gray')
+                    ->size('sm'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -319,11 +434,43 @@ class PostResource extends Resource
                 
                 Tables\Filters\TrashedFilter::make(),
             ])
+            ->recordAction(fn (Model $record): string => "view")
+            ->recordUrl(fn (Model $record): string => static::getUrl('view', ['record' => $record]))
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->icon('heroicon-o-eye')
+                        ->color('info'),
+                    Tables\Actions\EditAction::make()
+                        ->icon('heroicon-o-pencil')
+                        ->color('warning'),
+                    Tables\Actions\Action::make('duplicate')
+                        ->label('Duplicar')
+                        ->icon('heroicon-o-document-duplicate')
+                        ->color('gray')
+                        ->action(function ($record) {
+                            $newPost = $record->replicate();
+                            $newPost->title = $record->title . ' (Cópia)';
+                            $newPost->slug = $record->slug . '-copia';
+                            $newPost->status = 'draft';
+                            $newPost->published_at = null;
+                            $newPost->save();
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Post duplicado com sucesso!')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\DeleteAction::make()
+                        ->icon('heroicon-o-trash'),
+                    Tables\Actions\RestoreAction::make()
+                        ->icon('heroicon-o-arrow-path'),
+                ])
+                ->tooltip('Ações')
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray')
+                ->button()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

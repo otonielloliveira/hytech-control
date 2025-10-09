@@ -4,15 +4,16 @@
 @section('description', $config->meta_description ?? $config->site_description)
 
 @section('content')
-    <!-- Banner Carousel -->
+    <!-- Banner Carousel - Fixo em todas as telas -->
     @if($banners->count() > 0)
-        <div id="heroCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel">
-            <div class="carousel-indicators">
-                @foreach($banners as $index => $banner)
-                    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ $index }}" 
-                            class="{{ $index === 0 ? 'active' : '' }}"></button>
-                @endforeach
-            </div>
+        <div class="blog-banner">
+            <div id="heroCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    @foreach($banners as $index => $banner)
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ $index }}" 
+                                class="{{ $index === 0 ? 'active' : '' }}"></button>
+                    @endforeach
+                </div>
             
             <div class="carousel-inner">
                 @foreach($banners as $index => $banner)
@@ -87,7 +88,7 @@
                                     <img src="{{ asset('storage/' . $post->featured_image) }}" 
                                          alt="{{ $post->title }}" loading="lazy">
                                 @else
-                                    <img src="https://via.placeholder.com/400x200?text=Blog+Post" 
+                                    <img src="{{ asset('images/default-no-image.png') }}" 
                                          alt="{{ $post->title }}" loading="lazy">
                                 @endif
                                 
@@ -139,7 +140,7 @@
                                 <img src="{{ asset('storage/' . $post->featured_image) }}" 
                                      alt="{{ $post->title }}" loading="lazy">
                             @else
-                                <img src="https://via.placeholder.com/400x200?text=Blog+Post" 
+                                <img src="{{ asset('images/default-no-image.png') }}" 
                                      alt="{{ $post->title }}" loading="lazy">
                             @endif
                             
@@ -200,10 +201,10 @@
                                                  class="rounded-circle mb-3" 
                                                  style="width: 80px; height: 80px; object-fit: cover;">
                                         @else
-                                            <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                                                 style="width: 80px; height: 80px; background-color: {{ $category->color }};">
-                                                <i class="fas fa-tag text-white fa-2x"></i>
-                                            </div>
+                                            <img src="{{ asset('images/default-no-image.png') }}" 
+                                                 alt="{{ $category->name }}" 
+                                                 class="rounded-circle mb-3" 
+                                                 style="width: 80px; height: 80px; object-fit: cover;">
                                         @endif
                                         
                                         <h5 class="card-title" style="color: {{ $category->color }};">

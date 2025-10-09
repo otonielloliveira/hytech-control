@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class NoticeResource extends Resource
@@ -114,53 +115,65 @@ class NoticeResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')
-                    ->label('Título')
-                    ->searchable()
-                    ->sortable(),
-                
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Imagem')
-                    ->size(50),
+                    ->size(50)
+                    ->defaultImageUrl(asset('images/default-no-image.png')),
+                
+                Tables\Columns\Layout\Stack::make([
+                    Tables\Columns\TextColumn::make('title')
+                        ->weight('semibold')
+                        ->searchable()
+                        ->sortable()
+                        ->limit(40)
+                        ->tooltip(function (Model $record): ?string {
+                            return strlen($record->title) > 40 ? $record->title : null;
+                        }),
+                    
+                    Tables\Columns\TextColumn::make('description')
+                        ->color('gray')
+                        ->size('sm')
+                        ->limit(60)
+                        ->tooltip(function (Model $record): ?string {
+                            return $record->description && strlen($record->description) > 60 ? $record->description : null;
+                        }),
+                ])->space(1),
                 
                 Tables\Columns\TextColumn::make('link_type')
-                    ->label('Tipo de Link')
+                    ->label('Tipo')
                     ->badge()
+                    ->size('sm')
                     ->color(fn (string $state): string => match ($state) {
                         'none' => 'gray',
                         'internal' => 'info',
                         'external' => 'success',
                         default => 'gray',
-                    }),
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'none' => 'Sem Link',
+                        'internal' => 'Interno',
+                        'external' => 'Externo',
+                        default => $state,
+                    })
+                    ->alignCenter(),
                 
                 Tables\Columns\TextColumn::make('priority')
                     ->label('Prioridade')
                     ->numeric()
                     ->sortable()
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->badge()
+                    ->color('warning')
+                    ->size('sm'),
                 
                 Tables\Columns\IconColumn::make('is_active')
-                    ->label('Ativo')
+                    ->label('Status')
                     ->boolean()
+                    ->trueIcon('heroicon-s-check-circle')
+                    ->falseIcon('heroicon-s-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
                     ->alignCenter(),
-                
-                Tables\Columns\TextColumn::make('start_date')
-                    ->label('Início')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->placeholder('Imediato'),
-                
-                Tables\Columns\TextColumn::make('end_date')
-                    ->label('Fim')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->placeholder('Indefinido'),
-                
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('link_type')
@@ -174,9 +187,49 @@ class NoticeResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Status'),
             ])
+            ->recordAction('edit')
+            ->recordUrl(fn (Model $record): string => static::getUrl('edit', ['record' => $record]))
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()
+                        ->icon('heroicon-o-pencil')
+                        ->color('warning'),
+                    Tables\Actions\Action::make('duplicate')
+                        ->label('Duplicar')
+                        ->icon('heroicon-o-document-duplicate')
+                        ->color('gray')
+                        ->action(function ($record) {
+                            $newNotice = $record->replicate();
+                            $newNotice->title = $record->title . ' (Cópia)';
+                            $newNotice->is_active = false;
+                            $newNotice->save();
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Aviso duplicado com sucesso!')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('toggle_status')
+                        ->label(fn ($record) => $record->is_active ? 'Desativar' : 'Ativar')
+                        ->icon(fn ($record) => $record->is_active ? 'heroicon-o-eye-slash' : 'heroicon-o-eye')
+                        ->color(fn ($record) => $record->is_active ? 'warning' : 'success')
+                        ->action(function ($record) {
+                            $record->is_active = !$record->is_active;
+                            $record->save();
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Status alterado com sucesso!')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\DeleteAction::make()
+                        ->icon('heroicon-o-trash'),
+                ])
+                ->tooltip('Ações')
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray')
+                ->button()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

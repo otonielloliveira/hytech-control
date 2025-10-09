@@ -168,7 +168,7 @@ class HangoutResource extends Resource
                 ImageColumn::make('cover_image')
                     ->label('Capa')
                     ->size(60)
-                    ->defaultImageUrl(asset('images/hangout-default.png')),
+                    ->defaultImageUrl(asset('images/default-no-image.png')),
                 
                 Tables\Columns\TextColumn::make('title')
                     ->label('Título')
