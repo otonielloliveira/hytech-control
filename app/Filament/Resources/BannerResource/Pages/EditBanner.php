@@ -18,4 +18,35 @@ class EditBanner extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function getSavedNotification(): ?\Filament\Notifications\Notification
+    {
+        return \Filament\Notifications\Notification::make()
+            ->success()
+            ->title('Banner atualizado com sucesso!')
+            ->body('As informações do banner foram salvas.')
+            ->duration(5000)
+            ->actions([
+                \Filament\Notifications\Actions\Action::make('view')
+                    ->label('Ver listagem')
+                    ->url($this->getResource()::getUrl('index'))
+                    ->button(),
+                \Filament\Notifications\Actions\Action::make('continue')
+                    ->label('Continuar editando')
+                    ->button()
+                    ->close(),
+            ]);
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getSaveFormAction()
+                ->label('Salvar Alterações')
+                ->icon('heroicon-m-check'),
+            $this->getCancelFormAction()
+                ->label('Cancelar')
+                ->icon('heroicon-m-x'),
+        ];
+    }
 }

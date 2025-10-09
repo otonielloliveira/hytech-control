@@ -28,8 +28,23 @@ class EditDownload extends EditRecord
     {
         return Notification::make()
             ->success()
-            ->title('Download atualizado!')
-            ->body('As alterações foram salvas com sucesso.');
+            ->title('Download atualizado com sucesso!')
+            ->body('As informações do download foram salvas.')
+            ->duration(5000)
+            ->actions([
+                \Filament\Notifications\Actions\Action::make('view')
+                    ->label('Ver listagem')
+                    ->url($this->getResource()::getUrl('index'))
+                    ->button(),
+                \Filament\Notifications\Actions\Action::make('continue')
+                    ->label('Continuar editando')
+                    ->button()
+                    ->close(),
+                \Filament\Notifications\Actions\Action::make('view_property')
+                    ->label('Visualizar propriedade')
+                    ->url($this->getResource()::getUrl('view', ['record' => $this->record]))
+                    ->button(),
+            ]);
     }
 
     public function getTitle(): string
