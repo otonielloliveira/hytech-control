@@ -3,7 +3,8 @@
 @section('title', 'Vídeos')
 
 @section('content')
-    <!-- Banner Carousel -->
+
+ <!-- Banner Carousel -->
     @php
         $banners = App\Models\Banner::where('is_active', true)->orderBy('sort_order')->get();
     @endphp
@@ -134,58 +135,84 @@
             </div>
         </div>
     </section>
-
-
-<div class="container-fluid mt-4">
-    <div class="row">
-        <!-- Conteúdo Principal -->
-        <div class="col-lg-12">
-            <h1 class="text-center mb-4">Vídeos</h1>
-            <p class="text-center text-muted mb-5">Assista aos nossos vídeos e conteúdos em vídeo</p>
-            
-            <!-- Search and Filters -->
-            <div class="row mb-4">
+    
+    <!-- Video Header -->
+    <div class="video-header-bg">
+        <div class="container">
+            <div class="row align-items-center py-4">
+                <div class="col-md-8">
+                    <h1 class="text-white mb-2">
+                        <i class="fas fa-video me-2"></i>Vídeos
+                    </h1>
+                    <p class="text-white-50 mb-0">Assista aos nossos conteúdos em vídeo</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="video-stats">
+                        <span class="badge bg-white text-dark px-3 py-2">
+                            <i class="fas fa-play-circle me-1"></i>
+                            {{ $totalVideos }} vídeos disponíveis
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container my-4">
+        <!-- Filters Section -->
+        <div class="filters-section mb-4">
+            <div class="row g-3">
                 <div class="col-md-6">
-                    <form method="GET" class="d-flex gap-2">
-                        <input type="text" 
-                               name="search" 
-                               class="form-control" 
-                               placeholder="Buscar vídeos..."
-                               value="{{ request('search') }}">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search"></i>
-                        </button>
+                    <form method="GET" class="search-form">
+                        <div class="input-group">
+                            <input type="text" 
+                                   name="search" 
+                                   class="form-control" 
+                                   placeholder="🔍 Buscar vídeos por título, descrição ou categoria..."
+                                   value="{{ request('search') }}">
+                            <input type="hidden" name="categoria" value="{{ request('categoria') }}">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
                     </form>
                 </div>
                 
                 @if($categories && count($categories) > 0)
-                <div class="col-md-6">
-                    <form method="GET" class="d-flex gap-2">
+                <div class="col-md-4">
+                    <form method="GET">
                         <input type="hidden" name="search" value="{{ request('search') }}">
                         <select name="categoria" class="form-select" onchange="this.form.submit()">
-                            <option value="">Todas as categorias</option>
+                            <option value="">📂 Todas as categorias</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category }}" 
                                         {{ request('categoria') === $category ? 'selected' : '' }}>
-                                    {{ ucfirst($category) }}
+                                    🎬 {{ ucfirst($category) }}
                                 </option>
                             @endforeach
                         </select>
                     </form>
                 </div>
                 @endif
+                
+                <div class="col-md-2">
+                    @if(request('search') || request('categoria'))
+                        <a href="{{ route('videos.index') }}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-times me-1"></i>Limpar
+                        </a>
+                    @endif
+                </div>
             </div>
             
-            <!-- Active Filters -->
+            <!-- Active Filters Display -->
             @if(request('search') || request('categoria'))
-                <div class="mb-4">
+                <div class="active-filters mt-3">
                     <div class="d-flex flex-wrap gap-2 align-items-center">
-                        <span class="text-muted">Filtros ativos:</span>
+                        <span class="text-muted small">Filtros ativos:</span>
                         
                         @if(request('search'))
                             <span class="badge bg-primary">
-                                Busca: "{{ request('search') }}"
-                                <a href="{{ request()->url() }}?categoria={{ request('categoria') }}" class="text-white ms-1">
+                                🔍 "{{ request('search') }}"
+                                <a href="?categoria={{ request('categoria') }}" class="text-white ms-1">
                                     <i class="fas fa-times"></i>
                                 </a>
                             </span>
@@ -193,8 +220,8 @@
                         
                         @if(request('categoria'))
                             <span class="badge bg-secondary">
-                                Categoria: {{ ucfirst(request('categoria')) }}
-                                <a href="{{ request()->url() }}?search={{ request('search') }}" class="text-white ms-1">
+                                📂 {{ ucfirst(request('categoria')) }}
+                                <a href="?search={{ request('search') }}" class="text-white ms-1">
                                     <i class="fas fa-times"></i>
                                 </a>
                             </span>
@@ -202,27 +229,22 @@
                     </div>
                 </div>
             @endif
+        </div>
             
-            @if($videos->count() > 0)
-                <div class="row g-4">
-                    @foreach($videos as $video)
-                        <div class="col-lg-6 col-md-6">
-                            <div class="card h-100 shadow-sm video-card">
-                                <div class="position-relative video-thumbnail">
-                                    @if($video->thumbnail_url)
-                                        <img src="{{ $video->thumbnail_url }}" 
-                                             class="card-img-top" 
-                                             alt="{{ $video->title }}"
-                                             style="height: 200px; object-fit: cover;">
-                                    @else
-                                        <div class="bg-light d-flex align-items-center justify-content-center" 
-                                             style="height: 200px;">
-                                            <i class="fas fa-video fa-3x text-muted"></i>
-                                        </div>
-                                    @endif
+        <!-- Videos Grid -->
+        @if($videos->count() > 0)
+            <div class="videos-grid">
+                @foreach($videos as $video)
+                    <div class="video-item">
+                        <div class="video-card">
+                            <div class="video-thumbnail">
+                                <a href="{{ route('videos.show', $video) }}" class="video-link">
+                                    <img src="{{ $video->thumbnail }}" 
+                                         alt="{{ $video->title }}"
+                                         class="video-image">
                                     
                                     <!-- Play Button Overlay -->
-                                    <div class="video-play-overlay">
+                                    <div class="video-overlay">
                                         <div class="play-button">
                                             <i class="fas fa-play"></i>
                                         </div>
@@ -230,212 +252,354 @@
                                     
                                     @if($video->duration)
                                         <div class="video-duration">
-                                            {{ $video->formatted_duration }}
+                                            {{ $video->duration }}
                                         </div>
                                     @endif
-                                </div>
-                                
-                                <div class="card-body d-flex flex-column">
-                                    <h5 class="card-title">{{ $video->title }}</h5>
                                     
-                                    @if($video->description)
-                                        <p class="card-text text-muted flex-grow-1">
-                                            {{ Str::limit($video->description, 100) }}
-                                        </p>
+                                    <!-- Platform Badge -->
+                                    @if($video->video_platform)
+                                        <div class="platform-badge">
+                                            @if($video->video_platform === 'youtube')
+                                                <i class="fab fa-youtube" style="color: #ff0000;"></i>
+                                            @elseif($video->video_platform === 'vimeo')
+                                                <i class="fab fa-vimeo" style="color: #1ab7ea;"></i>
+                                            @else
+                                                <i class="fas fa-video"></i>
+                                            @endif
+                                        </div>
                                     @endif
-                                    
-                                    <div class="video-meta mb-3">
-                                        @if($video->category)
-                                            <span class="badge bg-primary me-2">{{ ucfirst($video->category) }}</span>
-                                        @endif
+                                </a>
+                            </div>
+                            
+                            <div class="video-content">
+                                <h5 class="video-title">
+                                    <a href="{{ route('videos.show', $video) }}">
+                                        {{ $video->title }}
+                                    </a>
+                                </h5>
+                                
+                                @if($video->description)
+                                    <p class="video-description">
+                                        {{ Str::limit($video->description, 80) }}
+                                    </p>
+                                @endif
+                                
+                                <div class="video-meta">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="video-info">
+                                            @if($video->category)
+                                                <span class="category-tag">
+                                                    {{ ucfirst($video->category) }}
+                                                </span>
+                                            @endif
+                                            
+                                            @if($video->published_date)
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    {{ $video->formatted_published_date }}
+                                                </small>
+                                            @endif
+                                        </div>
                                         
                                         @if($video->views_count)
                                             <small class="text-muted">
                                                 <i class="fas fa-eye me-1"></i>
-                                                {{ number_format($video->views_count) }} visualizações
+                                                {{ number_format($video->views_count) }}
                                             </small>
                                         @endif
-                                    </div>
-                                    
-                                    <div class="mt-auto">
-                                        <a href="{{ route('videos.show', $video) }}" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-play me-1"></i>
-                                            Assistir Vídeo
-                                        </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    @endforeach
-                </div>
-                
-                <!-- Paginação -->
-                @if($videos->hasPages())
-                    <div class="d-flex justify-content-center mt-5">
-                        {{ $videos->appends(request()->query())->links() }}
                     </div>
-                @endif
-            @else
-                <div class="text-center py-5">
-                    <i class="fas fa-video fa-4x text-muted mb-3"></i>
-                    <h3 class="text-muted">Nenhum vídeo encontrado</h3>
-                    @if(request('search') || request('categoria'))
-                        <p class="text-muted">Tente ajustar os filtros de busca.</p>
-                        <a href="{{ route('videos.index') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-refresh me-1"></i>
-                            Limpar Filtros
-                        </a>
-                    @else
-                        <p class="text-muted">Ainda não há vídeos disponíveis.</p>
-                    @endif
+                @endforeach
+            </div>
+                
+            <!-- Pagination -->
+            @if($videos->hasPages())
+                <div class="pagination-section mt-5">
+                    <div class="d-flex justify-content-center">
+                        <div class="pagination-wrapper">
+                            {{ $videos->appends(request()->query())->links() }}
+                        </div>
+                    </div>
                 </div>
             @endif
-        </div>
-        
-       
+        @else
+            <!-- Empty State -->
+            <div class="empty-videos">
+                <div class="empty-content">
+                    <i class="fas fa-video fa-4x text-muted mb-4"></i>
+                    <h3 class="text-muted mb-3">
+                        @if(request('search') || request('categoria'))
+                            Nenhum vídeo encontrado
+                        @else
+                            Ainda não há vídeos
+                        @endif
+                    </h3>
+                    <p class="text-muted mb-4">
+                        @if(request('search') || request('categoria'))
+                            Tente ajustar os filtros de busca ou explorar outras categorias.
+                        @else
+                            Os vídeos serão adicionados em breve. Volte mais tarde!
+                        @endif
+                    </p>
+                    
+                    @if(request('search') || request('categoria'))
+                        <a href="{{ route('videos.index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-1"></i>Ver todos os vídeos
+                        </a>
+                    @endif
+                </div>
+            </div>
+        @endif
     </div>
-</div>
+    
+    <!-- Footer Spacing -->
+    <div class="pb-5 mb-4"></div>
 
-<style>
-.video-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 15px;
-    overflow: hidden;
-}
+    <style>
+        /* Video Header */
+        .video-header-bg {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            min-height: 120px;
+        }
 
-.video-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
+        /* Filters Section */
+        .filters-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #ff6b6b;
+        }
 
-.video-thumbnail {
-    position: relative;
-    overflow: hidden;
-}
+        .active-filters .badge {
+            font-size: 0.85rem;
+            border-radius: 20px;
+        }
 
-.video-play-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
+        /* Videos Grid */
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
 
-.video-card:hover .video-play-overlay {
-    opacity: 1;
-}
+        .video-item {
+            transition: transform 0.3s ease;
+        }
 
-.play-button {
-    width: 60px;
-    height: 60px;
-    background: rgba(255,255,255,0.9);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #007bff;
-    font-size: 1.5rem;
-    transition: all 0.3s ease;
-}
+        .video-item:hover {
+            transform: translateY(-5px);
+        }
 
-.play-button:hover {
-    background: white;
-    transform: scale(1.1);
-}
+        .video-card {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: box-shadow 0.3s ease;
+        }
 
-.video-duration {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: rgba(0,0,0,0.8);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 0.8rem;
-}
+        .video-card:hover {
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
 
-.sidebar {
-    padding-top: 2rem;
-}
+        .video-thumbnail {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+        }
 
-.sidebar-widget {
-    background: #fff;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    border: 1px solid #e9ecef;
-}
+        .video-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
 
-.widget-header {
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #f8f9fa;
-}
+        .video-item:hover .video-image {
+            transform: scale(1.05);
+        }
 
-.widget-header h5 {
-    margin: 0;
-    color: #495057;
-    font-weight: 600;
-}
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
-.widget-item {
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #f8f9fa;
-}
+        .video-item:hover .video-overlay {
+            opacity: 1;
+        }
 
-.widget-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
+        .play-button {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff6b6b;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
 
-.widget-icon {
-    color: #6c757d;
-    width: 20px;
-    text-align: center;
-}
+        .play-button:hover {
+            background: white;
+            transform: scale(1.1);
+            color: #ee5a52;
+        }
 
-.widget-info h6 a {
-    color: #495057;
-    text-decoration: none;
-    font-size: 0.9rem;
-    line-height: 1.3;
-}
+        .video-duration {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
 
-.widget-info h6 a:hover {
-    color: #007bff;
-}
+        .platform-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 6px 8px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
 
-.tag-cloud {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
+        .video-content {
+            padding: 1.25rem;
+        }
 
-.tag-link {
-    display: inline-block;
-    padding: 0.3rem 0.6rem;
-    background: #f8f9fa;
-    color: #6c757d;
-    text-decoration: none;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    transition: all 0.3s ease;
-}
+        .video-title {
+            margin-bottom: 0.75rem;
+        }
 
-.tag-link:hover {
-    background: #007bff;
-    color: white;
-}
+        .video-title a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 600;
+            line-height: 1.3;
+            transition: color 0.3s ease;
+        }
 
-.tag-count {
-    font-size: 0.7rem;
-    opacity: 0.7;
-}
-</style>
+        .video-title a:hover {
+            color: #ff6b6b;
+        }
+
+        .video-description {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 1rem;
+        }
+
+        .video-meta {
+            font-size: 0.85rem;
+        }
+
+        .category-tag {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .video-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Empty State */
+        .empty-videos {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+
+        .empty-content {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Pagination */
+        .pagination-section {
+            text-align: center;
+        }
+
+        .pagination-wrapper {
+            background: #fff;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            display: inline-block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .videos-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1rem;
+            }
+            
+            .filters-section {
+                padding: 1rem;
+            }
+            
+            .video-content {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .videos-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .play-button {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Search form improvements */
+        .search-form .form-control:focus {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
+        }
+
+        .btn-outline-primary {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #ff6b6b;
+            border-color: #ff6b6b;
+            color: white;
+        }
+    </style>
 @endsection

@@ -13,7 +13,13 @@ class ListVideos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Criar Vídeo'),
+            Actions\Action::make('bulk_create')
+                ->label('Upload em Lote')
+                ->icon('heroicon-o-plus-circle')
+                ->color('success')
+                ->url(VideoResource::getUrl('bulk-create')),
         ];
     }
 }

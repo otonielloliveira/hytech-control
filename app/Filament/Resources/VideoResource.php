@@ -50,50 +50,98 @@ class VideoResource extends Resource
                             ->label('URL do Vídeo')
                             ->required()
                             ->url()
-                            ->helperText('Cole aqui a URL do YouTube, Vimeo ou outro serviço')
+                            ->helperText('Cole aqui a URL completa do YouTube, Vimeo ou outro serviço. O sistema extrairá automaticamente as informações.')
+                            ->placeholder('Ex: https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                if ($state) {
+                                    // Extrair ID do YouTube
+                                    if (preg_match('/youtube\.com\/watch\?v=([^&]+)/', $state, $matches)) {
+                                        $set('video_id', $matches[1]);
+                                        $set('video_platform', 'youtube');
+                                        $set('thumbnail_url', "https://img.youtube.com/vi/{$matches[1]}/maxresdefault.jpg");
+                                    } elseif (preg_match('/youtu\.be\/([^?]+)/', $state, $matches)) {
+                                        $set('video_id', $matches[1]);
+                                        $set('video_platform', 'youtube');
+                                        $set('thumbnail_url', "https://img.youtube.com/vi/{$matches[1]}/maxresdefault.jpg");
+                                    }
+                                    // Extrair ID do Vimeo
+                                    elseif (preg_match('/vimeo\.com\/(\d+)/', $state, $matches)) {
+                                        $set('video_id', $matches[1]);
+                                        $set('video_platform', 'vimeo');
+                                        $set('thumbnail_url', "https://vumbnail.com/{$matches[1]}.jpg");
+                                    }
+                                }
+                            })
                             ->columnSpanFull(),
                             
-                        Forms\Components\Select::make('video_platform')
-                            ->label('Plataforma')
-                            ->options([
-                                'youtube' => 'YouTube',
-                                'vimeo' => 'Vimeo',
-                                'local' => 'Local/Outro',
-                            ])
-                            ->default('youtube'),
-                            
-                        Forms\Components\TextInput::make('video_id')
-                            ->label('ID do Vídeo')
-                            ->helperText('Será extraído automaticamente da URL'),
-                            
-                        Forms\Components\TextInput::make('duration')
-                            ->label('Duração')
-                            ->placeholder('Ex: 5:30')
-                            ->helperText('Formato: mm:ss ou hh:mm:ss'),
-                    ])->columns(2),
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\Select::make('video_platform')
+                                    ->label('Plataforma')
+                                    ->options([
+                                        'youtube' => 'YouTube',
+                                        'vimeo' => 'Vimeo',
+                                        'local' => 'Local/Outro',
+                                    ])
+                                    ->default('youtube')
+                                    ->disabled(),
+                                    
+                                Forms\Components\TextInput::make('video_id')
+                                    ->label('ID do Vídeo')
+                                    ->disabled()
+                                    ->helperText('Extraído automaticamente'),
+                                    
+                                Forms\Components\TextInput::make('duration')
+                                    ->label('Duração')
+                                    ->placeholder('Ex: 5:30')
+                                    ->helperText('Formato: mm:ss ou hh:mm:ss'),
+                            ]),
+                    ]),
                     
-                Forms\Components\Section::make('Imagem e Categoria')
+                Forms\Components\Section::make('Miniatura e Categoria')
                     ->schema([
-                        Forms\Components\TextInput::make('thumbnail_url')
-                            ->label('URL da Miniatura')
-                            ->url()
-                            ->helperText('Deixe vazio para usar miniatura automática')
-                            ->columnSpanFull(),
-                            
-                        Forms\Components\TextInput::make('category')
-                            ->label('Categoria')
-                            ->datalist([
-                                'entrevistas',
-                                'palestras',
-                                'eventos',
-                                'tutoriais',
-                                'debates',
-                                'documentarios',
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('thumbnail_url')
+                                    ->label('URL da Miniatura')
+                                    ->url()
+                                    ->helperText('Preenchido automaticamente ou insira URL personalizada'),
+                                    
+                                Forms\Components\Placeholder::make('thumbnail_preview')
+                                    ->label('Preview da Miniatura')
+                                    ->content(function ($get) {
+                                        $thumbnailUrl = $get('thumbnail_url');
+                                        if ($thumbnailUrl) {
+                                            return new \Illuminate\Support\HtmlString(
+                                                "<img src='{$thumbnailUrl}' style='max-width: 200px; max-height: 120px; border-radius: 8px; object-fit: cover;' alt='Preview'>"
+                                            );
+                                        }
+                                        return 'Nenhuma miniatura disponível';
+                                    }),
                             ]),
                             
-                        Forms\Components\DatePicker::make('published_date')
-                            ->label('Data de Publicação'),
-                    ])->columns(2),
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('category')
+                                    ->label('Categoria')
+                                    ->datalist([
+                                        'entrevistas' => 'Entrevistas',
+                                        'palestras' => 'Palestras', 
+                                        'eventos' => 'Eventos',
+                                        'tutoriais' => 'Tutoriais',
+                                        'debates' => 'Debates',
+                                        'documentarios' => 'Documentários',
+                                        'noticias' => 'Notícias',
+                                        'educativo' => 'Educativo',
+                                    ])
+                                    ->helperText('Digite ou selecione uma categoria'),
+                                    
+                                Forms\Components\DatePicker::make('published_date')
+                                    ->label('Data de Publicação')
+                                    ->default(now()),
+                            ]),
+                    ]),
                     
                 Forms\Components\Section::make('Tags e SEO')
                     ->schema([
@@ -128,53 +176,70 @@ class VideoResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('thumbnail')
+                Tables\Columns\ImageColumn::make('thumbnail_url')
                     ->label('Miniatura')
-                    ->circular()
-                    ->defaultImageUrl(url('/images/video-placeholder.jpg')),
+                    ->size(80)
+                    ->defaultImageUrl(url('/images/video-placeholder.jpg'))
+                    ->extraAttributes(['style' => 'border-radius: 8px;']),
                     
                 Tables\Columns\TextColumn::make('title')
                     ->label('Título')
                     ->searchable()
                     ->sortable()
-                    ->limit(40),
+                    ->limit(50)
+                    ->description(fn (Video $record): string => $record->short_description)
+                    ->wrap(),
                     
                 Tables\Columns\TextColumn::make('video_platform')
                     ->label('Plataforma')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'youtube' => 'danger',
-                        'vimeo' => 'info',
+                        'vimeo' => 'info', 
                         'local' => 'gray',
                         default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'youtube' => 'heroicon-o-play-circle',
+                        'vimeo' => 'heroicon-o-video-camera',
+                        'local' => 'heroicon-o-film',
+                        default => 'heroicon-o-video-camera',
                     }),
                     
                 Tables\Columns\TextColumn::make('category')
                     ->label('Categoria')
                     ->searchable()
-                    ->badge(),
+                    ->badge()
+                    ->color('info'),
                     
                 Tables\Columns\TextColumn::make('duration')
-                    ->label('Duração'),
+                    ->label('Duração')
+                    ->alignCenter(),
                     
                 Tables\Columns\TextColumn::make('views_count')
                     ->label('Visualizações')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter()
+                    ->formatStateUsing(fn (int $state): string => number_format($state)),
                     
                 Tables\Columns\IconColumn::make('is_active')
-                    ->label('Ativo')
-                    ->boolean(),
+                    ->label('Status')
+                    ->boolean()
+                    ->alignCenter(),
                     
                 Tables\Columns\TextColumn::make('priority')
                     ->label('Prioridade')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter()
+                    ->toggleable(isToggledHiddenByDefault: true),
                     
                 Tables\Columns\TextColumn::make('published_date')
                     ->label('Publicado em')
                     ->date('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                     
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Criado em')
@@ -211,15 +276,43 @@ class VideoResource extends Resource
                     ->native(false),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->url(fn (Video $record): string => route('videos.show', $record))
-                    ->openUrlInNewTab(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->label('Ver no Site')
+                        ->icon('heroicon-o-eye')
+                        ->url(fn (Video $record): string => route('videos.show', $record))
+                        ->openUrlInNewTab(),
+                    Tables\Actions\Action::make('preview')
+                        ->label('Preview do Vídeo')
+                        ->icon('heroicon-o-play')
+                        ->modalContent(fn (Video $record) => view('filament.video-preview', ['video' => $record]))
+                        ->modalWidth('5xl'),
+                    Tables\Actions\EditAction::make()
+                        ->icon('heroicon-o-pencil'),
+                    Tables\Actions\DeleteAction::make()
+                        ->icon('heroicon-o-trash'),
+                ])->label('Ações')
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->size('sm')
+                    ->color('gray')
+                    ->button(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('activate')
+                        ->label('Ativar Selecionados')
+                        ->icon('heroicon-o-check')
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['is_active' => true])))
+                        ->color('success')
+                        ->requiresConfirmation(),
+                    Tables\Actions\BulkAction::make('deactivate')
+                        ->label('Desativar Selecionados')
+                        ->icon('heroicon-o-x-mark')
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['is_active' => false])))
+                        ->color('warning')
+                        ->requiresConfirmation(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Excluir Selecionados'),
                 ]),
             ])
             ->defaultSort('priority', 'desc');
@@ -237,6 +330,7 @@ class VideoResource extends Resource
         return [
             'index' => Pages\ListVideos::route('/'),
             'create' => Pages\CreateVideo::route('/create'),
+            'bulk-create' => Pages\BulkCreateVideos::route('/bulk-create'),
             'edit' => Pages\EditVideo::route('/{record}/edit'),
         ];
     }
