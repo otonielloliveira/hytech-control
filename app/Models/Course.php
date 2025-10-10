@@ -147,12 +147,12 @@ class Course extends Model
 
     public function getTotalLessons()
     {
-        return $this->lessons()->where('is_published', true)->count();
+        return $this->lessons()->where('course_lessons.is_published', true)->count();
     }
 
     public function getTotalDuration()
     {
-        return $this->lessons()->where('is_published', true)->sum('video_duration');
+        return $this->lessons()->where('course_lessons.is_published', true)->sum('video_duration');
     }
 
     public function getFormattedDuration()

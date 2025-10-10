@@ -14,7 +14,7 @@ class CreateCourseModule extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['name']);
+            $data['slug'] = Str::slug($data['title']);
         }
         
         return $data;

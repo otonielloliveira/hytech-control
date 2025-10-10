@@ -50,15 +50,15 @@ class CourseLessonResource extends Resource
                         if (!$courseId) return [];
                         
                         return CourseModule::where('course_id', $courseId)
-                            ->pluck('name', 'id');
+                            ->pluck('title', 'id');
                     })
                     ->required()
                     ->searchable()
                     ->preload()
                     ->reactive(),
                 
-                Forms\Components\TextInput::make('name')
-                    ->label('Nome da Aula')
+                Forms\Components\TextInput::make('title')
+                    ->label('Título da Aula')
                     ->required()
                     ->maxLength(255),
                 
@@ -96,14 +96,14 @@ class CourseLessonResource extends Resource
                     ->directory('course-lessons')
                     ->visibility('public'),
                 
-                Forms\Components\TextInput::make('order')
+                Forms\Components\TextInput::make('sort_order')
                     ->label('Ordem')
                     ->numeric()
                     ->required()
                     ->default(1),
                 
-                Forms\Components\Toggle::make('is_active')
-                    ->label('Ativo')
+                Forms\Components\Toggle::make('is_published')
+                    ->label('Publicado')
                     ->default(true),
                 
                 Forms\Components\Toggle::make('is_free')
@@ -121,13 +121,13 @@ class CourseLessonResource extends Resource
                     ->sortable()
                     ->searchable(),
                 
-                Tables\Columns\TextColumn::make('courseModule.name')
+                Tables\Columns\TextColumn::make('courseModule.title')
                     ->label('Módulo')
                     ->sortable()
                     ->searchable(),
                 
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nome da Aula')
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Título da Aula')
                     ->searchable()
                     ->sortable(),
                 
@@ -140,12 +140,12 @@ class CourseLessonResource extends Resource
                     ->suffix(' min')
                     ->sortable(),
                 
-                Tables\Columns\TextColumn::make('order')
+                Tables\Columns\TextColumn::make('sort_order')
                     ->label('Ordem')
                     ->sortable(),
                 
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Ativo')
+                Tables\Columns\IconColumn::make('is_published')
+                    ->label('Publicado')
                     ->boolean(),
                 
                 Tables\Columns\IconColumn::make('is_free')
@@ -164,11 +164,11 @@ class CourseLessonResource extends Resource
                     ->label('Curso'),
                 
                 Tables\Filters\SelectFilter::make('courseModule')
-                    ->relationship('courseModule', 'name')
+                    ->relationship('courseModule', 'title')
                     ->label('Módulo'),
                 
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Ativo'),
+                Tables\Filters\TernaryFilter::make('is_published')
+                    ->label('Publicado'),
                 
                 Tables\Filters\TernaryFilter::make('is_free')
                     ->label('Gratuita'),
@@ -182,7 +182,7 @@ class CourseLessonResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('order');
+            ->defaultSort('sort_order');
     }
 
     public static function getRelations(): array

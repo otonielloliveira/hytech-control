@@ -25,9 +25,9 @@ class CourseResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Cursos';
     
-    protected static ?string $navigationGroup = 'Cursos';
+    protected static ?string $navigationGroup = 'Gestão de Cursos';
     
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {

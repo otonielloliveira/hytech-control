@@ -3,6 +3,19 @@
 @section('title', $lesson->title . ' - ' . $course->title)
 
 @section('content')
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+    <div id="lesson-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="fas fa-check-circle text-success me-2"></i>
+            <strong class="me-auto">Progresso Salvo</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            Aula marcada como concluída com sucesso!
+        </div>
+    </div>
+</div>
 <div class="lesson-container">
     <!-- Lesson Header -->
     <div class="lesson-header bg-dark text-white py-3">
@@ -183,15 +196,17 @@
                         <small class="text-muted">{{ $enrollment->progress_percentage }}% concluído</small>
                         
                         <!-- Mark as Complete Button -->
-                        @if(!$progress->is_completed)
-                        <button id="mark-complete-btn" class="btn btn-success btn-sm btn-block mt-3">
-                            <i class="fas fa-check"></i> Marcar como Concluída
-                        </button>
-                        @else
-                        <div class="alert alert-success mt-3 mb-0">
-                            <i class="fas fa-check-circle"></i> Aula concluída!
+                        <div class="lesson-controls">
+                            @if(!$progress->is_completed)
+                            <button id="mark-complete-btn" class="btn btn-success btn-sm btn-block mt-3">
+                                <i class="fas fa-check"></i> Marcar como Concluída
+                            </button>
+                            @else
+                            <div class="alert alert-success mt-3 mb-0">
+                                <i class="fas fa-check-circle"></i> Aula concluída!
+                            </div>
+                            @endif
                         </div>
-                        @endif
                     </div>
                     
                     <!-- Course Modules -->
@@ -367,6 +382,55 @@
         margin-top: 1rem;
     }
 }
+
+/* Animation Classes */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate__animated {
+    animation-duration: 0.5s;
+}
+
+.animate__fadeIn {
+    animation-name: fadeIn;
+}
+
+/* Toast Custom Styles */
+.toast {
+    min-width: 300px;
+}
+
+.toast-container {
+    z-index: 1060;
+}
+
+/* Button Loading State */
+#mark-complete-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+    transition: width 0.6s ease-in-out;
+}
+
+/* Success Alert Enhancement */
+.alert-success {
+    border-left: 4px solid #28a745;
+}
+
+.alert-info {
+    border-left: 4px solid #17a2b8;
+}
 </style>
 
 <!-- Progress Tracking Script -->
@@ -374,8 +438,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     const markCompleteBtn = document.getElementById('mark-complete-btn');
     
+    // Initialize Bootstrap Toast
+    const toastEl = document.getElementById('lesson-toast');
+    const toast = new bootstrap.Toast(toastEl);
+    
     if (markCompleteBtn) {
         markCompleteBtn.addEventListener('click', function() {
+            // Disable button and show loading state
+            markCompleteBtn.disabled = true;
+            markCompleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            
             fetch('{{ route('courses.lesson.complete', [$course->slug, $module->slug, $lesson->slug]) }}', {
                 method: 'POST',
                 headers: {
@@ -391,34 +463,104 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     // Update UI
-                    markCompleteBtn.outerHTML = '<div class="alert alert-success mt-3 mb-0"><i class="fas fa-check-circle"></i> Aula concluída!</div>';
+                    markCompleteBtn.outerHTML = `
+                        <div class="alert alert-success mt-3 mb-0 animate__animated animate__fadeIn">
+                            <i class="fas fa-check-circle"></i> Aula concluída!
+                        </div>
+                    `;
                     
-                    // Update progress bar
+                    // Update progress bar with animation
                     const progressBar = document.querySelector('.progress-bar');
                     if (progressBar) {
+                        progressBar.style.transition = 'width 0.6s ease-in-out';
                         progressBar.style.width = data.course_progress + '%';
                         progressBar.setAttribute('aria-valuenow', data.course_progress);
-                        progressBar.parentElement.nextElementSibling.textContent = data.course_progress + '% concluído';
+                        
+                        const progressText = progressBar.parentElement.nextElementSibling;
+                        if (progressText) {
+                            progressText.textContent = data.course_progress + '% concluído';
+                        }
                     }
                     
-                    // Mark lesson as completed in sidebar
+                    // Mark lesson as completed in sidebar with animation
                     const currentLessonIcon = document.querySelector('.lesson-item.current .lesson-status i');
                     if (currentLessonIcon) {
                         currentLessonIcon.className = 'fas fa-check-circle text-success';
+                        currentLessonIcon.style.animation = 'pulse 0.5s ease-in-out';
                     }
                     
-                    // Show success message
-                    if (data.lesson_completed) {
-                        // Could show a toast notification here
-                        console.log('Lesson completed successfully!');
+                    // Update toast message based on progress
+                    let toastMessage = 'Aula marcada como concluída!';
+                    if (data.course_progress === 100) {
+                        toastMessage = '🎉 Parabéns! Você concluiu o curso!';
+                        // Show confetti or special celebration
+                        triggerCelebration();
+                    } else if (data.module_completed) {
+                        toastMessage = '📚 Módulo concluído! Continue para o próximo.';
                     }
+                    
+                    // Update toast content and show
+                    toastEl.querySelector('.toast-body').textContent = toastMessage;
+                    toast.show();
+                    
+                    // Auto-redirect to next lesson after delay if available
+                    if (data.next_lesson && data.course_progress < 100) {
+                        setTimeout(() => {
+                            const nextBtn = document.createElement('div');
+                            nextBtn.className = 'alert alert-info mt-2 mb-0';
+                            nextBtn.innerHTML = `
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-arrow-right"></i> Próxima aula disponível</span>
+                                    <a href="${data.next_lesson.url}" class="btn btn-primary btn-sm">Continuar</a>
+                                </div>
+                            `;
+                            document.querySelector('.lesson-controls').appendChild(nextBtn);
+                        }, 2000);
+                    }
+                } else {
+                    throw new Error(data.message || 'Erro desconhecido');
                 }
             })
             .catch(error => {
                 console.error('Error marking lesson as complete:', error);
-                alert('Erro ao marcar aula como concluída. Tente novamente.');
+                
+                // Reset button state
+                markCompleteBtn.disabled = false;
+                markCompleteBtn.innerHTML = '<i class="fas fa-check"></i> Marcar como Concluída';
+                
+                // Show error toast
+                toastEl.querySelector('.toast-header strong').textContent = 'Erro';
+                toastEl.querySelector('.toast-header i').className = 'fas fa-exclamation-circle text-danger me-2';
+                toastEl.querySelector('.toast-body').textContent = 'Erro ao marcar aula como concluída. Tente novamente.';
+                toastEl.classList.add('border-danger');
+                toast.show();
+                
+                // Reset toast state after hiding
+                setTimeout(() => {
+                    toastEl.classList.remove('border-danger');
+                    toastEl.querySelector('.toast-header strong').textContent = 'Progresso Salvo';
+                    toastEl.querySelector('.toast-header i').className = 'fas fa-check-circle text-success me-2';
+                }, 3000);
             });
         });
+    }
+    
+    // Celebration function for course completion
+    function triggerCelebration() {
+        // Create confetti effect (optional - requires confetti library)
+        if (typeof confetti !== 'undefined') {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+        
+        // Play success sound (optional)
+        try {
+            const audio = new Audio('data:audio/wav;base64,UklGRvoBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaKKjf5rF9IAhdqOLiqUpSDUqNl/+wUfYNKKbL5R2FIg9nLrMePwAA');
+            audio.play().catch(() => {}); // Ignore errors if audio fails
+        } catch (e) {}
     }
 });
 </script>

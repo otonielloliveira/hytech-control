@@ -40,8 +40,8 @@ class CourseModuleResource extends Resource
                     ->searchable()
                     ->preload(),
                 
-                Forms\Components\TextInput::make('name')
-                    ->label('Nome do Módulo')
+                Forms\Components\TextInput::make('title')
+                    ->label('Título do Módulo')
                     ->required()
                     ->maxLength(255),
                 
@@ -56,14 +56,14 @@ class CourseModuleResource extends Resource
                     ->rows(3)
                     ->columnSpanFull(),
                 
-                Forms\Components\TextInput::make('order')
+                Forms\Components\TextInput::make('sort_order')
                     ->label('Ordem')
                     ->numeric()
                     ->required()
                     ->default(1),
                 
-                Forms\Components\Toggle::make('is_active')
-                    ->label('Ativo')
+                Forms\Components\Toggle::make('is_published')
+                    ->label('Publicado')
                     ->default(true),
             ]);
     }
@@ -77,8 +77,8 @@ class CourseModuleResource extends Resource
                     ->sortable()
                     ->searchable(),
                 
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nome do Módulo')
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Título do Módulo')
                     ->searchable()
                     ->sortable(),
                 
@@ -86,12 +86,12 @@ class CourseModuleResource extends Resource
                     ->label('Slug')
                     ->searchable(),
                 
-                Tables\Columns\TextColumn::make('order')
+                Tables\Columns\TextColumn::make('sort_order')
                     ->label('Ordem')
                     ->sortable(),
                 
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Ativo')
+                Tables\Columns\IconColumn::make('is_published')
+                    ->label('Publicado')
                     ->boolean(),
                 
                 Tables\Columns\TextColumn::make('lessons_count')
@@ -110,8 +110,8 @@ class CourseModuleResource extends Resource
                     ->relationship('course', 'title')
                     ->label('Curso'),
                 
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Ativo'),
+                Tables\Filters\TernaryFilter::make('is_published')
+                    ->label('Publicado'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -122,7 +122,7 @@ class CourseModuleResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('order');
+            ->defaultSort('sort_order');
     }
 
     public static function getRelations(): array

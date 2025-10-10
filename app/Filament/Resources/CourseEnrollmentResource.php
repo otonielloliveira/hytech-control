@@ -26,9 +26,9 @@ class CourseEnrollmentResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Matrículas';
     
-    protected static ?string $navigationGroup = 'Cursos';
-    
-    protected static ?int $navigationSort = 3;
+    protected static ?string $navigationGroup = 'Gestão de Cursos';
+
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {

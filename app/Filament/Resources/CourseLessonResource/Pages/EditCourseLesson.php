@@ -21,7 +21,7 @@ class EditCourseLesson extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         if (empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['name']);
+            $data['slug'] = Str::slug($data['title']);
         }
         
         return $data;
