@@ -132,21 +132,21 @@
     @if($featuredProducts->count() > 0)
     <section class="store-featured-section py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
         <div class="container-fluid">
-            <div class="text-center mb-5">
+            <div class="text-center mb-4">
                 <div class="d-inline-flex align-items-center bg-white bg-opacity-90 rounded-pill px-4 py-2 mb-3">
                     <i class="fas fa-shopping-bag text-primary me-2"></i>
                     <span class="fw-bold text-primary">Loja Oficial</span>
                 </div>
-                <h2 class="h1 text-white fw-bold mb-3">Produtos Exclusivos</h2>
-                <p class="text-white-50 fs-5 mb-0">Descubra nossa seleção especial de produtos únicos</p>
+                <h2 class="h3 text-white fw-bold mb-2">Produtos Exclusivos</h2>
+                <p class="text-white-50 mb-0">Descubra nossa seleção especial de produtos únicos</p>
             </div>
             
-            <div class="row g-4 mb-4">
+            <div class="row g-3 mb-4">
                 @foreach($featuredProducts as $product)
-                <div class="col-lg-3 col-md-6">
-                    <div class="card product-card h-100 border-0 shadow-lg" style="border-radius: 15px; overflow: hidden; transform: translateY(0); transition: all 0.3s ease;">
+                <div class="col-lg-4 col-md-6">
+                    <div class="card product-card h-100 border-0 shadow" style="border-radius: 12px; overflow: hidden; transform: translateY(0); transition: all 0.3s ease; max-width: 100%;">
                         <div class="position-relative">
-                            <div class="product-image" style="height: 250px; overflow: hidden;">
+                            <div class="product-image" style="height: 200px; overflow: hidden;">
                                 @if($product->images && count($product->images) > 0)
                                     <img src="{{ Storage::url($product->images[0]) }}" 
                                          alt="{{ $product->name }}" 
@@ -154,14 +154,14 @@
                                          style="object-fit: cover; transition: transform 0.3s ease;">
                                 @else
                                     <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
-                                        <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                                        <i class="fas fa-image text-muted" style="font-size: 2.5rem;"></i>
                                     </div>
                                 @endif
                             </div>
                             
                             @if($product->isOnSale())
                                 <div class="position-absolute top-0 end-0 m-2">
-                                    <span class="badge bg-danger rounded-pill">
+                                    <span class="badge bg-danger rounded-pill px-2 py-1" style="font-size: 0.75rem;">
                                         -{{ $product->getDiscountPercentage() }}%
                                     </span>
                                 </div>
@@ -169,63 +169,63 @@
                             
                             @if(!$product->in_stock)
                                 <div class="position-absolute top-0 start-0 end-0 bottom-0 d-flex align-items-center justify-content-center" 
-                                     style="background: rgba(0,0,0,0.7); border-radius: 15px;">
-                                    <span class="badge bg-dark fs-6 px-3 py-2">Esgotado</span>
+                                     style="background: rgba(0,0,0,0.7); border-radius: 12px;">
+                                    <span class="badge bg-dark px-3 py-2">Esgotado</span>
                                 </div>
                             @endif
                         </div>
                         
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title fw-bold text-dark mb-2">{{ $product->name }}</h5>
+                        <div class="card-body d-flex flex-column p-3">
+                            <h6 class="card-title fw-bold text-dark mb-2" style="font-size: 1rem; line-height: 1.3;">{{ $product->name }}</h6>
                             
                             @if($product->short_description)
-                                <p class="card-text text-muted small mb-3" style="line-height: 1.4;">
-                                    {{ Str::limit($product->short_description, 80) }}
+                                <p class="card-text text-muted small mb-2" style="line-height: 1.3; font-size: 0.85rem;">
+                                    {{ Str::limit($product->short_description, 60) }}
                                 </p>
                             @endif
                             
                             <div class="mt-auto">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
                                     @if($product->isOnSale())
                                         <div>
-                                            <span class="h5 text-danger fw-bold mb-0">
+                                            <span class="fw-bold text-danger mb-0" style="font-size: 1.1rem;">
                                                 R$ {{ number_format($product->sale_price, 2, ',', '.') }}
                                             </span>
                                             <br>
-                                            <small class="text-muted text-decoration-line-through">
+                                            <small class="text-muted text-decoration-line-through" style="font-size: 0.8rem;">
                                                 R$ {{ number_format($product->price, 2, ',', '.') }}
                                             </small>
                                         </div>
                                     @else
-                                        <span class="h5 text-primary fw-bold mb-0">
+                                        <span class="fw-bold text-primary mb-0" style="font-size: 1.1rem;">
                                             R$ {{ number_format($product->price, 2, ',', '.') }}
                                         </span>
                                     @endif
                                     
                                     @if($product->manage_stock && $product->stock_quantity <= 5 && $product->in_stock)
-                                        <small class="text-warning fw-semibold">
+                                        <small class="text-warning fw-semibold" style="font-size: 0.75rem;">
                                             <i class="fas fa-exclamation-triangle me-1"></i>
                                             Últimas {{ $product->stock_quantity }}
                                         </small>
                                     @endif
                                 </div>
                                 
-                                <div class="d-grid gap-2">
+                                <div class="d-grid gap-1">
                                     @if($product->in_stock)
                                         <button class="btn btn-primary btn-sm rounded-pill fw-semibold add-to-cart-homepage" 
                                                 data-product-id="{{ $product->id }}"
-                                                style="transition: all 0.3s ease;">
-                                            <i class="fas fa-shopping-cart me-2"></i>
+                                                style="transition: all 0.3s ease; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                            <i class="fas fa-shopping-cart me-1"></i>
                                             Adicionar ao Carrinho
                                         </button>
-                                        <a href="{{ route('store.product.show', $product->sku) }}" 
-                                           class="btn btn-outline-primary btn-sm rounded-pill">
-                                            <i class="fas fa-eye me-2"></i>
+                                        <a href="{{ route('store.product', $product->slug) }}" 
+                                           class="btn btn-outline-primary btn-sm rounded-pill" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">
+                                            <i class="fas fa-eye me-1"></i>
                                             Ver Detalhes
                                         </a>
                                     @else
-                                        <button class="btn btn-secondary btn-sm rounded-pill" disabled>
-                                            <i class="fas fa-times me-2"></i>
+                                        <button class="btn btn-secondary btn-sm rounded-pill" disabled style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                            <i class="fas fa-times me-1"></i>
                                             Indisponível
                                         </button>
                                     @endif
@@ -237,6 +237,7 @@
                 @endforeach
             </div>
             
+            @if($featuredProducts->count() > 3)
             <div class="text-center">
                 <a href="{{ route('store.index') }}" 
                    class="btn btn-light btn-lg rounded-pill px-5 py-3 fw-bold">
@@ -244,6 +245,7 @@
                     Ver Todos os Produtos
                 </a>
             </div>
+            @endif
         </div>
     </section>
     @endif
@@ -1850,25 +1852,28 @@
     .product-card {
         transition: all 0.3s ease;
         backdrop-filter: blur(10px);
+        max-height: 380px;
     }
     
     .product-card:hover {
-        transform: translateY(-10px) !important;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important;
+        transform: translateY(-5px) !important;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important;
     }
     
     .product-card:hover .product-image img {
-        transform: scale(1.1);
+        transform: scale(1.05);
     }
     
     .add-to-cart-homepage {
         position: relative;
         overflow: hidden;
+        font-size: 0.85rem !important;
+        padding: 0.4rem 0.8rem !important;
     }
     
     .add-to-cart-homepage:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
     
     .add-to-cart-homepage.loading {
@@ -2042,7 +2047,7 @@
         const originalText = button.html();
         
         // Disable button and show loading
-        button.addClass('loading').prop('disabled', true).html('');
+        button.addClass('loading').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Carregando...');
         
         $.ajax({
             url: `/loja/carrinho/adicionar/${productId}`,
@@ -2071,7 +2076,7 @@
                     
                     // Change button temporarily
                     button.removeClass('btn-primary').addClass('btn-success')
-                          .html('<i class="fas fa-check me-2"></i>Adicionado!');
+                          .html('<i class="fas fa-check me-1"></i>Adicionado!');
                     
                     setTimeout(() => {
                         button.removeClass('btn-success').addClass('btn-primary')

@@ -39,11 +39,9 @@ class StoreController extends Controller
         return view('store.index', compact('products', 'featuredProducts'));
     }
 
-    public function show(Product $product)
+    public function show($slug)
     {
-        if ($product->status !== 'active') {
-            abort(404);
-        }
+        $product = Product::where('slug', $slug)->where('status', 'active')->firstOrFail();
 
         $relatedProducts = Product::active()
             ->inStock()
@@ -55,8 +53,10 @@ class StoreController extends Controller
         return view('store.product', compact('product', 'relatedProducts'));
     }
 
-    public function addToCart(Request $request, Product $product)
+    public function addToCart(Request $request, $productId)
     {
+        $product = Product::findOrFail($productId);
+        
         $request->validate([
             'quantity' => 'required|integer|min:1|max:100',
         ]);

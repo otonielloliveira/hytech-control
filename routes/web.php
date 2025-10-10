@@ -103,7 +103,7 @@ Route::prefix('cliente')->name('client.')->group(function () {
 // Store Routes (Loja)
 Route::prefix('loja')->name('store.')->group(function () {
     Route::get('/', [StoreController::class, 'index'])->name('index');
-    Route::get('/produto/{product:sku}', [StoreController::class, 'show'])->name('product.show');
+    Route::get('/produto/{slug}', [StoreController::class, 'show'])->name('product');
     
     // Cart routes
     Route::get('/carrinho', [StoreController::class, 'cart'])->name('cart');

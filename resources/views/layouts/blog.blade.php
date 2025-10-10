@@ -1004,8 +1004,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-box me-1"></i>Produtos
+                        <a class="nav-link" href="{{ route('store.index') }}">
+                            <i class="fas fa-shopping-bag me-1"></i>Loja
                         </a>
                     </li>
                     <li class="nav-item">
@@ -1047,9 +1047,9 @@
                     
                     <!-- Badge de Carrinho -->
                     <li class="nav-item">
-                        <a class="nav-link position-relative" href="#">
+                        <a class="nav-link position-relative" href="{{ route('store.cart') }}">
                             <i class="fas fa-shopping-cart"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.7rem;">
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary cart-counter d-none" style="font-size: 0.7rem;">
                                 0
                                 <span class="visually-hidden">itens no carrinho</span>
                             </span>
