@@ -350,24 +350,70 @@
         
         /* Footer */
         .footer {
-            background: var(--dark-bg);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f172a 100%);
             color: white;
-            padding: 3rem 0 1rem;
+            padding: 4rem 0 1.5rem;
+            position: relative;
+            border-top: 1px solid #334155;
+        }
+        
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="0.5" fill="%23ffffff" opacity="0.02"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+            pointer-events: none;
+        }
+        
+        .footer .container {
+            position: relative;
+            z-index: 1;
         }
         
         .footer h5 {
-            color: var(--primary-color);
+            color: #60a5fa;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .footer p {
+            color: #cbd5e1;
             margin-bottom: 1rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
         }
         
         .footer a {
-            color: #adb5bd;
+            color: #94a3b8;
             text-decoration: none;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
         
         .footer a:hover {
-            color: var(--primary-color);
+            color: #60a5fa;
+            text-shadow: 0 0 8px rgba(96, 165, 250, 0.3);
+        }
+        
+        .footer small {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+        
+        .footer i {
+            color: inherit;
+        }
+        
+        .footer hr {
+            border-color: #334155;
+            margin: 2.5rem 0 1.5rem;
+            opacity: 0.6;
         }
         
         .footer-bottom {
@@ -378,22 +424,110 @@
             color: #adb5bd;
         }
         
+        .footer-bottom-section {
+            padding-top: 1.5rem;
+            background: rgba(15, 23, 42, 0.5);
+            margin: 0 -15px;
+            padding-left: 15px;
+            padding-right: 15px;
+            border-radius: 12px;
+        }
+        
+        .footer-text-content {
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+        
+        .footer-credits {
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        .footer-link {
+            color: #60a5fa;
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .footer-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: linear-gradient(90deg, #60a5fa, #3b82f6);
+            transition: width 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: #3b82f6;
+            text-shadow: 0 0 8px rgba(96, 165, 250, 0.3);
+        }
+        
+        .footer-link:hover::after {
+            width: 100%;
+        }
+        
+        .footer-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+            padding: 0.25rem 0;
+        }
+        
+        .footer-links a:hover {
+            color: #60a5fa;
+            transform: translateX(5px);
+        }
+        
+        .footer-links i {
+            width: 16px;
+            text-align: center;
+            opacity: 0.7;
+        }
+        
+        .social-links {
+            margin-top: 1.5rem;
+        }
+        
         .social-links a {
             display: inline-block;
-            width: 40px;
-            height: 40px;
-            background: var(--primary-color);
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
-            border-radius: 50%;
+            border-radius: 12px;
             text-align: center;
-            line-height: 40px;
-            margin: 0 0.5rem;
-            transition: transform 0.3s ease, background-color 0.3s ease;
+            line-height: 45px;
+            margin: 0 0.75rem 0.75rem 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .social-links a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
         
         .social-links a:hover {
-            transform: translateY(-2px);
-            background: var(--secondary-color);
+            transform: translateY(-3px) scale(1.05);
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .social-links a:hover::before {
+            left: 100%;
         }
         
         /* Responsive */
@@ -967,7 +1101,7 @@
                         <div class="social-links">
                             @foreach($config->social_links as $platform => $url)
                                 @if($url)
-                                    <a href="{{ $url }}" target="_blank">
+                                    <a href="{{ $url }}" target="_blank" title="{{ ucfirst($platform) }}">
                                         <i class="fab fa-{{ $platform }}"></i>
                                     </a>
                                 @endif
@@ -989,19 +1123,36 @@
                     @endif
                 </div>
                 
-                
+                <div class="col-lg-4 mb-4">
+                    <h5>Links Úteis</h5>
+                    <div class="footer-links">
+                        <p><a href="{{ route('blog.index') }}"><i class="fas fa-home me-2"></i>Página Inicial</a></p>
+                        <p><a href="{{ route('albums.index') }}"><i class="fas fa-images me-2"></i>Galeria de Fotos</a></p>
+                        <p><a href="{{ route('videos.index') }}"><i class="fas fa-video me-2"></i>Vídeos</a></p>
+                        <p><a href="{{ route('downloads.index') }}"><i class="fas fa-download me-2"></i>Downloads</a></p>
+                        <p><a href="{{ route('lectures.index') }}"><i class="fas fa-chalkboard-teacher me-2"></i>Palestras</a></p>
+                    </div>
+                </div>
             </div>
             
-            <hr style="border-color: #374151;">
+            <hr>
             
-            <div class="row align-items-center">
+            <div class="row align-items-center footer-bottom-section">
                 <div class="col-md-6">
                     @if($config->footer_text)
-                        {!! $config->footer_text !!}
+                        <div class="footer-text-content">
+                            {!! $config->footer_text !!}
+                        </div>
+                    @else
+                        <div class="footer-text-content">
+                            <small>&copy; {{ date('Y') }} {{ $config->site_name }}. Todos os direitos reservados.</small>
+                        </div>
                     @endif
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <small>Desenvolvido por <a href="http://www.hytech.com.br/" target="_blank">HYTECH TECNOLOGIA LTDA</a></small>
+                    <small class="footer-credits">
+                        Desenvolvido por <a href="http://www.hytech.com.br/" target="_blank" class="footer-link">HYTECH TECNOLOGIA LTDA</a>
+                    </small>
                 </div>
             </div>
         </div>

@@ -21,7 +21,7 @@ $widgetConfig = App\Models\SidebarConfig::getWidgetConfig('books');
                 <div class="d-flex gap-3">
                     {{-- Capa do Livro --}}
                     <div class="flex-shrink-0">
-                        <img src="{{ $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/no-book-cover.png') }}" 
+                        <img src="{{ $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/default-no-image.png') }}" 
                              alt="{{ $book->title }}"
                              class="book-cover img-fluid rounded shadow-sm border" 
                              style="width: 60px; height: 75px; object-fit: cover;">

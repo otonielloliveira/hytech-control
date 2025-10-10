@@ -146,17 +146,21 @@
             <div class="@if($showSidebar) col-lg-9 @else col-lg-12 @endif">
                 <!-- Posts em Destaque -->
                 @if($featuredPosts->count() > 0)
-                    <section class="section">
+                    <section class="featured-section">
                         <div class="container-fluid">
-                            <div class="section-title">
-                                <h2>⭐ Posts em Destaque</h2>
-                                <p>Confira nossos conteúdos mais importantes e relevantes</p>
+                            <div class="section-header">
+                                <div class="section-badge">
+                                    <i class="fas fa-star"></i>
+                                    Em Destaque
+                                </div>
+                                <h2 class="section-title">Conteúdos Principais</h2>
+                                <p class="section-subtitle">Descubra nossos artigos mais importantes e relevantes</p>
                             </div>
                             
-                            <div class="row">
-                                @foreach($featuredPosts as $post)
-                                    <div class="col-lg-4 col-md-6 mb-4">
-                                        <article class="post-card">
+                            <div class="featured-grid">
+                                @foreach($featuredPosts as $index => $post)
+                                    <article class="featured-card">
+                                        <div class="featured-image">
                                             @if($post->featured_image)
                                                 <img src="{{ asset('storage/' . $post->featured_image) }}" 
                                                      alt="{{ $post->title }}" loading="lazy">
@@ -165,32 +169,51 @@
                                                      alt="{{ $post->title }}" loading="lazy">
                                             @endif
                                             
-                                            <div class="post-card-body">
-                                                @if($post->category)
-                                                    <span class="post-category" style="background-color: {{ $post->category->color }}">
-                                                        {{ $post->category->name }}
-                                                    </span>
-                                                @endif
-                                                
-                                                <h3 class="post-title">
-                                                    <a href="{{ route('blog.post.show', $post->slug) }}">
-                                                        {{ $post->title }}
-                                                    </a>
-                                                </h3>
-                                                
-                                                <p class="post-excerpt">{{ $post->excerpt }}</p>
-                                                
-                                                <div class="post-meta">
-                                                    <span>
-                                                        <i class="fas fa-user me-1"></i>{{ $post->user->name }}
-                                                    </span>
-                                                    <span>
-                                                        <i class="fas fa-calendar me-1"></i>{{ $post->published_at->format('d/m/Y') }}
-                                                    </span>
+                                            @if($post->category)
+                                                <span class="featured-category" style="background-color: {{ $post->category->color }}">
+                                                    {{ $post->category->name }}
+                                                </span>
+                                            @endif
+                                            
+                                            @if($index === 0)
+                                                <div class="featured-badge">
+                                                    <i class="fas fa-crown"></i>
+                                                    Principal
                                                 </div>
+                                            @endif
+                                        </div>
+                                        
+                                        <div class="featured-content">
+                                            <h3 class="featured-title">
+                                                <a href="{{ route('blog.post.show', $post->slug) }}">
+                                                    {{ $post->title }}
+                                                </a>
+                                            </h3>
+                                            
+                                            <p class="featured-excerpt">{{ $post->excerpt }}</p>
+                                            
+                                            <div class="featured-meta">
+                                                <div class="author-info">
+                                                    <i class="fas fa-user-circle"></i>
+                                                    <span>{{ $post->user->name }}</span>
+                                                </div>
+                                                <div class="date-info">
+                                                    <i class="fas fa-calendar-alt"></i>
+                                                    <span>{{ $post->published_at->format('d/m/Y') }}</span>
+                                                </div>
+                                                @if($post->reading_time)
+                                                    <div class="reading-time">
+                                                        <i class="fas fa-clock"></i>
+                                                        <span>{{ $post->reading_time }} min</span>
+                                                    </div>
+                                                @endif
                                             </div>
-                                        </article>
-                                    </div>
+                                            
+                                            <a href="{{ route('blog.post.show', $post->slug) }}" class="read-more-btn">
+                                                Ler mais <i class="fas fa-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </article>
                                 @endforeach
                             </div>
                         </div>
@@ -199,51 +222,65 @@
 
                 <!-- Artigos -->
                 @if($artigosPosts->count() > 0)
-                    <section class="section" style="background: var(--light-bg);">
+                    <section class="articles-section">
                         <div class="container-fluid">
-                            <div class="section-title">
-                                <h2>📝 Artigos</h2>
-                                <p>Conteúdos aprofundados e análises detalhadas</p>
+                            <div class="section-header">
+                                <div class="section-badge articles">
+                                    <i class="fas fa-newspaper"></i>
+                                    Artigos
+                                </div>
+                                <h2 class="section-title">Análises e Reflexões</h2>
+                                <p class="section-subtitle">Conteúdos aprofundados sobre diversos temas</p>
                             </div>
                             
-                            <div class="row">
+                            <div class="articles-grid">
                                 @foreach($artigosPosts as $post)
-                                    <div class="col-lg-4 col-md-6 mb-4">
-                                        <article class="post-card">
+                                    <article class="article-card">
+                                        <div class="article-image-wrapper">
                                             @if($post->featured_image)
                                                 <img src="{{ asset('storage/' . $post->featured_image) }}" 
-                                                     alt="{{ $post->title }}" loading="lazy">
+                                                     alt="{{ $post->title }}" loading="lazy" class="article-image">
                                             @else
                                                 <img src="{{ asset('images/default-no-image.png') }}" 
-                                                     alt="{{ $post->title }}" loading="lazy">
+                                                     alt="{{ $post->title }}" loading="lazy" class="article-image">
                                             @endif
                                             
-                                            <div class="post-card-body">
-                                                @if($post->category)
-                                                    <span class="post-category" style="background-color: {{ $post->category->color }}">
-                                                        {{ $post->category->name }}
-                                                    </span>
-                                                @endif
-                                                
-                                                <h3 class="post-title">
-                                                    <a href="{{ route('blog.post.show', $post->slug) }}">
-                                                        {{ $post->title }}
-                                                    </a>
-                                                </h3>
-                                                
-                                                <p class="post-excerpt">{{ $post->excerpt }}</p>
-                                                
-                                                <div class="post-meta">
-                                                    <span>
-                                                        <i class="fas fa-user me-1"></i>{{ $post->user->name }}
-                                                    </span>
-                                                    <span>
-                                                        <i class="fas fa-clock me-1"></i>{{ $post->reading_time }} min
-                                                    </span>
+                                            @if($post->category)
+                                                <span class="article-category" style="background-color: {{ $post->category->color }}">
+                                                    {{ $post->category->name }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        
+                                        <div class="article-content">
+                                            <h3 class="article-title">
+                                                <a href="{{ route('blog.post.show', $post->slug) }}">
+                                                    {{ $post->title }}
+                                                </a>
+                                            </h3>
+                                            
+                                            <p class="article-excerpt">{{ $post->excerpt }}</p>
+                                            
+                                            <div class="article-footer">
+                                                <div class="article-meta">
+                                                    <div class="meta-item">
+                                                        <i class="fas fa-user"></i>
+                                                        <span>{{ $post->user->name }}</span>
+                                                    </div>
+                                                    @if($post->reading_time)
+                                                        <div class="meta-item">
+                                                            <i class="fas fa-clock"></i>
+                                                            <span>{{ $post->reading_time }} min</span>
+                                                        </div>
+                                                    @endif
                                                 </div>
+                                                
+                                                <a href="{{ route('blog.post.show', $post->slug) }}" class="article-link">
+                                                    <i class="fas fa-arrow-right"></i>
+                                                </a>
                                             </div>
-                                        </article>
-                                    </div>
+                                        </div>
+                                    </article>
                                 @endforeach
                             </div>
                         </div>
@@ -362,19 +399,34 @@
 
                 <!-- Seção de Notícias em Colunas -->
                 @if($noticiasMundiaisPosts->count() > 0 || $noticiasNacionaisPosts->count() > 0 || $noticiasRegionaisPosts->count() > 0)
-                    <section class="section">
+                    <section class="news-columns-section">
                         <div class="container-fluid">
+                            <div class="section-header">
+                                <div class="section-badge">
+                                    <i class="fas fa-globe-americas"></i>
+                                    Notícias
+                                </div>
+                                <h2 class="section-title">Panorama Geral</h2>
+                                <p class="section-subtitle">Acompanhe as principais notícias do mundo, Brasil e região</p>
+                            </div>
+                            
                             <div class="row">
                                 <!-- Notícias Mundiais -->
                                 @if($noticiasMundiaisPosts->count() > 0)
                                     <div class="col-lg-4 mb-4">
                                         <div class="news-column">
-                                            <h3 class="column-title">🌍 Notícias Mundiais</h3>
+                                            <h3 class="column-title">
+                                                <i class="fas fa-globe"></i>
+                                                Notícias Mundiais
+                                            </h3>
                                             @foreach($noticiasMundiaisPosts as $post)
                                                 <article class="news-item">
                                                     <h5><a href="{{ route('blog.post.show', $post->slug) }}">{{ $post->title }}</a></h5>
                                                     <p class="news-excerpt-small">{{ Str::limit($post->excerpt, 80) }}</p>
-                                                    <small class="text-muted">{{ $post->published_at->diffForHumans() }}</small>
+                                                    <div class="news-time">
+                                                        <i class="fas fa-clock"></i>
+                                                        <span>{{ $post->published_at->diffForHumans() }}</span>
+                                                    </div>
                                                 </article>
                                             @endforeach
                                         </div>
@@ -385,12 +437,18 @@
                                 @if($noticiasNacionaisPosts->count() > 0)
                                     <div class="col-lg-4 mb-4">
                                         <div class="news-column">
-                                            <h3 class="column-title">🇧🇷 Notícias Nacionais</h3>
+                                            <h3 class="column-title">
+                                                <i class="fas fa-flag"></i>
+                                                Notícias Nacionais
+                                            </h3>
                                             @foreach($noticiasNacionaisPosts as $post)
                                                 <article class="news-item">
                                                     <h5><a href="{{ route('blog.post.show', $post->slug) }}">{{ $post->title }}</a></h5>
                                                     <p class="news-excerpt-small">{{ Str::limit($post->excerpt, 80) }}</p>
-                                                    <small class="text-muted">{{ $post->published_at->diffForHumans() }}</small>
+                                                    <div class="news-time">
+                                                        <i class="fas fa-clock"></i>
+                                                        <span>{{ $post->published_at->diffForHumans() }}</span>
+                                                    </div>
                                                 </article>
                                             @endforeach
                                         </div>
@@ -401,12 +459,18 @@
                                 @if($noticiasRegionaisPosts->count() > 0)
                                     <div class="col-lg-4 mb-4">
                                         <div class="news-column">
-                                            <h3 class="column-title">🏙️ Notícias Regionais</h3>
+                                            <h3 class="column-title">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                Notícias Regionais
+                                            </h3>
                                             @foreach($noticiasRegionaisPosts as $post)
                                                 <article class="news-item">
                                                     <h5><a href="{{ route('blog.post.show', $post->slug) }}">{{ $post->title }}</a></h5>
                                                     <p class="news-excerpt-small">{{ Str::limit($post->excerpt, 80) }}</p>
-                                                    <small class="text-muted">{{ $post->published_at->diffForHumans() }}</small>
+                                                    <div class="news-time">
+                                                        <i class="fas fa-clock"></i>
+                                                        <span>{{ $post->published_at->diffForHumans() }}</span>
+                                                    </div>
                                                 </article>
                                             @endforeach
                                         </div>
@@ -588,51 +652,7 @@
                 @endif
 
                 <!-- Categorias -->
-                @if($categories->count() > 0)
-                    <section class="section">
-                        <div class="container-fluid">
-                            <div class="section-title">
-                                <h2>🏷️ Explore por Categoria</h2>
-                                <p>Navegue pelos nossos conteúdos organizados por tema</p>
-                            </div>
-                            
-                            <div class="row">
-                                @foreach($categories as $category)
-                                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                                        <a href="{{ route('blog.category.show', $category->slug) }}" 
-                                           class="text-decoration-none">
-                                            <div class="card h-100 border-0 shadow-sm category-card">
-                                                <div class="card-body text-center">
-                                                    @if($category->image)
-                                                        <img src="{{ asset('storage/' . $category->image) }}" 
-                                                             alt="{{ $category->name }}" 
-                                                             class="rounded-circle mb-3" 
-                                                             style="width: 80px; height: 80px; object-fit: cover;">
-                                                    @else
-                                                        <img src="{{ asset('images/default-no-image.png') }}" 
-                                                             alt="{{ $category->name }}" 
-                                                             class="rounded-circle mb-3" 
-                                                             style="width: 80px; height: 80px; object-fit: cover;">
-                                                    @endif
-                                                    
-                                                    <h5 class="card-title" style="color: {{ $category->color }};">
-                                                        {{ $category->name }}
-                                                    </h5>
-                                                    <p class="card-text text-muted small">
-                                                        {{ $category->description }}
-                                                    </p>
-                                                    <small class="text-muted">
-                                                        {{ $category->posts_count }} {{ Str::plural('post', $category->posts_count) }}
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </section>
-                @endif
+                
             </div>
             
             @if($showSidebar && $sidebarPosition === 'right')
@@ -779,6 +799,383 @@
 
 @section('styles')
 <style>
+    /* Modern Section Headers */
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+    
+    .section-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .section-badge.articles {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+    
+    .section-subtitle {
+        font-size: 1.1rem;
+        color: #6c757d;
+        margin-bottom: 0;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Featured Section */
+    .featured-section {
+        padding: 4rem 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    .featured-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .featured-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .featured-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    
+    .featured-image {
+        position: relative;
+        overflow: hidden;
+        height: 240px;
+        flex-shrink: 0;
+    }
+    
+    .featured-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+    
+    .featured-card:hover .featured-image img {
+        transform: scale(1.05);
+    }
+    
+    .featured-category {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 2;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .featured-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        color: #333;
+        padding: 0.4rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        z-index: 2;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+    
+    .featured-content {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .featured-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        flex-grow: 1;
+    }
+    
+    .featured-title a {
+        color: #2d3748;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .featured-title a:hover {
+        color: #667eea;
+    }
+    
+    .featured-excerpt {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+        font-size: 0.95rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .featured-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .featured-meta > div {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .featured-meta i {
+        color: #667eea;
+        font-size: 0.8rem;
+    }
+    
+    .read-more-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        margin-top: auto;
+        align-self: flex-start;
+    }
+    
+    .read-more-btn:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Articles Section */
+    .articles-section {
+        padding: 4rem 0;
+        background: #fff;
+    }
+    
+    .articles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+        gap: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .article-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        transition: all 0.4s ease;
+        border: 1px solid #f1f3f4;
+    }
+    
+    .article-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        border-color: #667eea;
+    }
+    
+    .article-image-wrapper {
+        position: relative;
+        height: 220px;
+        overflow: hidden;
+    }
+    
+    .article-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .article-card:hover .article-image {
+        transform: scale(1.05);
+    }
+    
+    .article-category {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+    
+    .article-content {
+        padding: 1.5rem;
+    }
+    
+    .article-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+    
+    .article-title a {
+        color: #2d3748;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .article-title a:hover {
+        color: #28a745;
+    }
+    
+    .article-excerpt {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .article-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .article-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .meta-item i {
+        color: #28a745;
+    }
+    
+    .article-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-radius: 50%;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .article-link:hover {
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .featured-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .featured-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .featured-image {
+            height: 200px !important;
+        }
+        
+        .featured-content {
+            padding: 1.2rem;
+        }
+        
+        .featured-title {
+            font-size: 1.1rem;
+        }
+        
+        .featured-excerpt {
+            font-size: 0.9rem;
+            -webkit-line-clamp: 2;
+        }
+        
+        .articles-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .section-subtitle {
+            font-size: 1rem;
+        }
+    }
+
     .category-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
@@ -928,98 +1325,241 @@
     }
     
     /* Colunas de Notícias */
+    .news-columns-section {
+        padding: 4rem 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    }
+    
     .news-column {
         background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
         height: 100%;
+        border: 1px solid #f1f3f4;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .news-column::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .news-column:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        border-color: #667eea;
     }
     
     .column-title {
-        border-bottom: 2px solid #e9ecef;
-        padding-bottom: 0.8rem;
-        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f1f3f4;
+        position: relative;
+    }
+    
+    .column-title i {
         font-size: 1.2rem;
+        color: #667eea;
+    }
+    
+    .column-title::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 50px;
+        height: 2px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
     }
     
     .news-item {
-        padding-bottom: 1rem;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid #f1f3f4;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid #f8f9fa;
+        transition: all 0.3s ease;
+        position: relative;
     }
     
     .news-item:last-child {
         border-bottom: none;
-        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .news-item:hover {
+        background: #f8f9fa;
+        margin: 0 -1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        border-radius: 8px;
     }
     
     .news-item h5 {
-        font-size: 0.95rem;
-        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
         line-height: 1.4;
+        color: #2d3748;
     }
     
     .news-item a {
         color: #2d3748;
         text-decoration: none;
+        transition: color 0.3s ease;
     }
     
     .news-item a:hover {
-        color: #0984e3;
+        color: #667eea;
     }
     
     .news-excerpt-small {
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         color: #6c757d;
-        margin-bottom: 0.5rem;
-        line-height: 1.4;
+        margin-bottom: 0.75rem;
+        line-height: 1.5;
+    }
+    
+    .news-time {
+        font-size: 0.8rem;
+        color: #9ca3af;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .news-time i {
+        color: #667eea;
     }
     
     /* Seções Compactas (Política/Economia) */
+    .compact-sections {
+        padding: 4rem 0;
+        background: white;
+    }
+    
+    .politics-section,
+    .economy-section {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        border: 1px solid #f1f3f4;
+        height: 100%;
+    }
+    
     .section-title-inline {
-        border-bottom: 3px solid #e9ecef;
-        padding-bottom: 0.8rem;
-        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid #f1f3f4;
+        position: relative;
+    }
+    
+    .section-title-inline i {
         font-size: 1.3rem;
+    }
+    
+    .politics-section .section-title-inline i {
+        color: #dc3545;
+    }
+    
+    .economy-section .section-title-inline i {
+        color: #28a745;
+    }
+    
+    .section-title-inline::after {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        width: 60px;
+        height: 3px;
+    }
+    
+    .politics-section .section-title-inline::after {
+        background: linear-gradient(90deg, #dc3545 0%, #e74c3c 100%);
+    }
+    
+    .economy-section .section-title-inline::after {
+        background: linear-gradient(90deg, #28a745 0%, #2ecc71 100%);
     }
     
     .compact-card {
         display: flex;
         gap: 1rem;
-        background: white;
-        border-radius: 10px;
-        padding: 1rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transition: transform 0.3s ease;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.2rem;
+        transition: all 0.3s ease;
         height: 100%;
+        border: 1px solid #e9ecef;
     }
     
     .compact-card:hover {
-        transform: translateY(-2px);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        background: white;
+        border-color: #667eea;
     }
     
     .compact-card img {
-        width: 80px;
-        height: 60px;
+        width: 100px;
+        height: 80px;
         object-fit: cover;
-        border-radius: 6px;
+        border-radius: 8px;
         flex-shrink: 0;
     }
     
+    .compact-content {
+        flex-grow: 1;
+    }
+    
     .compact-content h6 {
-        font-size: 0.9rem;
-        margin-bottom: 0.3rem;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
         line-height: 1.3;
+        color: #2d3748;
     }
     
     .compact-content a {
         color: #2d3748;
         text-decoration: none;
+        transition: color 0.3s ease;
     }
     
     .compact-content a:hover {
-        color: #0984e3;
+        color: #667eea;
+    }
+    
+    .compact-time {
+        font-size: 0.8rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+    }
+    
+    .compact-time i {
+        color: #667eea;
     }
     
     /* Amigos e Apoiadores Carousel */

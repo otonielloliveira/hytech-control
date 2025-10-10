@@ -279,9 +279,6 @@
         @endif
     </div>
     
-    <!-- Footer Spacing -->
-    <div class="pb-5 mb-4"></div>
-
     <!-- Photo Modal with Slider -->
     <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
