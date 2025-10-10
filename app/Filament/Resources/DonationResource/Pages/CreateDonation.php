@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Filament\Resources\DonationResource\Pages;
+
+use App\Filament\Resources\DonationResource;
+use Filament\Actions;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateDonation extends CreateRecord
+{
+    protected static string $resource = DonationResource::class;
+
+    //disable create and delete
+    protected function getHeaderActions(): array
+    {
+        return [];
+    }
+}

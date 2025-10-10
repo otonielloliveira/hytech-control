@@ -11,6 +11,7 @@ use App\Http\Controllers\Client\AuthController;
 use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\DonationController;
 
 Route::get('/', [BlogController::class, 'index'])->name('blog.index');
 
@@ -148,4 +149,19 @@ Route::prefix('loja')->name('store.')->group(function () {
     // AJAX routes for shipping calculation
     Route::post('/frete/calcular', [StoreController::class, 'calculateShipping'])->name('shipping.calculate');
     Route::post('/frete/aplicar', [StoreController::class, 'applyShipping'])->name('shipping.apply');
+});
+
+// Donation Routes (Doações)
+Route::prefix('doacoes')->name('donations.')->group(function () {
+    Route::get('/', [DonationController::class, 'index'])->name('index');
+    Route::post('/', [DonationController::class, 'store'])->name('store');
+    Route::get('/{id}/pagamento', [DonationController::class, 'payment'])->name('payment');
+    Route::get('/{id}/status', [DonationController::class, 'checkStatus'])->name('status');
+    Route::get('/{id}/sucesso', [DonationController::class, 'success'])->name('success');
+    
+    // Development/Test routes
+    Route::get('/{id}/simular', [DonationController::class, 'simulatePayment'])->name('simulate');
+    
+    // Webhook for payment notifications
+    Route::post('/webhook', [DonationController::class, 'webhook'])->name('webhook');
 });

@@ -1034,6 +1034,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-warning" href="{{ route('donations.index') }}">
+                            <i class="fas fa-heart me-1"></i>Ajudar Projeto
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#">
                             <i class="fas fa-envelope me-1"></i>Contatos
                         </a>

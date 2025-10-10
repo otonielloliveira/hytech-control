@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'pix' => [
+        'key' => env('PIX_KEY', 'seu@email.com'),
+        'merchant_name' => env('PIX_MERCHANT_NAME', 'Seu Projeto'),
+        'merchant_city' => env('PIX_MERCHANT_CITY', 'Sua Cidade'),
+        'merchant_postal_code' => env('PIX_MERCHANT_POSTAL_CODE', '12345678'),
+    ],
+
 ];
