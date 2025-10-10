@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Donation;
+use App\Services\Payment\PaymentManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -10,6 +11,12 @@ use Carbon\Carbon;
 
 class DonationController extends Controller
 {
+    protected $paymentManager;
+
+    public function __construct(PaymentManager $paymentManager)
+    {
+        $this->paymentManager = $paymentManager;
+    }
     /**
      * Exibe o formulário de doação
      */
@@ -49,15 +56,43 @@ class DonationController extends Controller
             'phone' => $request->phone,
             'amount' => $request->amount,
             'message' => $request->message,
+            'status' => Donation::STATUS_PENDING,
             'expires_at' => Carbon::now()->addMinutes(30), // Expira em 30 minutos
             'ip_address' => $request->ip(),
         ]);
 
-        // Gerar código PIX
-        $pixCode = $donation->generatePixCode();
+        // Preparar dados do pagador
+        $payerData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'document' => '', // Pode ser implementado depois
+        ];
 
-        return redirect()->route('donations.payment', $donation->id)
-                        ->with('success', 'Doação criada com sucesso! Use o QR Code para realizar o pagamento.');
+        // Criar pagamento PIX usando o PaymentManager
+        $paymentResult = $this->paymentManager->createPixPayment(
+            $donation, 
+            $payerData, 
+            $request->amount,
+            [
+                'description' => 'Doação para o projeto',
+                'metadata' => [
+                    'donation_id' => $donation->id,
+                    'message' => $request->message,
+                ]
+            ]
+        );
+
+        if ($paymentResult['success']) {
+            return redirect()->route('donations.payment', $donation->id)
+                            ->with('success', 'Doação criada com sucesso! Use o QR Code para realizar o pagamento.');
+        } else {
+            $donation->update(['status' => Donation::STATUS_CANCELLED]);
+            
+            return back()
+                ->withErrors(['payment' => $paymentResult['error'] ?? 'Erro ao processar pagamento'])
+                ->withInput();
+        }
     }
 
     /**
@@ -66,25 +101,33 @@ class DonationController extends Controller
     public function payment($id)
     {
         $donation = Donation::findOrFail($id);
+        $payment = $donation->latestPayment();
 
         // Verificar se não expirou
-        if ($donation->isExpired()) {
+        if ($donation->isExpired() || ($payment && $payment->isExpired())) {
             $donation->markAsExpired();
+            if ($payment) {
+                $payment->update(['status' => 'cancelled']);
+            }
+            
             return redirect()->route('donations.index')
                            ->with('error', 'Esta doação expirou. Por favor, faça uma nova doação.');
         }
 
-        // Gerar QR Code
+        // Gerar QR Code se tiver código PIX
         $qrCode = null;
-        if ($donation->pix_code) {
+        if ($payment && $payment->pix_code) {
             $qrCode = QrCode::size(300)
                            ->style('round')
                            ->eye('circle')
                            ->margin(1)
-                           ->generate($donation->pix_code);
+                           ->generate($payment->pix_code);
+        } elseif ($payment && $payment->qr_code_url) {
+            // Se for uma URL de QR Code, use diretamente
+            $qrCode = '<img src="' . $payment->qr_code_url . '" alt="QR Code PIX" class="img-fluid" />';
         }
 
-        return view('donations.payment', compact('donation', 'qrCode'));
+        return view('donations.payment', compact('donation', 'payment', 'qrCode'));
     }
 
     /**
@@ -93,19 +136,40 @@ class DonationController extends Controller
     public function checkStatus($id)
     {
         $donation = Donation::findOrFail($id);
+        $payment = $donation->latestPayment();
 
-        // Aqui você integraria com seu gateway de pagamento para verificar o status
-        // Por enquanto, vou simular uma verificação básica
-        
-        if ($donation->isExpired()) {
+        if ($payment) {
+            // Verificar status no gateway
+            $statusResult = $this->paymentManager->checkPaymentStatus($payment);
+            
+            if ($statusResult['success'] && $statusResult['status_changed']) {
+                // Atualizar doação baseado no status do pagamento
+                if ($payment->fresh()->isApproved()) {
+                    $donation->update([
+                        'status' => Donation::STATUS_PAID,
+                        'paid_at' => now(),
+                        'payment_id' => $payment->gateway_transaction_id
+                    ]);
+                } elseif ($payment->fresh()->isRejected()) {
+                    $donation->update(['status' => Donation::STATUS_CANCELLED]);
+                }
+            }
+        }
+
+        // Verificar se expirou
+        if ($donation->isExpired() || ($payment && $payment->isExpired())) {
             $donation->markAsExpired();
+            if ($payment) {
+                $payment->update(['status' => 'cancelled']);
+            }
         }
 
         return response()->json([
-            'status' => $donation->status,
-            'status_label' => $donation->status_label,
-            'is_paid' => $donation->isPaid(),
-            'is_expired' => $donation->isExpired(),
+            'status' => $donation->fresh()->status,
+            'status_label' => $donation->fresh()->status_label,
+            'is_paid' => $donation->fresh()->isPaid(),
+            'is_expired' => $donation->fresh()->isExpired(),
+            'payment_status' => $payment ? $payment->fresh()->status : null,
         ]);
     }
 
@@ -143,16 +207,22 @@ class DonationController extends Controller
      */
     public function webhook(Request $request)
     {
-        // Aqui você processaria as notificações do seu gateway de pagamento
-        // Exemplo para diferentes gateways:
-        
-        $paymentId = $request->input('payment_id');
-        $status = $request->input('status');
-        
-        if ($paymentId && $status === 'approved') {
-            $donation = Donation::where('payment_id', $paymentId)->first();
-            if ($donation && $donation->isPending()) {
-                $donation->markAsPaid();
+        // Processar webhook usando o PaymentManager
+        $result = $this->paymentManager->processWebhook(
+            $request->all(),
+            $request->header('X-Gateway-Name') // Gateway pode enviar seu nome no header
+        );
+
+        if ($result['success'] && isset($result['payment'])) {
+            $payment = $result['payment'];
+            $donation = $payment->payable;
+
+            if ($donation && $payment->isApproved()) {
+                $donation->update([
+                    'status' => Donation::STATUS_PAID,
+                    'paid_at' => now(),
+                    'payment_id' => $payment->gateway_transaction_id
+                ]);
             }
         }
 

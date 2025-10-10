@@ -13,7 +13,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Register PaymentManager
+        $this->app->singleton(\App\Services\PaymentManager::class, function ($app) {
+            return new \App\Services\PaymentManager();
+        });
     }
 
     /**

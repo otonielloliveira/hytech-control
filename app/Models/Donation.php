@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Carbon\Carbon;
 
 class Donation extends Model
@@ -38,6 +39,17 @@ class Donation extends Model
     const STATUS_PAID = 'paid';
     const STATUS_CANCELLED = 'cancelled';
     const STATUS_EXPIRED = 'expired';
+
+    // Relationships
+    public function payments(): MorphMany
+    {
+        return $this->morphMany(Payment::class, 'payable');
+    }
+
+    public function latestPayment()
+    {
+        return $this->payments()->latest()->first();
+    }
 
     // Scopes
     public function scopePending($query)

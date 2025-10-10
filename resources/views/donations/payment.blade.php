@@ -35,7 +35,7 @@
                                         <input type="text" 
                                                class="form-control text-center small" 
                                                id="pixCode" 
-                                               value="{{ $donation->pix_code }}" 
+                                               value="{{ $payment->pix_code ?? '' }}" 
                                                readonly>
                                         <button class="btn btn-outline-primary" 
                                                 type="button" 
@@ -108,7 +108,7 @@
                                     <strong>Expira em:</strong>
                                     <p class="mb-0 text-warning">
                                         <i class="fas fa-clock me-1"></i>
-                                        <span id="countdown">{{ $donation->expires_at->format('d/m/Y H:i:s') }}</span>
+                                        <span id="countdown">{{ $payment->expires_at ? $payment->expires_at->format('d/m/Y H:i:s') : $donation->expires_at->format('d/m/Y H:i:s') }}</span>
                                     </p>
                                 </div>
                             </div>
@@ -249,7 +249,7 @@ function copyPixCode() {
 }
 
 function startCountdown() {
-    const expiresAt = new Date('{{ $donation->expires_at->toISOString() }}');
+    const expiresAt = new Date('{{ ($payment->expires_at ?? $donation->expires_at)->toISOString() }}');
     const countdownElement = document.getElementById('countdown');
     
     countdownInterval = setInterval(() => {

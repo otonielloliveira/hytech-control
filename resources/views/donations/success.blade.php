@@ -34,7 +34,7 @@
 
                         <div class="col-md-6">
                             <strong>Data do Pagamento:</strong>
-                            <p class="mb-0">{{ $donation->paid_at->format('d/m/Y H:i:s') }}</p>
+                            <p class="mb-0">{{ ($donation->payments->first()?->paid_at ?? $donation->paid_at)?->format('d/m/Y H:i:s') ?? 'Processando...' }}</p>
                         </div>
 
                         <div class="col-md-6">
@@ -62,9 +62,22 @@
                         <div class="col-md-6">
                             <strong>Método de Pagamento:</strong>
                             <p class="mb-0">
-                                <i class="fas fa-money-bill-wave me-1"></i>PIX
+                                <i class="fas fa-money-bill-wave me-1"></i>
+                                @if($donation->payments->first())
+                                    {{ ucfirst($donation->payments->first()->payment_method) }} 
+                                    via {{ $donation->payments->first()->gateway }}
+                                @else
+                                    PIX
+                                @endif
                             </p>
                         </div>
+
+                        @if($donation->payments->first()?->transaction_id)
+                        <div class="col-md-6">
+                            <strong>ID da Transação:</strong>
+                            <p class="mb-0 font-monospace small">{{ $donation->payments->first()->transaction_id }}</p>
+                        </div>
+                        @endif
 
                         <div class="col-md-6">
                             <strong>Status:</strong>
