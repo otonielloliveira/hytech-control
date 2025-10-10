@@ -10,7 +10,12 @@ class AlbumController extends Controller
 {
     public function index(): View
     {
-        $albums = Album::getActiveAlbums(12);
+        $albums = Album::active()
+            ->ordered()
+            ->with(['photos' => function ($query) {
+                $query->take(4);
+            }])
+            ->paginate(12);
         
         return view('albums.index', compact('albums'));
     }

@@ -51,6 +51,53 @@ class AlbumResource extends Resource
                             ->columnSpanFull(),
                     ])->columns(2),
                     
+                Forms\Components\Section::make('Upload Múltiplo Simples')
+                    ->schema([
+                        Forms\Components\FileUpload::make('bulk_photos')
+                            ->label('Upload em Lote')
+                            ->image()
+                            ->multiple()
+                            ->directory('albums/photos')
+                            ->imageEditor()
+                            ->reorderable()
+                            ->helperText('Selecione múltiplas imagens para adicionar rapidamente ao álbum. Todas serão adicionadas sem título específico.')
+                            ->columnSpanFull(),
+                    ])->collapsible()
+                    ->collapsed(),
+                    
+                Forms\Components\Section::make('Fotos do Álbum (Individual)')
+                    ->schema([
+                        Forms\Components\Repeater::make('photos')
+                            ->label('Fotos')
+                            ->relationship('photos')
+                            ->schema([
+                                Forms\Components\FileUpload::make('image_path')
+                                    ->label('Imagem')
+                                    ->image()
+                                    ->directory('albums/photos')
+                                    ->required()
+                                    ->imageEditor()
+                                    ->columnSpanFull(),
+                                    
+                                Forms\Components\TextInput::make('title')
+                                    ->label('Título (opcional)')
+                                    ->maxLength(255),
+                                    
+                                Forms\Components\Toggle::make('is_featured')
+                                    ->label('Foto destacada')
+                                    ->default(false),
+                            ])
+                            ->columns(2)
+                            ->reorderable('order')
+                            ->orderColumn('order')
+                            ->collapsible()
+                            ->cloneable()
+                            ->addActionLabel('Adicionar Foto')
+                            ->defaultItems(0)
+                            ->columnSpanFull(),
+                    ])->collapsible()
+                    ->collapsed(),
+                    
                 Forms\Components\Section::make('Detalhes do Evento')
                     ->schema([
                         Forms\Components\DatePicker::make('event_date')
