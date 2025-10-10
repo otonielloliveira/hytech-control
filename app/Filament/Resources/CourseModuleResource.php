@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CourseModuleResource\Pages;
+use App\Filament\Resources\CourseModuleResource\RelationManagers;
 use App\Models\CourseModule;
 use App\Models\Course;
 use Filament\Forms;
@@ -128,7 +129,7 @@ class CourseModuleResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\LessonsRelationManager::class,
         ];
     }
 

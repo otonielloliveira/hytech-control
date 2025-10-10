@@ -26,36 +26,20 @@ class CourseLessonResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Aulas do Curso';
 
-    protected static ?string $navigationGroup = 'Gestão de Cursos';
+    protected static ?string $navigationGroup = 'Gestão de Cursos (Avançado)';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 10;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('course_id')
-                    ->label('Curso')
-                    ->options(Course::all()->pluck('title', 'id'))
-                    ->required()
-                    ->searchable()
-                    ->preload()
-                    ->reactive()
-                    ->afterStateUpdated(fn ($state, callable $set) => $set('course_module_id', null)),
-                
                 Forms\Components\Select::make('course_module_id')
                     ->label('Módulo')
-                    ->options(function (callable $get) {
-                        $courseId = $get('course_id');
-                        if (!$courseId) return [];
-                        
-                        return CourseModule::where('course_id', $courseId)
-                            ->pluck('title', 'id');
-                    })
-                    ->required()
+                    ->relationship('module', 'title')
                     ->searchable()
                     ->preload()
-                    ->reactive(),
+                    ->required(),
                 
                 Forms\Components\TextInput::make('title')
                     ->label('Título da Aula')
@@ -116,12 +100,12 @@ class CourseLessonResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('course.title')
+                Tables\Columns\TextColumn::make('module.course.title')
                     ->label('Curso')
                     ->sortable()
                     ->searchable(),
                 
-                Tables\Columns\TextColumn::make('courseModule.title')
+                Tables\Columns\TextColumn::make('module.title')
                     ->label('Módulo')
                     ->sortable()
                     ->searchable(),
@@ -159,12 +143,8 @@ class CourseLessonResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('course')
-                    ->relationship('course', 'title')
-                    ->label('Curso'),
-                
-                Tables\Filters\SelectFilter::make('courseModule')
-                    ->relationship('courseModule', 'title')
+                Tables\Filters\SelectFilter::make('module')
+                    ->relationship('module', 'title')
                     ->label('Módulo'),
                 
                 Tables\Filters\TernaryFilter::make('is_published')

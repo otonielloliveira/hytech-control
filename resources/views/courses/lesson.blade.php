@@ -296,19 +296,46 @@
 
 .video-container {
     position: relative;
-    height: 60vh;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
     background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 90%;
+    border: none;
 }
 
 .youtube-player iframe,
-.vimeo-player iframe,
-.video-player video {
+.vimeo-player iframe {
     width: 100%;
     height: 100%;
 }
 
-.no-video {
+.video-player video {
+    width: 100%;
     height: 100%;
+    object-fit: contain; /* Garante que o vídeo não seja cortado */
+}
+
+.no-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a1a;
+    color: #fff;
 }
 
 .lesson-sidebar {
@@ -375,11 +402,33 @@
     }
     
     .video-container {
-        height: 40vh;
+        padding-bottom: 56.25%; /* Mantém 16:9 em mobile */
     }
     
     .lesson-actions {
         margin-top: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .video-container {
+        padding-bottom: 56.25%; /* 16:9 aspect ratio para mobile */
+        border-radius: 4px;
+    }
+    
+    .lesson-info-card {
+        padding: 15px;
+        margin-top: 15px;
+    }
+    
+    .modules-section {
+        max-height: 250px;
+    }
+}
+
+@media (max-width: 576px) {
+    .video-container {
+        padding-bottom: 60%; /* Ajuste mais quadrado para telas muito pequenas */
     }
 }
 
