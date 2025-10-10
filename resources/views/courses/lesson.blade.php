@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.blog')
 
 @section('title', $lesson->title . ' - ' . $course->title)
 
