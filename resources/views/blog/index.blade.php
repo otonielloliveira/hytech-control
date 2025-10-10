@@ -128,6 +128,126 @@
         </div>
     </section>
 
+    <!-- Seção de Produtos em Destaque -->
+    @if($featuredProducts->count() > 0)
+    <section class="store-featured-section py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container-fluid">
+            <div class="text-center mb-5">
+                <div class="d-inline-flex align-items-center bg-white bg-opacity-90 rounded-pill px-4 py-2 mb-3">
+                    <i class="fas fa-shopping-bag text-primary me-2"></i>
+                    <span class="fw-bold text-primary">Loja Oficial</span>
+                </div>
+                <h2 class="h1 text-white fw-bold mb-3">Produtos Exclusivos</h2>
+                <p class="text-white-50 fs-5 mb-0">Descubra nossa seleção especial de produtos únicos</p>
+            </div>
+            
+            <div class="row g-4 mb-4">
+                @foreach($featuredProducts as $product)
+                <div class="col-lg-3 col-md-6">
+                    <div class="card product-card h-100 border-0 shadow-lg" style="border-radius: 15px; overflow: hidden; transform: translateY(0); transition: all 0.3s ease;">
+                        <div class="position-relative">
+                            <div class="product-image" style="height: 250px; overflow: hidden;">
+                                @if($product->images && count($product->images) > 0)
+                                    <img src="{{ Storage::url($product->images[0]) }}" 
+                                         alt="{{ $product->name }}" 
+                                         class="card-img-top w-100 h-100" 
+                                         style="object-fit: cover; transition: transform 0.3s ease;">
+                                @else
+                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                                        <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                                    </div>
+                                @endif
+                            </div>
+                            
+                            @if($product->isOnSale())
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge bg-danger rounded-pill">
+                                        -{{ $product->getDiscountPercentage() }}%
+                                    </span>
+                                </div>
+                            @endif
+                            
+                            @if(!$product->in_stock)
+                                <div class="position-absolute top-0 start-0 end-0 bottom-0 d-flex align-items-center justify-content-center" 
+                                     style="background: rgba(0,0,0,0.7); border-radius: 15px;">
+                                    <span class="badge bg-dark fs-6 px-3 py-2">Esgotado</span>
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold text-dark mb-2">{{ $product->name }}</h5>
+                            
+                            @if($product->short_description)
+                                <p class="card-text text-muted small mb-3" style="line-height: 1.4;">
+                                    {{ Str::limit($product->short_description, 80) }}
+                                </p>
+                            @endif
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    @if($product->isOnSale())
+                                        <div>
+                                            <span class="h5 text-danger fw-bold mb-0">
+                                                R$ {{ number_format($product->sale_price, 2, ',', '.') }}
+                                            </span>
+                                            <br>
+                                            <small class="text-muted text-decoration-line-through">
+                                                R$ {{ number_format($product->price, 2, ',', '.') }}
+                                            </small>
+                                        </div>
+                                    @else
+                                        <span class="h5 text-primary fw-bold mb-0">
+                                            R$ {{ number_format($product->price, 2, ',', '.') }}
+                                        </span>
+                                    @endif
+                                    
+                                    @if($product->manage_stock && $product->stock_quantity <= 5 && $product->in_stock)
+                                        <small class="text-warning fw-semibold">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            Últimas {{ $product->stock_quantity }}
+                                        </small>
+                                    @endif
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    @if($product->in_stock)
+                                        <button class="btn btn-primary btn-sm rounded-pill fw-semibold add-to-cart-homepage" 
+                                                data-product-id="{{ $product->id }}"
+                                                style="transition: all 0.3s ease;">
+                                            <i class="fas fa-shopping-cart me-2"></i>
+                                            Adicionar ao Carrinho
+                                        </button>
+                                        <a href="{{ route('store.product.show', $product->sku) }}" 
+                                           class="btn btn-outline-primary btn-sm rounded-pill">
+                                            <i class="fas fa-eye me-2"></i>
+                                            Ver Detalhes
+                                        </a>
+                                    @else
+                                        <button class="btn btn-secondary btn-sm rounded-pill" disabled>
+                                            <i class="fas fa-times me-2"></i>
+                                            Indisponível
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            
+            <div class="text-center">
+                <a href="{{ route('store.index') }}" 
+                   class="btn btn-light btn-lg rounded-pill px-5 py-3 fw-bold">
+                    <i class="fas fa-store me-2"></i>
+                    Ver Todos os Produtos
+                </a>
+            </div>
+        </div>
+    </section>
+    @endif
+
     <!-- Main Content with Sidebar -->
     <div class="container-fluid mt-4">
         @php
@@ -1709,6 +1829,70 @@
         50% { transform: scale(1.05); }
         100% { transform: scale(1); }
     }
+    
+    /* Estilos para seção de produtos */
+    .store-featured-section {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .store-featured-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.1)" points="0,1000 1000,0 1000,1000"/></svg>');
+        background-size: cover;
+    }
+    
+    .product-card {
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .product-card:hover {
+        transform: translateY(-10px) !important;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important;
+    }
+    
+    .product-card:hover .product-image img {
+        transform: scale(1.1);
+    }
+    
+    .add-to-cart-homepage {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .add-to-cart-homepage:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .add-to-cart-homepage.loading {
+        pointer-events: none;
+    }
+    
+    .add-to-cart-homepage.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid transparent;
+        border-top: 2px solid #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>
 @endsection
 
@@ -1848,5 +2032,91 @@
         value = value.replace(/(\d)(\d{4})$/, '$1-$2');
         this.value = value;
     });
+
+    // Add to cart functionality for homepage
+    $('.add-to-cart-homepage').on('click', function(e) {
+        e.preventDefault();
+        
+        const button = $(this);
+        const productId = button.data('product-id');
+        const originalText = button.html();
+        
+        // Disable button and show loading
+        button.addClass('loading').prop('disabled', true).html('');
+        
+        $.ajax({
+            url: `/loja/carrinho/adicionar/${productId}`,
+            type: 'POST',
+            data: {
+                quantity: 1
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Show success notification
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Produto adicionado!',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                    
+                    // Update cart counter if exists
+                    updateCartCounter(response.cart_totals.items_count);
+                    
+                    // Change button temporarily
+                    button.removeClass('btn-primary').addClass('btn-success')
+                          .html('<i class="fas fa-check me-2"></i>Adicionado!');
+                    
+                    setTimeout(() => {
+                        button.removeClass('btn-success').addClass('btn-primary')
+                              .html(originalText);
+                    }, 2000);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: response.message
+                    });
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'Erro ao adicionar produto ao carrinho';
+                
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: errorMessage
+                });
+            },
+            complete: function() {
+                button.removeClass('loading').prop('disabled', false);
+                if (!button.hasClass('btn-success')) {
+                    button.html(originalText);
+                }
+            }
+        });
+    });
+
+    function updateCartCounter(count) {
+        const counter = $('.cart-counter');
+        if (counter.length) {
+            counter.text(count);
+            if (count > 0) {
+                counter.removeClass('d-none').addClass('d-inline');
+            } else {
+                counter.removeClass('d-inline').addClass('d-none');
+            }
+        }
+    }
 </script>
 @endsection

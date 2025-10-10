@@ -10,6 +10,7 @@ use App\Models\BlogConfig;
 use App\Models\Newsletter;
 use App\Models\Comment;
 use App\Models\PetitionSignature;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -103,6 +104,14 @@ class BlogController extends Controller
             $query->where('status', 'published');
         }])->get();
         
+        // Produtos em destaque para a homepage
+        $featuredProducts = Product::active()
+            ->featured()
+            ->inStock()
+            ->orderBy('sort_order')
+            ->take(4)
+            ->get();
+        
         return view('blog.index', compact(
             'config',
             'banners', 
@@ -117,7 +126,8 @@ class BlogController extends Controller
             'politicaPosts',
             'economiaPosts',
             'amigosApoiadoresPosts',
-            'categories'
+            'categories',
+            'featuredProducts'
         ));
     }
 

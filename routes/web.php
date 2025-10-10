@@ -9,6 +9,7 @@ use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\Client\AuthController;
 use App\Http\Controllers\Client\DashboardController;
+use App\Http\Controllers\StoreController;
 
 Route::get('/', [BlogController::class, 'index'])->name('blog.index');
 
@@ -97,6 +98,30 @@ Route::prefix('cliente')->name('client.')->group(function () {
         Route::get('/preferencias', [DashboardController::class, 'preferences'])->name('preferences');
         Route::post('/preferencias', [DashboardController::class, 'updatePreferences'])->name('preferences.update');
     });
+});
+
+// Store Routes (Loja)
+Route::prefix('loja')->name('store.')->group(function () {
+    Route::get('/', [StoreController::class, 'index'])->name('index');
+    Route::get('/produto/{product:sku}', [StoreController::class, 'show'])->name('product.show');
+    
+    // Cart routes
+    Route::get('/carrinho', [StoreController::class, 'cart'])->name('cart');
+    Route::post('/carrinho/adicionar/{product}', [StoreController::class, 'addToCart'])->name('cart.add');
+    Route::patch('/carrinho/atualizar', [StoreController::class, 'updateCart'])->name('cart.update');
+    Route::delete('/carrinho/remover', [StoreController::class, 'removeFromCart'])->name('cart.remove');
+    Route::delete('/carrinho/limpar', [StoreController::class, 'clearCart'])->name('cart.clear');
+    
+    // Checkout routes
+    Route::get('/checkout', [StoreController::class, 'checkout'])->name('checkout');
+    Route::post('/checkout/processar', [StoreController::class, 'processCheckout'])->name('checkout.process');
+    
+    // Order routes
+    Route::get('/pedido/{order}/sucesso', [StoreController::class, 'orderSuccess'])->name('order.success');
+    
+    // AJAX routes for shipping calculation
+    Route::post('/frete/calcular', [StoreController::class, 'calculateShipping'])->name('shipping.calculate');
+    Route::post('/frete/aplicar', [StoreController::class, 'applyShipping'])->name('shipping.apply');
 });
 
 // Admin redirect
