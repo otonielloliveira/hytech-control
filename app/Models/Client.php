@@ -52,6 +52,50 @@ class Client extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    public function courseEnrollments(): HasMany
+    {
+        return $this->hasMany(CourseEnrollment::class);
+    }
+
+    public function activeCourseEnrollments(): HasMany
+    {
+        return $this->courseEnrollments()->where('status', 'active');
+    }
+
+    public function completedCourseEnrollments(): HasMany
+    {
+        return $this->courseEnrollments()->where('status', 'completed');
+    }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'course_enrollments')
+                    ->withPivot(['status', 'progress_percentage', 'started_at', 'completed_at', 'certificate_number'])
+                    ->withTimestamps();
+    }
+
+    public function isEnrolledIn($courseId): bool
+    {
+        return $this->courseEnrollments()->where('course_id', $courseId)->exists();
+    }
+
+    public function getEnrollmentFor($courseId)
+    {
+        return $this->courseEnrollments()->where('course_id', $courseId)->first();
+    }
+
+    public function getCourseProgress($courseId): int
+    {
+        $enrollment = $this->getEnrollmentFor($courseId);
+        return $enrollment ? $enrollment->progress_percentage : 0;
+    }
+
+    public function hasCertificateFor($courseId): bool
+    {
+        $enrollment = $this->getEnrollmentFor($courseId);
+        return $enrollment && $enrollment->certificate_issued_at;
+    }
+
     public function getAvatarUrlAttribute(): string
     {
         if ($this->avatar) {

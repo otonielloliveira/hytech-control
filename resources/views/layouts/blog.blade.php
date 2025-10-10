@@ -1004,6 +1004,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('courses.index') }}">
+                            <i class="fas fa-graduation-cap me-1"></i>Cursos
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('store.index') }}">
                             <i class="fas fa-shopping-bag me-1"></i>Loja
                         </a>

@@ -23,43 +23,7 @@
     <div class="container-fluid mt-4">
         <div class="row">
             <!-- Menu lateral do cliente -->
-            <div class="col-lg-3">
-                <div class="client-sidebar">
-                    <div class="sidebar-header">
-                        <h5><i class="fas fa-user-circle me-2"></i>Minha Conta</h5>
-                    </div>
-                    <nav class="client-nav">
-                        <a href="{{ route('client.dashboard') }}" class="nav-item">
-                            <i class="fas fa-tachometer-alt"></i>
-                            Dashboard
-                        </a>
-                        <a href="{{ route('client.profile') }}" class="nav-item">
-                            <i class="fas fa-user-edit"></i>
-                            Meu Perfil
-                        </a>
-                        <a href="{{ route('client.addresses') }}" class="nav-item active">
-                            <i class="fas fa-map-marker-alt"></i>
-                            Endereços
-                        </a>
-                        <a href="{{ route('client.preferences') }}" class="nav-item">
-                            <i class="fas fa-cog"></i>
-                            Preferências
-                        </a>
-                        <a href="{{ route('blog.index') }}" class="nav-item">
-                            <i class="fas fa-home"></i>
-                            Voltar ao Blog
-                        </a>
-                        <hr>
-                        <form action="{{ route('client.logout') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="nav-item logout-btn">
-                                <i class="fas fa-sign-out-alt"></i>
-                                Sair da Conta
-                            </button>
-                        </form>
-                    </nav>
-                </div>
-            </div>
+            @include('client.dashboard.partial-menu')
 
             <!-- Conteúdo principal -->
             <div class="col-lg-9">

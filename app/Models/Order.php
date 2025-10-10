@@ -125,6 +125,19 @@ class Order extends Model
         };
     }
 
+    public function getStatusColor()
+    {
+        return match($this->status) {
+            'pending' => 'warning',
+            'processing' => 'info',
+            'shipped' => 'primary',
+            'delivered' => 'success',
+            'cancelled' => 'danger',
+            'refunded' => 'secondary',
+            default => 'secondary'
+        };
+    }
+
     public function getPaymentStatusLabel()
     {
         return match($this->payment_status) {

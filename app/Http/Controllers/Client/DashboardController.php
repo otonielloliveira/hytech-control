@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\ClientAddress;
+use App\Models\Order;
+use App\Models\CourseEnrollment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +16,27 @@ class DashboardController extends Controller
     public function index()
     {
         $client = Auth::guard('client')->user();
-        return view('client.dashboard.index', compact('client'));
+        
+        // Buscar estatísticas para o dashboard
+        $enrollments = $client->courseEnrollments()
+            ->with('course')
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get();
+            
+        $recentOrders = $client->orders()
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get();
+            
+        $stats = [
+            'total_courses' => $client->courseEnrollments()->count(),
+            'active_courses' => $client->courseEnrollments()->where('status', 'active')->count(),
+            'completed_courses' => $client->courseEnrollments()->where('status', 'completed')->count(),
+            'total_orders' => $client->orders()->count(),
+        ];
+        
+        return view('client.dashboard.index', compact('client', 'enrollments', 'recentOrders', 'stats'));
     }
 
     public function profile()
