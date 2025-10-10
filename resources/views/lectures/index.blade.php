@@ -5,7 +5,7 @@
 
 @section('content')
     <!-- Page Header -->
-@php
+    @php
         $banners = App\Models\Banner::where('is_active', true)->orderBy('sort_order')->get();
     @endphp
     @if ($banners->count() > 0)
@@ -225,7 +225,7 @@
             </div>
 
             <!-- Sidebar -->
-            
+
         </div>
     </div>
 

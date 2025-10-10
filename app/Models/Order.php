@@ -32,6 +32,8 @@ class Order extends Model
         'shipped_at',
         'delivered_at',
         'tracking_info',
+        'tracking_code',
+        'tracking_url',
     ];
 
     protected $casts = [
@@ -134,5 +136,73 @@ class Order extends Model
             'refunded' => 'Reembolsado',
             default => 'Desconhecido'
         };
+    }
+
+    /**
+     * Check if order is shipped
+     */
+    public function isShipped(): bool
+    {
+        return $this->shipped_at !== null;
+    }
+
+    /**
+     * Check if order is delivered
+     */
+    public function isDelivered(): bool
+    {
+        return $this->delivered_at !== null;
+    }
+
+    /**
+     * Check if order has tracking information
+     */
+    public function hasTracking(): bool
+    {
+        return !empty($this->tracking_code) || !empty($this->tracking_url);
+    }
+
+    /**
+     * Get tracking status
+     */
+    public function getTrackingStatus(): string
+    {
+        if ($this->isDelivered()) {
+            return 'delivered';
+        }
+        
+        if ($this->isShipped()) {
+            return 'shipped';
+        }
+        
+        if ($this->status === 'processing') {
+            return 'processing';
+        }
+        
+        return 'pending';
+    }
+
+    /**
+     * Mark order as shipped
+     */
+    public function markAsShipped(?string $trackingCode = null, ?string $trackingUrl = null): void
+    {
+        $this->update([
+            'status' => 'shipped',
+            'shipped_at' => now(),
+            'tracking_code' => $trackingCode,
+            'tracking_url' => $trackingUrl,
+        ]);
+    }
+
+    /**
+     * Mark order as delivered
+     */
+    public function markAsDelivered(): void
+    {
+        $this->update([
+            'status' => 'delivered',
+            'delivered_at' => now(),
+        ]);
     }
 }

@@ -94,6 +94,10 @@ Route::prefix('cliente')->name('client.')->group(function () {
         Route::put('/enderecos/{address}', [DashboardController::class, 'updateAddress'])->name('addresses.update');
         Route::delete('/enderecos/{address}', [DashboardController::class, 'deleteAddress'])->name('addresses.delete');
         
+        // Orders routes
+        Route::get('/pedidos', [DashboardController::class, 'orders'])->name('orders');
+        Route::get('/pedidos/{order}', [DashboardController::class, 'orderDetail'])->name('orders.detail');
+        
         // Preferences routes
         Route::get('/preferencias', [DashboardController::class, 'preferences'])->name('preferences');
         Route::post('/preferencias', [DashboardController::class, 'updatePreferences'])->name('preferences.update');

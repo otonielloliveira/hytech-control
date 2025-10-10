@@ -151,6 +151,31 @@ class OrderResource extends Resource
                             ->rows(3),
                     ])
                     ->columns(2),
+                    
+                Forms\Components\Section::make('Rastreamento')
+                    ->schema([
+                        Forms\Components\TextInput::make('tracking_code')
+                            ->label('Código de Rastreamento')
+                            ->maxLength(255)
+                            ->placeholder('Ex: BR123456789BR'),
+                            
+                        Forms\Components\TextInput::make('tracking_url')
+                            ->label('URL de Rastreamento')
+                            ->url()
+                            ->maxLength(500)
+                            ->placeholder('https://rastreamento.correios.com.br/...'),
+                            
+                        Forms\Components\DateTimePicker::make('shipped_at')
+                            ->label('Data de Envio')
+                            ->displayFormat('d/m/Y H:i')
+                            ->seconds(false),
+                            
+                        Forms\Components\DateTimePicker::make('delivered_at')
+                            ->label('Data de Entrega')
+                            ->displayFormat('d/m/Y H:i')
+                            ->seconds(false),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -234,6 +259,14 @@ class OrderResource extends Resource
                     ->dateTime('d/m/Y H:i')
                     ->placeholder('Não entregue')
                     ->toggleable(isToggledHiddenByDefault: true),
+                    
+                Tables\Columns\TextColumn::make('tracking_code')
+                    ->label('Código de Rastreamento')
+                    ->placeholder('Sem código')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->copyable()
+                    ->copyMessage('Código copiado!')
+                    ->copyMessageDuration(1500),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -281,18 +314,54 @@ class OrderResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 
+                Tables\Actions\Action::make('add_tracking')
+                    ->label('Adicionar Rastreamento')
+                    ->icon('heroicon-o-truck')
+                    ->color('info')
+                    ->visible(fn (Order $record): bool => in_array($record->status, ['processing', 'shipped']) && empty($record->tracking_code))
+                    ->form([
+                        Forms\Components\TextInput::make('tracking_code')
+                            ->label('Código de Rastreamento')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('Ex: BR123456789BR'),
+                            
+                        Forms\Components\TextInput::make('tracking_url')
+                            ->label('URL de Rastreamento')
+                            ->url()
+                            ->maxLength(500)
+                            ->placeholder('https://rastreamento.correios.com.br/...'),
+                    ])
+                    ->action(function (Order $record, array $data) {
+                        $record->update([
+                            'tracking_code' => $data['tracking_code'],
+                            'tracking_url' => $data['tracking_url'] ?? null,
+                        ]);
+                    }),
+                
                 Tables\Actions\Action::make('mark_as_shipped')
                     ->label('Marcar como Enviado')
                     ->icon('heroicon-o-truck')
                     ->color('primary')
                     ->visible(fn (Order $record): bool => $record->status === 'processing')
-                    ->action(function (Order $record) {
-                        $record->update([
-                            'status' => 'shipped',
-                            'shipped_at' => now(),
-                        ]);
-                    })
-                    ->requiresConfirmation(),
+                    ->form([
+                        Forms\Components\TextInput::make('tracking_code')
+                            ->label('Código de Rastreamento (Opcional)')
+                            ->maxLength(255)
+                            ->placeholder('Ex: BR123456789BR'),
+                            
+                        Forms\Components\TextInput::make('tracking_url')
+                            ->label('URL de Rastreamento (Opcional)')
+                            ->url()
+                            ->maxLength(500)
+                            ->placeholder('https://rastreamento.correios.com.br/...'),
+                    ])
+                    ->action(function (Order $record, array $data) {
+                        $record->markAsShipped(
+                            $data['tracking_code'] ?? null,
+                            $data['tracking_url'] ?? null
+                        );
+                    }),
                     
                 Tables\Actions\Action::make('mark_as_delivered')
                     ->label('Marcar como Entregue')
@@ -300,10 +369,7 @@ class OrderResource extends Resource
                     ->color('success')
                     ->visible(fn (Order $record): bool => $record->status === 'shipped')
                     ->action(function (Order $record) {
-                        $record->update([
-                            'status' => 'delivered',
-                            'delivered_at' => now(),
-                        ]);
+                        $record->markAsDelivered();
                     })
                     ->requiresConfirmation(),
             ])
@@ -369,6 +435,34 @@ class OrderResource extends Resource
                             ->money('BRL'),
                     ])
                     ->columns(3),
+                    
+                Infolists\Components\Section::make('Rastreamento')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('tracking_code')
+                            ->label('Código de Rastreamento')
+                            ->placeholder('Não informado')
+                            ->copyable()
+                            ->copyMessage('Código copiado!')
+                            ->copyMessageDuration(1500),
+                            
+                        Infolists\Components\TextEntry::make('tracking_url')
+                            ->label('URL de Rastreamento')
+                            ->placeholder('Não informado')
+                            ->url(fn ($state) => $state)
+                            ->openUrlInNewTab(),
+                            
+                        Infolists\Components\TextEntry::make('shipped_at')
+                            ->label('Data de Envio')
+                            ->dateTime('d/m/Y H:i')
+                            ->placeholder('Não enviado'),
+                            
+                        Infolists\Components\TextEntry::make('delivered_at')
+                            ->label('Data de Entrega')
+                            ->dateTime('d/m/Y H:i')
+                            ->placeholder('Não entregue'),
+                    ])
+                    ->columns(2)
+                    ->visible(fn (Order $record): bool => $record->hasTracking() || $record->isShipped() || $record->isDelivered()),
             ]);
     }
 

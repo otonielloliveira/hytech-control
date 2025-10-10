@@ -174,4 +174,29 @@ class DashboardController extends Controller
 
         return back()->with('success', 'Preferências atualizadas com sucesso!');
     }
+
+    public function orders()
+    {
+        $client = Auth::guard('client')->user();
+        $orders = \App\Models\Order::where('client_id', $client->id)
+            ->with(['items', 'paymentMethod'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return view('client.dashboard.orders', compact('orders'));
+    }
+
+    public function orderDetail(\App\Models\Order $order)
+    {
+        $client = Auth::guard('client')->user();
+        
+        // Verificar se o pedido pertence ao cliente logado
+        if ($order->client_id !== $client->id) {
+            abort(404);
+        }
+        
+        $order->load(['items', 'paymentMethod']);
+        
+        return view('client.dashboard.order-detail', compact('order'));
+    }
 }

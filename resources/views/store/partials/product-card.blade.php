@@ -1,6 +1,6 @@
 <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
     <div class="relative">
-        <a href="{{ route('store.product.show', $product->sku) }}">
+        <a href="{{ route('store.product', $product->slug) }}">
             <div class="aspect-square bg-gray-200 overflow-hidden">
                 @if($product->images && count($product->images) > 0)
                     <img src="{{ Storage::url($product->images[0]) }}" 
@@ -40,7 +40,7 @@
     </div>
     
     <div class="p-4">
-        <a href="{{ route('store.product.show', $product->sku) }}" class="block">
+        <a href="{{ route('store.product', $product->slug) }}" class="block">
             <h3 class="font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
                 {{ $product->name }}
             </h3>
