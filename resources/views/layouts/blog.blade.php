@@ -1065,6 +1065,8 @@
         </div>
     </nav>
 
+    @include('layouts.partials.banner')
+
     <!-- Conteúdo principal -->
     @yield('content')
 
