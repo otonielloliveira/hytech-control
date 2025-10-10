@@ -22,7 +22,7 @@ class MercadoPagoService implements PaymentGatewayInterface
         
         if ($this->accessToken) {
             MercadoPagoConfig::setAccessToken($this->accessToken);
-            MercadoPagoConfig::setRuntimeEnviroment($this->isSandbox ? 'sandbox' : 'production');
+            MercadoPagoConfig::setRuntimeEnviroment($this->isSandbox ? MercadoPagoConfig::LOCAL : MercadoPagoConfig::SERVER);
             $this->paymentClient = new PaymentClient();
         }
     }
@@ -83,35 +83,41 @@ class MercadoPagoService implements PaymentGatewayInterface
     public function createCreditCardPayment(array $data): array
     {
         try {
-            $payment = new Payment();
-            
-            $payment->transaction_amount = (float) $data['amount'];
-            $payment->currency_id = $data['currency'] ?? 'BRL';
-            $payment->description = $data['description'] ?? 'Pagamento';
-            $payment->installments = (int) ($data['installments'] ?? 1);
-            $payment->payment_method_id = $data['payment_method_id'] ?? 'visa';
-            $payment->token = $data['card_token'];
-            
-            // Payer information
-            $payer = new Payer();
-            $payer->email = $data['payer']['email'];
-            $payer->identification = [
-                'type' => 'CPF',
-                'number' => $data['payer']['document'] ?? ''
+            $requestData = [
+                'transaction_amount' => (float) $data['amount'],
+                'currency_id' => $data['currency'] ?? 'BRL',
+                'description' => $data['description'] ?? 'Pagamento',
+                'installments' => (int) ($data['installments'] ?? 1),
+                'payment_method_id' => $data['payment_method_id'] ?? 'visa',
+                'token' => $data['card_token'],
+                'payer' => [
+                    'email' => $data['payer']['email'],
+                    'identification' => [
+                        'type' => 'CPF',
+                        'number' => $data['payer']['document'] ?? ''
+                    ]
+                ]
             ];
-            $payment->payer = $payer;
             
-            $payment->external_reference = $data['external_reference'] ?? null;
+            if (isset($data['external_reference'])) {
+                $requestData['external_reference'] = $data['external_reference'];
+            }
             
-            $payment->save();
+            $payment = $this->paymentClient->create($requestData);
             
             return [
                 'success' => true,
                 'transaction_id' => $payment->id,
                 'status' => $this->mapStatus($payment->status),
-                'gateway_response' => $payment->toArray(),
+                'gateway_response' => (array) $payment,
             ];
             
+        } catch (MPApiException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+            ];
         } catch (Exception $e) {
             return [
                 'success' => false,
@@ -124,35 +130,41 @@ class MercadoPagoService implements PaymentGatewayInterface
     public function createBankSlipPayment(array $data): array
     {
         try {
-            $payment = new Payment();
-            
-            $payment->transaction_amount = (float) $data['amount'];
-            $payment->currency_id = $data['currency'] ?? 'BRL';
-            $payment->description = $data['description'] ?? 'Pagamento';
-            $payment->payment_method_id = 'bolbradesco'; // ou outro banco
-            
-            // Payer information
-            $payer = new Payer();
-            $payer->email = $data['payer']['email'];
-            $payer->first_name = $data['payer']['name'] ?? '';
-            $payer->identification = [
-                'type' => 'CPF',
-                'number' => $data['payer']['document'] ?? ''
+            $requestData = [
+                'transaction_amount' => (float) $data['amount'],
+                'currency_id' => $data['currency'] ?? 'BRL',
+                'description' => $data['description'] ?? 'Pagamento',
+                'payment_method_id' => $data['payment_method_id'] ?? 'bolbradesco',
+                'payer' => [
+                    'email' => $data['payer']['email'],
+                    'first_name' => $data['payer']['name'] ?? '',
+                    'identification' => [
+                        'type' => 'CPF',
+                        'number' => $data['payer']['document'] ?? ''
+                    ]
+                ]
             ];
-            $payment->payer = $payer;
             
-            $payment->external_reference = $data['external_reference'] ?? null;
+            if (isset($data['external_reference'])) {
+                $requestData['external_reference'] = $data['external_reference'];
+            }
             
-            $payment->save();
+            $payment = $this->paymentClient->create($requestData);
             
             return [
                 'success' => true,
                 'transaction_id' => $payment->id,
                 'status' => $this->mapStatus($payment->status),
                 'bank_slip_url' => $payment->transaction_details->external_resource_url ?? null,
-                'gateway_response' => $payment->toArray(),
+                'gateway_response' => (array) $payment,
             ];
             
+        } catch (MPApiException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+            ];
         } catch (Exception $e) {
             return [
                 'success' => false,
@@ -165,14 +177,20 @@ class MercadoPagoService implements PaymentGatewayInterface
     public function getPaymentStatus(string $transactionId): array
     {
         try {
-            $payment = Payment::find_by_id($transactionId);
+            $payment = $this->paymentClient->get($transactionId);
             
             return [
                 'success' => true,
                 'status' => $this->mapStatus($payment->status),
-                'gateway_response' => $payment->toArray(),
+                'gateway_response' => (array) $payment,
             ];
             
+        } catch (MPApiException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+            ];
         } catch (Exception $e) {
             return [
                 'success' => false,
@@ -184,15 +202,20 @@ class MercadoPagoService implements PaymentGatewayInterface
     public function cancelPayment(string $transactionId): array
     {
         try {
-            $payment = Payment::find_by_id($transactionId);
-            $payment->status = 'cancelled';
-            $payment->update();
+            $payment = $this->paymentClient->cancel($transactionId);
             
             return [
                 'success' => true,
                 'status' => $this->mapStatus($payment->status),
+                'gateway_response' => (array) $payment,
             ];
             
+        } catch (MPApiException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+            ];
         } catch (Exception $e) {
             return [
                 'success' => false,
@@ -205,19 +228,25 @@ class MercadoPagoService implements PaymentGatewayInterface
     {
         try {
             if (isset($data['data']['id'])) {
-                $payment = Payment::find_by_id($data['data']['id']);
+                $payment = $this->paymentClient->get($data['data']['id']);
                 
                 return [
                     'success' => true,
                     'transaction_id' => $payment->id,
                     'status' => $this->mapStatus($payment->status),
                     'external_reference' => $payment->external_reference,
-                    'gateway_response' => $payment->toArray(),
+                    'gateway_response' => (array) $payment,
                 ];
             }
             
             return ['success' => false, 'error' => 'Invalid webhook data'];
             
+        } catch (MPApiException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+            ];
         } catch (Exception $e) {
             return [
                 'success' => false,
