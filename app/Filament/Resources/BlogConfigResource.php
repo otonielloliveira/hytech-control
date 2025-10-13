@@ -71,6 +71,18 @@ class BlogConfigResource extends Resource
                                             ->visibility('public')
                                             ->acceptedFileTypes(['image/x-icon', 'image/png'])
                                             ->maxSize(512),
+                                        
+                                        Forms\Components\FileUpload::make('login_image')
+                                            ->label('Imagem da Tela de Login')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->directory('blog/config')
+                                            ->visibility('public')
+                                            ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
+                                            ->maxSize(4096)
+                                            ->helperText('Imagem exibida ao lado do formulário de login no painel administrativo. Recomendado: 800x600px ou proporção similar. Deixe vazio para usar a imagem padrão (/images/login.png).')
+                                            ->hint('💡 A imagem será redimensionada automaticamente para se ajustar ao layout')
+                                            ->columnSpanFull(),
                                     ])->columns(2),
                             ]),
                         

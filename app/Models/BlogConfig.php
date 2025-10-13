@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class BlogConfig extends Model
 {
@@ -40,6 +41,7 @@ class BlogConfig extends Model
         'default_widget_title_color',
         'default_widget_background_color',
         'default_widget_text_color',
+        'login_image',
     ];
 
     protected $casts = [
@@ -149,5 +151,14 @@ class BlogConfig extends Model
     public function getPostsPerPageAttribute(): int
     {
         return 12; // Default value
+    }
+    
+    public function getLoginImageUrlAttribute(): string
+    {
+        if ($this->login_image) {
+            return Storage::url($this->login_image);
+        }
+        
+        return '/images/login.png'; // Imagem padrão
     }
 }

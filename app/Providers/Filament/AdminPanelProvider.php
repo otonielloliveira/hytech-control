@@ -20,9 +20,16 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Rupadana\ApiService\ApiServicePlugin;
+use App\Models\BlogConfig;
 
 class AdminPanelProvider extends PanelProvider
 {
+    private function getLoginImageUrl(): string
+    {
+        $config = BlogConfig::current();
+        return asset($config->login_image_url);
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -63,9 +70,15 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
-                AuthUIEnhancerPlugin::make(),//Plugin permitindo customização da UI de autenticação do Filament Admin
-                ApiServicePlugin::make(),//Plugin que cria o serviço de API RESTful para o painel admin do Filament
-                FilamentNordThemePlugin::make(),//Plugin que aplica o tema Nord ao painel admin do Filament
+                AuthUIEnhancerPlugin::make() //Plugin permitindo customização da UI de autenticação do Filament Admin
+                    ->mobileFormPanelPosition('bottom')
+                    ->formPanelWidth('50%')
+                    ->formPanelBackgroundColor(Color::Zinc, '300')
+                    ->emptyPanelBackgroundImageOpacity('70%')
+                    ->emptyPanelBackgroundImageUrl($this->getLoginImageUrl())
+                    ->formPanelPosition('right'),
+                ApiServicePlugin::make(), //Plugin que cria o serviço de API RESTful para o painel admin do Filament
+                FilamentNordThemePlugin::make(), //Plugin que aplica o tema Nord ao painel admin do Filament
             ])->viteTheme('resources/css/filament/admin/theme.css'); //Não alterar essa linha
     }
 }

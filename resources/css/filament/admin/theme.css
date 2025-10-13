@@ -119,3 +119,192 @@
         height: 250px;
     }
 }
+
+/* Customização da tela de login com imagem lateral */
+.fi-simple-layout {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 2rem !important;
+}
+
+.fi-simple-main {
+    max-width: 1100px !important;
+    width: 100% !important;
+    display: flex !important;
+    border-radius: 1rem !important;
+    overflow: hidden !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    background: white !important;
+    position: relative !important;
+}
+
+/* Adicionar a imagem como pseudo-elemento */
+.fi-simple-main::before {
+    content: '' !important;
+    flex: 1 !important;
+    background-image: var(--login-bg-image, url('/images/login.png')) !important;
+    background-position: center !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    min-height: 600px !important;
+    position: relative !important;
+    display: block !important;
+}
+
+/* Overlay com texto sobre a imagem */
+.fi-simple-main::after {
+    content: 'HyTech Control\APlataforma de Gestão Tecnológica' !important;
+    white-space: pre-line !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 50% !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    color: white !important;
+    font-size: 1.8rem !important;
+    font-weight: bold !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7) !important;
+    z-index: 1 !important;
+}
+
+/* Seção do formulário (lado direito) */
+.fi-simple-main-content {
+    flex: 1 !important;
+    padding: 3rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    background: white !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+/* Melhorar o formulário */
+.fi-simple-main-content .fi-form {
+    max-width: 400px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+}
+
+/* Estilizar campos do formulário */
+.fi-simple-main-content .fi-input {
+    border-radius: 0.75rem !important;
+    border: 2px solid #e5e7eb !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.fi-simple-main-content .fi-input:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Botão de login */
+.fi-simple-main-content .fi-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    border: none !important;
+    border-radius: 0.75rem !important;
+    padding: 0.75rem 2rem !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.fi-simple-main-content .fi-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Animações */
+.fi-simple-main-content {
+    animation: slideInRight 0.8s ease-out !important;
+}
+
+.fi-simple-main::before {
+    animation: slideInLeft 0.8s ease-out !important;
+}
+
+.fi-simple-main::after {
+    animation: fadeIn 1.2s ease-out !important;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsivo para tablets */
+@media (max-width: 1024px) {
+    .fi-simple-main::after {
+        font-size: 1.4rem !important;
+        padding: 1rem !important;
+    }
+}
+
+/* Responsivo para dispositivos móveis */
+@media (max-width: 768px) {
+    .fi-simple-layout {
+        padding: 1rem !important;
+    }
+    
+    .fi-simple-main {
+        flex-direction: column !important;
+        max-width: 100% !important;
+    }
+    
+    .fi-simple-main::before {
+        min-height: 250px !important;
+        order: 1 !important;
+    }
+    
+    .fi-simple-main::after {
+        top: 0 !important;
+        right: 0 !important;
+        bottom: auto !important;
+        height: 250px !important;
+        font-size: 1.2rem !important;
+        order: 1 !important;
+    }
+    
+    .fi-simple-main-content {
+        order: 2 !important;
+        padding: 2rem 1.5rem !important;
+    }
+}
