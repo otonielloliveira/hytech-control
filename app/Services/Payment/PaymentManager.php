@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Services\Payment\Gateways\MercadoPagoService;
 use App\Services\Payment\Gateways\EfiPayService;
 use App\Services\Payment\Gateways\PagSeguroService;
+use App\Services\Payment\Gateways\AsaasService;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -59,8 +60,9 @@ class PaymentManager
                 // Update payment with gateway response
                 $payment->update([
                     'gateway_transaction_id' => $response['transaction_id'],
-                    'pix_code' => $response['pix_code'] ?? null,
-                    'qr_code_url' => $response['qr_code_url'] ?? $response['qr_code_base64'] ?? null,
+                    'pix_code' => $response['qr_code'] ?? $response['pix_code'] ?? null, // PIX payload text
+                    'qr_code_url' => $response['qr_code_url'] ?? null, // URL if provided
+                    'qr_code_base64' => $response['qr_code_base64'] ?? null, // Base64 image
                     'gateway_response' => $response['gateway_response'] ?? null,
                     'status' => $response['status'],
                     'expires_at' => isset($response['expires_at']) ? 
@@ -315,7 +317,7 @@ class PaymentManager
     /**
      * Process webhook
      */
-    public function processWebhook(array $data, string $gatewayName = null): array
+    public function processWebhook(array $data, ?string $gatewayName = null): array
     {
         try {
             $gateway = $gatewayName ? 
@@ -370,7 +372,7 @@ class PaymentManager
     }
 
     /**
-     * Get active gateway
+     * Get active gateway configuration
      */
     public function getActiveGateway(): ?PaymentGatewayConfig
     {
@@ -378,6 +380,75 @@ class PaymentManager
     }
 
     /**
+     * Set active gateway by name
+     */
+    public function setActiveGateway(string $gatewayName): bool
+    {
+        try {
+            $gateway = PaymentGatewayConfig::where('gateway', $gatewayName)
+                ->where('is_active', true)
+                ->first();
+
+            if (!$gateway || !$gateway->isConfigured()) {
+                return false;
+            }
+
+            $this->activeGateway = $gateway;
+            $this->gatewayService = $this->createGatewayService($gateway);
+
+            return $this->gatewayService !== null;
+        } catch (Exception $e) {
+            Log::error('Erro ao definir gateway ativo', [
+                'gateway' => $gatewayName,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Get payment status
+     */
+    public function getPaymentStatus(string $paymentId): array
+    {
+        try {
+            if (!$this->gatewayService) {
+                throw new Exception('Nenhum gateway de pagamento ativo configurado');
+            }
+
+            return $this->gatewayService->getPaymentStatus($paymentId);
+        } catch (Exception $e) {
+            Log::error('Erro ao consultar status do pagamento', [
+                'payment_id' => $paymentId,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Test gateway connection
+     */
+    public function testConnection(): bool
+    {
+        try {
+            if (!$this->gatewayService) {
+                return false;
+            }
+
+            return $this->gatewayService->testConnection();
+        } catch (Exception $e) {
+            Log::error('Erro ao testar conexão do gateway', [
+                'gateway' => $this->activeGateway?->gateway,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }    /**
      * Get supported payment methods
      */
     public function getSupportedMethods(): array
@@ -404,17 +475,35 @@ class PaymentManager
     /**
      * Create gateway service instance
      */
-    private function createGatewayService(PaymentGatewayConfig $config): PaymentGatewayInterface
+    private function createGatewayService(PaymentGatewayConfig $config): ?PaymentGatewayInterface
     {
-        $credentials = $config->credentials;
-        $credentials['is_sandbox'] = $config->is_sandbox;
+        try {
+            $gatewayConfig = [
+                'api_key' => $config->getCredential('api_key'),
+                'api_secret' => $config->getCredential('api_secret'),
+                'public_key' => $config->getCredential('public_key'),
+                'access_token' => $config->getCredential('access_token'),
+                'client_id' => $config->getCredential('client_id'),
+                'client_secret' => $config->getCredential('client_secret'),
+                'email' => $config->getCredential('email'),
+                'token' => $config->getCredential('token'),
+                'is_sandbox' => $config->is_sandbox,
+            ];
 
-        return match($config->gateway) {
-            'mercadopago' => new MercadoPagoService($credentials),
-            'efipay' => new EfiPayService($credentials),
-            'pagseguro' => new PagSeguroService($credentials),
-            default => throw new Exception("Gateway não suportado: {$config->gateway}")
-        };
+            return match($config->gateway) {
+                'mercadopago' => new MercadoPagoService($gatewayConfig),
+                'asaas' => new AsaasService($gatewayConfig),
+                'efipay' => new EfiPayService($gatewayConfig),
+                'pagseguro' => new PagSeguroService($gatewayConfig),
+                default => throw new Exception("Gateway '{$config->gateway}' não suportado")
+            };
+        } catch (Exception $e) {
+            Log::error('Erro ao criar serviço do gateway', [
+                'gateway' => $config->gateway,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
     }
 
     /**

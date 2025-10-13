@@ -24,6 +24,7 @@ class Payment extends Model
         'payer_document',
         'pix_code',
         'qr_code_url',
+        'qr_code_base64',
         'checkout_url',
         'gateway_response',
         'metadata',

@@ -48,4 +48,9 @@ interface PaymentGatewayInterface
      * Get gateway name
      */
     public function getGatewayName(): string;
+
+    /**
+     * Test gateway connection
+     */
+    public function testConnection(): bool;
 }

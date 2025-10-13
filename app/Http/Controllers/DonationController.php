@@ -116,15 +116,19 @@ class DonationController extends Controller
 
         // Gerar QR Code se tiver código PIX
         $qrCode = null;
-        if ($payment && $payment->pix_code) {
+        if ($payment && $payment->qr_code_base64) {
+            // Se tiver QR Code em base64, use diretamente
+            $qrCode = '<img src="data:image/png;base64,' . $payment->qr_code_base64 . '" alt="QR Code PIX" class="img-fluid" />';
+        } elseif ($payment && $payment->qr_code_url) {
+            // Se for uma URL de QR Code, use diretamente
+            $qrCode = '<img src="' . $payment->qr_code_url . '" alt="QR Code PIX" class="img-fluid" />';
+        } elseif ($payment && $payment->pix_code) {
+            // Gerar QR Code usando o código PIX
             $qrCode = QrCode::size(300)
                            ->style('round')
                            ->eye('circle')
                            ->margin(1)
                            ->generate($payment->pix_code);
-        } elseif ($payment && $payment->qr_code_url) {
-            // Se for uma URL de QR Code, use diretamente
-            $qrCode = '<img src="' . $payment->qr_code_url . '" alt="QR Code PIX" class="img-fluid" />';
         }
 
         return view('donations.payment', compact('donation', 'payment', 'qrCode'));

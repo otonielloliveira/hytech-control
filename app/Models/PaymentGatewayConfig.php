@@ -87,6 +87,7 @@ class PaymentGatewayConfig extends Model
     public static function getAvailableGateways()
     {
         return [
+            'asaas' => 'ASAAS',
             'mercadopago' => 'MercadoPago',
             'efipay' => 'EFI Pay (PIX)',
             'pagseguro' => 'PagSeguro',
@@ -119,6 +120,7 @@ class PaymentGatewayConfig extends Model
     public function getRequiredCredentials()
     {
         return match($this->gateway) {
+            'asaas' => ['api_key'],
             'mercadopago' => ['access_token'],
             'efipay' => ['client_id', 'client_secret'],
             'pagseguro' => ['email', 'token'],

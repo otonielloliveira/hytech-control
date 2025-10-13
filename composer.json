@@ -15,6 +15,7 @@
         "gerencianet/gerencianet-sdk-php": "^5.1",
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",
+        "laravel/telescope": "^5.14",
         "laravel/tinker": "^2.9",
         "mercadopago/dx-php": "^3.7",
         "pagseguro/pagseguro-php-sdk": "^4.2",
