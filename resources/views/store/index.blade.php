@@ -2,6 +2,11 @@
 
 @section('title', 'Loja - Produtos')
 
+@push('styles')
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+@endpush
+
 @section('content')
 <style>
     /* Animação suave */
@@ -14,89 +19,460 @@
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
     }
 
-    /* Linha de corte */
+    /* Linha de corte aprimorada */
     .line-clamp-2 {
         display: -webkit-box;
         -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        height: 2.4rem;
+        line-height: 1.2;
     }
 
-    /* Ajuste de colunas no mobile */
-    @media (max-width: 640px) {
-        .grid {
-            gap: 1rem;
+    /* Object fit para imagens */
+    .object-fit-cover {
+        object-fit: cover;
+    }
+
+    /* Layout com largura fixa */
+    .product-grid-fixed {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .product-card-wrapper {
+        width: 280px;
+        flex: 0 0 280px;
+    }
+    
+    .product-card-wrapper .card {
+        height: 100%;
+        width: 100%;
+    }
+
+    /* Swiper Carousel Styles */
+    .products-swiper {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 0 50px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .products-swiper .swiper-wrapper {
+        display: flex;
+        align-items: stretch;
+        transition-timing-function: linear;
+    }
+    
+    .products-swiper .swiper-slide {
+        height: auto;
+        display: flex !important;
+        flex-direction: column;
+        align-items: stretch;
+        flex-shrink: 0;
+        width: 280px !important; /* Largura fixa */
+        max-width: 280px;
+        padding: 0 5px; /* Padding extra para espaçamento visual */
+    }
+    
+    .products-swiper .swiper-slide .card {
+        height: 100%;
+        flex: 1;
+        margin: 0;
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    /* Posicionamento das setas */
+    .products-swiper .swiper-button-next,
+    .products-swiper .swiper-button-prev {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 44px;
+        height: 44px;
+        margin-top: 0;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        color: #007bff;
+        z-index: 10;
+        transition: all 0.3s ease;
+    }
+    
+    .products-swiper .swiper-button-next {
+        right: -22px; /* Fora da área dos cards */
+    }
+    
+    .products-swiper .swiper-button-prev {
+        left: -22px; /* Fora da área dos cards */
+    }
+    
+    .products-swiper .swiper-button-next::after,
+    .products-swiper .swiper-button-prev::after {
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .products-swiper .swiper-button-next:hover,
+    .products-swiper .swiper-button-prev:hover {
+        background: #007bff;
+        color: white;
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    /* Customização dos botões de navegação */
+    .products-swiper .swiper-button-next,
+    .products-swiper .swiper-button-prev {
+        color: #007bff;
+        background: white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-top: -20px;
+    }
+    
+    .products-swiper .swiper-button-next::after,
+    .products-swiper .swiper-button-prev::after {
+        font-size: 16px;
+        font-weight: bold;
+    }
+    
+    .products-swiper .swiper-button-next:hover,
+    .products-swiper .swiper-button-prev:hover {
+        background: #007bff;
+        color: white;
+    }
+    
+    /* Customização da paginação */
+    .products-swiper .swiper-pagination {
+        bottom: 10px;
+    }
+    
+    .products-swiper .swiper-pagination-bullet {
+        background: #007bff;
+        opacity: 0.3;
+    }
+    
+    .products-swiper .swiper-pagination-bullet-active {
+        opacity: 1;
+    }
+    
+    /* Responsividade para carrossel */
+    @media (max-width: 767.98px) {
+        .products-swiper {
+            padding: 15px 0 40px 0;
+        }
+        
+        .products-swiper .swiper-button-next,
+        .products-swiper .swiper-button-prev {
+            width: 36px;
+            height: 36px;
+        }
+        
+        .products-swiper .swiper-button-next::after,
+        .products-swiper .swiper-button-prev::after {
+            font-size: 14px;
+        }
+        
+        .products-swiper .swiper-button-next {
+            right: -18px;
+        }
+        
+        .products-swiper .swiper-button-prev {
+            left: -18px;
+        }
+        
+        .products-swiper .swiper-slide {
+            width: 250px !important;
+            max-width: 250px;
+            padding: 0 4px; /* Padding menor no tablet */
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        .products-swiper {
+            padding: 10px 0 35px 0;
+        }
+        
+        .products-swiper .swiper-button-next,
+        .products-swiper .swiper-button-prev {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .products-swiper .swiper-button-next::after,
+        .products-swiper .swiper-button-prev::after {
+            font-size: 12px;
+        }
+        
+        .products-swiper .swiper-button-next {
+            right: -16px;
+        }
+        
+        .products-swiper .swiper-button-prev {
+            left: -16px;
+        }
+        
+        .products-swiper .swiper-slide {
+            width: 220px !important;
+            max-width: 220px;
+            padding: 0 3px; /* Padding menor no mobile */
+        }
+    }
+    
+    /* Container principal com espaço para as setas */
+    .container-fluid {
+        padding-left: 50px !important;
+        padding-right: 50px !important;
+    }
+    
+    @media (max-width: 767.98px) {
+        .container-fluid {
+            padding-left: 35px !important;
+            padding-right: 35px !important;
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        .container-fluid {
+            padding-left: 30px !important;
+            padding-right: 30px !important;
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        .products-swiper {
+            padding: 0 30px 35px 30px;
+        }
+    }
+
+    /* Alinhamento perfeito dos cards */
+    .product-card-wrapper .card {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .product-card-wrapper .card-body {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+    
+    .product-card-wrapper .card-title {
+        height: 2.4rem;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-height: 1.2;
+    }
+
+    /* Responsividade para carrossel */
+    @media (max-width: 767.98px) {
+        .products-swiper {
+            padding: 0 30px 40px 30px;
+        }
+        
+        .products-swiper .swiper-button-next,
+        .products-swiper .swiper-button-prev {
+            width: 30px;
+            height: 30px;
+            margin-top: -15px;
+        }
+        
+        .products-swiper .swiper-button-next::after,
+        .products-swiper .swiper-button-prev::after {
+            font-size: 12px;
+        }
+        
+        .container-fluid {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        .products-swiper {
+            padding: 0 25px 35px 25px;
+        }
+    }
+    
+    @media (min-width: 768px) and (max-width: 991.98px) {
+        .products-swiper {
+            padding: 0 45px 45px 45px;
+        }
+    }
+    
+    @media (min-width: 1400px) {
+        .products-swiper {
+            padding: 0 60px 60px 60px;
         }
     }
 </style>
 
-<div class="container mx-auto px-4 py-12">
-    <div class="text-center mb-10">
-        <h1 class="text-4xl font-extrabold text-gray-900 mb-3">🛍️ Nossa Loja</h1>
-        <p class="text-gray-600 max-w-2xl mx-auto">Confira produtos exclusivos relacionados ao nosso conteúdo — livros, camisetas, e muito mais!</p>
+<div class="container-fluid px-3">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-dark mb-3">🛍️ Nossa Loja</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">Confira produtos exclusivos relacionados ao nosso conteúdo — livros, camisetas, e muito mais!</p>
     </div>
 
     @if($featuredProducts->count() > 0)
-    <section class="mb-16">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">✨ Produtos em Destaque</h2>
+    <div class="mb-5">
+        <h2 class="h3 fw-bold text-dark mb-4 text-center">✨ Produtos em Destaque</h2>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div class="d-flex flex-wrap justify-content-center gap-3 product-grid-fixed">
             @foreach($featuredProducts as $product)
-            @include('store.partials.product-card', ['product' => $product])
+                <div class="product-card-wrapper">
+                    @include('store.partials.product-card', ['product' => $product])
+                </div>
             @endforeach
         </div>
-    </section>
+    </div>
     @endif
 
-    <section>
-        <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">📦 Todos os Produtos</h2>
+    <section class="mb-5">
+        <h2 class="h3 fw-bold text-dark mb-4 text-center">📦 Todos os Produtos</h2>
 
         @if($products->count() > 0)
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            @foreach($products as $product)
-            @include('store.partials.product-card', ['product' => $product])
-            @endforeach
+        <div class="position-relative">
+            <!-- Swiper Container -->
+            <div class="swiper products-swiper">
+                <div class="swiper-wrapper">
+                    @foreach($products as $product)
+                        <div class="swiper-slide">
+                            @include('store.partials.product-card', ['product' => $product])
+                        </div>
+                    @endforeach
+                </div>
+                
+                <!-- Navigation buttons -->
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+                
+                <!-- Pagination -->
+                <div class="swiper-pagination"></div>
+            </div>
         </div>
 
-        <div class="mt-10 flex justify-center">
+        <div class="d-flex justify-content-center mt-4">
             {{ $products->links() }}
         </div>
         @else
-        <div class="text-center py-12">
-            <div class="text-gray-400 text-6xl mb-4">
+        <div class="text-center py-5">
+            <div class="text-muted mb-4" style="font-size: 4rem;">
                 <i class="fas fa-box-open"></i>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">Nenhum produto encontrado</h3>
-            <p class="text-gray-600">Em breve teremos produtos disponíveis para você!</p>
+            <h3 class="h5 fw-semibold text-dark mb-2">Nenhum produto encontrado</h3>
+            <p class="text-muted">Em breve teremos produtos disponíveis para você!</p>
         </div>
         @endif
     </section>
 </div>
 
 {{-- Carrinho lateral --}}
-<div id="cart-sidebar" class="fixed right-0 top-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50 rounded-l-lg">
-    <div class="p-4 border-b flex justify-between items-center bg-gray-50">
-        <h3 class="text-lg font-semibold text-gray-700">Carrinho</h3>
-        <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+<div id="cart-sidebar" class="position-fixed top-0 end-0 h-100 bg-white shadow-lg translate-x-full transition-transform" style="width: 320px; z-index: 1050; transform: translateX(100%); transition: transform 0.3s ease;">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+        <h3 class="h5 fw-semibold text-dark mb-0">Carrinho</h3>
+        <button id="close-cart" class="btn btn-sm btn-outline-secondary">
             <i class="fas fa-times"></i>
         </button>
     </div>
-    <div id="cart-content" class="p-4 flex-1 overflow-y-auto text-gray-700">
-        <p class="text-center text-gray-500">Seu carrinho está vazio</p>
+    <div id="cart-content" class="p-3 flex-fill overflow-auto text-muted">
+        <p class="text-center text-muted">Seu carrinho está vazio</p>
     </div>
-    <div class="p-4 border-t bg-gray-50">
-        <a href="{{ route('store.cart') }}" class="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+    <div class="p-3 border-top bg-light">
+        <a href="{{ route('store.cart') }}" class="btn btn-primary w-100">
             Ver Carrinho Completo
         </a>
     </div>
 </div>
 
-<div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40"></div>
+<div id="cart-overlay" class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-none" style="z-index: 1040;"></div>
 @endsection
 
 @push('scripts')
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Verificar se Swiper está disponível
+        if (typeof Swiper === 'undefined') {
+            console.error('Swiper não foi carregado!');
+            return;
+        }
+
+        // Aguardar um pouco para garantir que tudo carregou
+        setTimeout(() => {
+            // Inicializar Swiper para produtos
+            console.log('Inicializando Swiper...');
+            const productsSwiper = new Swiper('.products-swiper', {
+            slidesPerView: 'auto',
+            spaceBetween: 30,
+            loop: true,
+            centeredSlides: false,
+            grabCursor: true,
+            autoplay: {
+                delay: 4000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+                dynamicBullets: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            breakpoints: {
+                320: {
+                    slidesPerView: 1,
+                    spaceBetween: 20,
+                    centeredSlides: true,
+                },
+                576: {
+                    slidesPerView: 2,
+                    spaceBetween: 25,
+                    centeredSlides: false,
+                },
+                768: {
+                    slidesPerView: 3,
+                    spaceBetween: 30,
+                },
+                992: {
+                    slidesPerView: 4,
+                    spaceBetween: 30,
+                }
+            },
+            on: {
+                init: function () {
+                    console.log('Swiper inicializado com sucesso!');
+                    // Garantir largura fixa nos slides
+                    this.slides.forEach(slide => {
+                        slide.style.width = '280px';
+                        slide.style.flexShrink = '0';
+                    });
+                },
+                resize: function() {
+                    // Manter largura fixa ao redimensionar
+                    this.slides.forEach(slide => {
+                        slide.style.width = '280px';
+                        slide.style.flexShrink = '0';
+                    });
+                }
+            }
+        });
+        }, 100); // Aguardar 100ms
+
+        // Código existente do carrinho
         document.querySelectorAll('.add-to-cart').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -130,33 +506,40 @@
     });
 
     function showCartSidebar() {
-        document.getElementById('cart-sidebar').classList.remove('translate-x-full');
-        document.getElementById('cart-overlay').classList.remove('hidden');
+        const sidebar = document.getElementById('cart-sidebar');
+        const overlay = document.getElementById('cart-overlay');
+        
+        sidebar.style.transform = 'translateX(0)';
+        overlay.classList.remove('d-none');
         loadCartContent();
     }
 
     function hideCartSidebar() {
-        document.getElementById('cart-sidebar').classList.add('translate-x-full');
-        document.getElementById('cart-overlay').classList.add('hidden');
+        const sidebar = document.getElementById('cart-sidebar');
+        const overlay = document.getElementById('cart-overlay');
+        
+        sidebar.style.transform = 'translateX(100%)';
+        overlay.classList.add('d-none');
     }
 
     function loadCartContent() {
-        document.getElementById('cart-content').innerHTML = '<p class="text-center text-gray-500">Carregando...</p>';
+        document.getElementById('cart-content').innerHTML = '<p class="text-center text-muted">Carregando...</p>';
     }
 
     function updateCartCounter(count) {
         const counter = document.querySelector('.cart-counter');
         if (counter) {
             counter.textContent = count;
-            counter.classList.toggle('hidden', count === 0);
+            counter.classList.toggle('d-none', count === 0);
         }
     }
 
     function showNotification(message, type) {
         const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 text-white font-medium ${
-        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        notification.className = `position-fixed top-0 end-0 m-3 p-3 rounded shadow text-white fw-medium ${
+        type === 'success' ? 'bg-success' : 'bg-danger'
     }`;
+        notification.style.zIndex = '9999';
         notification.textContent = message;
         document.body.appendChild(notification);
         setTimeout(() => notification.remove(), 3000);
