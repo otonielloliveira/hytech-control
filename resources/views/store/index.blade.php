@@ -52,14 +52,73 @@
         width: 100%;
     }
 
+    /* Container do carrossel */
+    .carousel-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 100px; /* Ainda mais espaço para os botões ficarem fora */
+        position: relative;
+        margin-left: 160px;
+    }
+    
+    /* Botões de navegação externos */
+    .carousel-nav-next,
+    .carousel-nav-prev {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        color: #007bff;
+        z-index: 20;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        outline: none;
+    }
+    
+    .carousel-nav-next {
+        float: right;
+        right: -140px; /* Posicionado completamente fora da área dos cards */
+    }
+    
+    .carousel-nav-prev {
+        float: left;
+        left: 100px; /* Posicionado completamente fora da área dos cards */
+    }
+    
+    .carousel-nav-next i,
+    .carousel-nav-prev i {
+        font-size: 20px;
+        color: #007bff;
+        line-height: 1;
+    }
+    
+    .carousel-nav-next:hover,
+    .carousel-nav-prev:hover {
+        background: #007bff;
+        color: white;
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+    
+    .carousel-nav-next:hover i,
+    .carousel-nav-prev:hover i {
+        color: white;
+    }
+
     /* Swiper Carousel Styles */
     .products-swiper {
         width: 100%;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px 0 50px 0;
+        padding: 20px 5px 50px 5px; /* Padding menor já que o container tem mais espaço */
         position: relative;
-        overflow: hidden;
+        overflow: visible; /* Permitir que os cards sejam visíveis fora da área */
     }
     
     .products-swiper .swiper-wrapper {
@@ -86,69 +145,7 @@
         width: 100%;
         max-width: 280px;
     }
-    
-    /* Posicionamento das setas */
-    .products-swiper .swiper-button-next,
-    .products-swiper .swiper-button-prev {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 44px;
-        height: 44px;
-        margin-top: 0;
-        background: white;
-        border-radius: 50%;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        color: #007bff;
-        z-index: 10;
-        transition: all 0.3s ease;
-    }
-    
-    .products-swiper .swiper-button-next {
-        right: -22px; /* Fora da área dos cards */
-    }
-    
-    .products-swiper .swiper-button-prev {
-        left: -22px; /* Fora da área dos cards */
-    }
-    
-    .products-swiper .swiper-button-next::after,
-    .products-swiper .swiper-button-prev::after {
-        font-size: 18px;
-        font-weight: bold;
-    }
-    
-    .products-swiper .swiper-button-next:hover,
-    .products-swiper .swiper-button-prev:hover {
-        background: #007bff;
-        color: white;
-        transform: translateY(-50%) scale(1.1);
-    }
 
-    /* Customização dos botões de navegação */
-    .products-swiper .swiper-button-next,
-    .products-swiper .swiper-button-prev {
-        color: #007bff;
-        background: white;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        margin-top: -20px;
-    }
-    
-    .products-swiper .swiper-button-next::after,
-    .products-swiper .swiper-button-prev::after {
-        font-size: 16px;
-        font-weight: bold;
-    }
-    
-    .products-swiper .swiper-button-next:hover,
-    .products-swiper .swiper-button-prev:hover {
-        background: #007bff;
-        color: white;
-    }
-    
     /* Customização da paginação */
     .products-swiper .swiper-pagination {
         bottom: 10px;
@@ -165,64 +162,72 @@
     
     /* Responsividade para carrossel */
     @media (max-width: 767.98px) {
+        .carousel-container {
+            padding: 0 85px; /* Mais espaço no tablet */
+        }
+        
+        .carousel-nav-next,
+        .carousel-nav-prev {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .carousel-nav-next i,
+        .carousel-nav-prev i {
+            font-size: 16px;
+        }
+        
+        .carousel-nav-next {
+            right: -20px;
+        }
+        
+        .carousel-nav-prev {
+            left: -20px;
+        }
+        
         .products-swiper {
-            padding: 15px 0 40px 0;
-        }
-        
-        .products-swiper .swiper-button-next,
-        .products-swiper .swiper-button-prev {
-            width: 36px;
-            height: 36px;
-        }
-        
-        .products-swiper .swiper-button-next::after,
-        .products-swiper .swiper-button-prev::after {
-            font-size: 14px;
-        }
-        
-        .products-swiper .swiper-button-next {
-            right: -18px;
-        }
-        
-        .products-swiper .swiper-button-prev {
-            left: -18px;
+            padding: 15px 5px 40px 5px;
         }
         
         .products-swiper .swiper-slide {
             width: 250px !important;
             max-width: 250px;
-            padding: 0 4px; /* Padding menor no tablet */
+            padding: 0 4px;
         }
     }
     
     @media (max-width: 575.98px) {
+        .carousel-container {
+            padding: 0 75px; /* Mais espaço no mobile */
+        }
+        
+        .carousel-nav-next,
+        .carousel-nav-prev {
+            width: 36px;
+            height: 36px;
+        }
+        
+        .carousel-nav-next i,
+        .carousel-nav-prev i {
+            font-size: 14px;
+        }
+        
+        .carousel-nav-next {
+            right: -18px;
+        }
+        
+        .carousel-nav-prev {
+            left: -18px;
+        }
+        
         .products-swiper {
-            padding: 10px 0 35px 0;
-        }
-        
-        .products-swiper .swiper-button-next,
-        .products-swiper .swiper-button-prev {
-            width: 32px;
-            height: 32px;
-        }
-        
-        .products-swiper .swiper-button-next::after,
-        .products-swiper .swiper-button-prev::after {
-            font-size: 12px;
-        }
-        
-        .products-swiper .swiper-button-next {
-            right: -16px;
-        }
-        
-        .products-swiper .swiper-button-prev {
-            left: -16px;
+            padding: 10px 3px 35px 3px;
         }
         
         .products-swiper .swiper-slide {
             width: 220px !important;
             max-width: 220px;
-            padding: 0 3px; /* Padding menor no mobile */
+            padding: 0 3px;
         }
     }
     
@@ -243,12 +248,6 @@
         .container-fluid {
             padding-left: 30px !important;
             padding-right: 30px !important;
-        }
-    }
-    
-    @media (max-width: 575.98px) {
-        .products-swiper {
-            padding: 0 30px 35px 30px;
         }
     }
 
@@ -341,7 +340,15 @@
         <h2 class="h3 fw-bold text-dark mb-4 text-center">📦 Todos os Produtos</h2>
 
         @if($products->count() > 0)
-        <div class="position-relative">
+        <div class="carousel-container">
+            <!-- Botões de navegação fora do Swiper -->
+            <div class="swiper-button-next carousel-nav-next">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="swiper-button-prev carousel-nav-prev">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            
             <!-- Swiper Container -->
             <div class="swiper products-swiper">
                 <div class="swiper-wrapper">
@@ -351,10 +358,6 @@
                         </div>
                     @endforeach
                 </div>
-                
-                <!-- Navigation buttons -->
-                <div class="swiper-button-next"></div>
-                <div class="swiper-button-prev"></div>
                 
                 <!-- Pagination -->
                 <div class="swiper-pagination"></div>
@@ -419,6 +422,7 @@
             loop: true,
             centeredSlides: false,
             grabCursor: true,
+            watchOverflow: true, /* Evita problemas quando há poucos slides */
             autoplay: {
                 delay: 4000,
                 disableOnInteraction: false,
@@ -429,8 +433,8 @@
                 dynamicBullets: true,
             },
             navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
+                nextEl: '.carousel-nav-next',
+                prevEl: '.carousel-nav-prev',
             },
             breakpoints: {
                 320: {
@@ -470,7 +474,7 @@
                 }
             }
         });
-        }, 100); // Aguardar 100ms
+        }, 1000); // Aguardar 100ms
 
         // Código existente do carrinho
         document.querySelectorAll('.add-to-cart').forEach(button => {
