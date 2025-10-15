@@ -125,7 +125,16 @@ class DashboardController extends Controller
             $client->addresses()->update(['is_default' => false]);
         }
 
-        $client->addresses()->create($request->all());
+        $address = $client->addresses()->create($request->all());
+
+        // Se for requisição AJAX, retornar JSON
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Endereço adicionado com sucesso!',
+                'address' => $address
+            ]);
+        }
 
         return back()->with('success', 'Endereço adicionado com sucesso!');
     }

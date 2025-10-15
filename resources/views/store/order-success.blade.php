@@ -56,15 +56,7 @@
             @if($paymentResult['success'])
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
                     <h3 class="font-semibold text-blue-900 mb-2">Informações de Pagamento</h3>
-                    
-                    @if(isset($paymentResult['qr_code']))
-                        <p class="text-blue-800 mb-3">Use o QR Code abaixo para pagar via PIX:</p>
-                        <div class="bg-white p-4 rounded-lg inline-block">
-                            <img src="{{ $paymentResult['qr_code']['qr_code_image'] ?? '#' }}" alt="QR Code PIX" class="w-48 h-48 mx-auto">
-                        </div>
-                        <p class="text-sm text-blue-600 mt-2">Ou copie e cole o código PIX</p>
-                    @endif
-                    
+                    @include('components.qr-code', ['paymentResult' => $paymentResult])
                     @if(isset($paymentResult['payment_url']))
                         <div class="mt-4">
                             <a href="{{ $paymentResult['payment_url'] }}" target="_blank" 

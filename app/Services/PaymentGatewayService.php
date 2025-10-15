@@ -4,12 +4,13 @@ namespace App\Services;
 
 use App\Models\PaymentMethod;
 use App\Models\Order;
+use App\Models\PaymentGatewayConfig;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PaymentGatewayService
 {
-    public function processPayment(Order $order, PaymentMethod $paymentMethod, array $paymentData = [])
+    public function processPayment(Order $order, PaymentGatewayConfig $paymentMethod, array $paymentData = [])
     {
         try {
             switch ($paymentMethod->gateway) {
@@ -127,9 +128,9 @@ class PaymentGatewayService
         ];
     }
 
-    private function processAsaas(Order $order, PaymentMethod $paymentMethod, array $paymentData)
+    private function processAsaas(Order $order, PaymentGatewayConfig $paymentMethod, array $paymentData)
     {
-        $config = $paymentMethod->getGatewayConfig();
+        $config = $paymentMethod->getActiveGateway();
         $apiKey = $config['api_key'] ?? '';
         $environment = $config['environment'] ?? 'sandbox';
         
@@ -152,7 +153,7 @@ class PaymentGatewayService
         
         if ($response->successful()) {
             $data = $response->json();
-            
+            Log::info('Cobrança Asaas criada', ['response' => $data]);
             return [
                 'success' => true,
                 'message' => 'Cobrança criada com sucesso',

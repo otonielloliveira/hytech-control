@@ -138,9 +138,16 @@
             <a href="{{ route('store.index') }}" class="btn btn-outline-primary">
                 <i class="fas fa-plus me-2"></i>Escolher + produtos
             </a>
-            <a href="{{ route('store.checkout') }}" class="btn btn-primary">
-                <i class="fas fa-shopping-cart me-2"></i>Comprar
-            </a>
+            @auth('client')
+                <a href="{{ route('store.checkout') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-shopping-cart me-2"></i>Finalizar Compra
+                </a>
+            @else
+                <a href="{{ route('client.login') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-user me-2"></i>Entrar para finalizar
+                </a>
+            @endauth
+           
         </div>
 
         <!-- Info Box -->

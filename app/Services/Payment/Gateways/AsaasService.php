@@ -394,10 +394,11 @@ class AsaasService implements PaymentGatewayInterface
 
             $result = $response['json'];
 
+
             return [
                 'success' => true,
                 'checkout_id' => $result['id'],
-                'checkout_url' => $result['url'],
+                'checkout_url' => $result['link'],
                 'expires_at' => $result['expiresAt'] ?? null,
                 'gateway_response' => $result,
             ];
