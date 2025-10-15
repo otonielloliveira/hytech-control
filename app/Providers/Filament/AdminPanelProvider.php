@@ -26,8 +26,13 @@ class AdminPanelProvider extends PanelProvider
 {
     private function getLoginImageUrl(): string
     {
-        $config = BlogConfig::current();
-        return asset($config->login_image_url);
+        try {
+            $config = BlogConfig::current();
+            return asset($config->login_image_url ?? '/images/default-login-bg.jpg');
+        } catch (\Exception $e) {
+            // Return default image if BlogConfig table doesn't exist yet (during migrations)
+            return asset('/images/default-login-bg.jpg');
+        }
     }
 
     public function panel(Panel $panel): Panel

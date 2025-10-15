@@ -168,7 +168,128 @@
                             <p class="mb-0 small text-muted">Entrega em 5-7 dias úteis</p>
                         </div>
                     </div>
+                </div>            <!-- Product Info -->
+            <div class="p-8 flex flex-col justify-between">
+                <div class="space-y-6">
+                    <!-- Header -->
+                    <div class="border-b pb-6">
+                        <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">{{ $product->name }}</h1>
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">SKU: {{ $product->sku }}</p>
+                            <div class="flex items-center space-x-2">
+                                <div class="flex text-yellow-400">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="fas fa-star text-sm"></i>
+                                    @endfor
+                                </div>
+                                <span class="text-sm text-gray-500">(4.8)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if($product->short_description)
+                        <div class="prose prose-gray">
+                            <p class="text-lg text-gray-600 leading-relaxed">{{ $product->short_description }}</p>
+                        </div>
+                    @endif
+
+                    <!-- Price -->
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+                        @if($product->isOnSale())
+                            <div class="space-y-2">
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-4xl font-bold text-red-600">
+                                        R$ {{ number_format($product->sale_price, 2, ',', '.') }}
+                                    </span>
+                                    <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                        -{{ $product->getDiscountPercentage() }}%
+                                    </span>
+                                </div>
+                                <span class="text-lg text-gray-500 line-through block">
+                                    R$ {{ number_format($product->price, 2, ',', '.') }}
+                                </span>
+                            </div>
+                        @else
+                            <span class="text-4xl font-bold text-gray-900">
+                                R$ {{ number_format($product->price, 2, ',', '.') }}
+                            </span>
+                        @endif
+                    </div>
+
+                    <!-- Stock Status -->
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        @if($product->in_stock)
+                            @if($product->manage_stock)
+                                @if($product->stock_quantity <= 5)
+                                    <div class="flex items-center text-orange-600">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                                        <span class="font-medium">Apenas {{ $product->stock_quantity }} unidade(s) disponível(eis)</span>
+                                    </div>
+                                @else
+                                    <div class="flex items-center text-green-600">
+                                        <i class="fas fa-check-circle mr-2"></i>
+                                        <span class="font-medium">Em estoque ({{ $product->stock_quantity }} disponíveis)</span>
+                                    </div>
+                                @endif
+                            @else
+                                <div class="flex items-center text-green-600">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    <span class="font-medium">Em estoque</span>
+                                </div>
+                            @endif
+                        @else
+                            <div class="flex items-center text-red-600">
+                                <i class="fas fa-times-circle mr-2"></i>
+                                <span class="font-medium">Fora de estoque</span>
+                            </div>
+                        @endif
+                    </div>
                 </div>
+
+                <!-- Add to Cart Section -->
+                <div class="pt-6 border-t">
+                    @if($product->in_stock)
+                        <form id="add-to-cart-form" class="space-y-6">
+                            <div class="flex items-center justify-between">
+                                <label for="quantity" class="text-sm font-semibold text-gray-700">Quantidade:</label>
+                                <div class="flex items-center bg-white border-2 border-gray-200 rounded-lg overflow-hidden">
+                                    <button type="button" onclick="changeQuantity(-1)" 
+                                            class="px-4 py-2 hover:bg-gray-100 transition-colors border-r border-gray-200">
+                                        <i class="fas fa-minus text-sm"></i>
+                                    </button>
+                                    <input type="number" id="quantity" name="quantity" value="1" min="1" 
+                                           max="{{ $product->manage_stock ? $product->stock_quantity : 999 }}" 
+                                           class="w-20 text-center border-0 focus:ring-0 py-2 font-semibold">
+                                    <button type="button" onclick="changeQuantity(1)" 
+                                            class="px-4 py-2 hover:bg-gray-100 transition-colors border-l border-gray-200">
+                                        <i class="fas fa-plus text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <button type="submit" 
+                                        class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                                    <i class="fas fa-shopping-cart mr-3"></i>
+                                    Adicionar ao Carrinho
+                                </button>
+                                <a href="{{ route('store.cart') }}" 
+                                   class="w-full block text-center bg-gray-100 text-gray-700 px-8 py-3 rounded-xl hover:bg-gray-200 transition-colors font-semibold">
+                                    <i class="fas fa-eye mr-2"></i>
+                                    Ver Carrinho
+                                </a>
+                            </div>
+                        </form>
+                    @else
+                        <button class="w-full bg-gray-300 text-gray-500 px-8 py-4 rounded-xl cursor-not-allowed font-bold text-lg" disabled>
+                            <i class="fas fa-times mr-3"></i>
+                            Produto Indisponível
+                        </button>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
 
                 <!-- Purchase Options -->
                 @if($product->in_stock)
@@ -481,135 +602,30 @@
         </div>
     </div>
 @endif
-
-<!-- Related Products -->
-@if($relatedProducts->count() > 0)
-    <div class="container my-5">
-        <div class="bg-white rounded-3 shadow-sm p-4">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <h4 class="fw-bold mb-0">
-                    <i class="fas fa-heart text-danger me-2"></i>
-                    Produtos Relacionados
-                </h4>
-                <a href="{{ route('store.index') }}" class="btn btn-outline-primary btn-sm">
-                    Ver todos <i class="fas fa-arrow-right ms-1"></i>
-                </a>
-            </div>
-            
-            <div class="row g-3">
+    @if($relatedProducts->count() > 0)
+        <div class="border-t pt-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-8">Produtos Relacionados</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 @foreach($relatedProducts as $relatedProduct)
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        @include('store.partials.product-card', ['product' => $relatedProduct])
-                    </div>
+                    @include('store.partials.product-card', ['product' => $relatedProduct])
                 @endforeach
             </div>
         </div>
-    </div>
-@endif
-
-<!-- Image Modal -->
-@if($product->images && count($product->images) > 0)
-    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title" id="imageModalLabel">{{ $product->name }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <img id="modal-image" src="{{ Storage::url($product->images[0]) }}" 
-                         alt="{{ $product->name }}" class="w-100">
-                </div>
-            </div>
-        </div>
-    </div>
-@endif
-
-@push('styles')
-<style>
-.thumbnail-btn {
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-}
-
-.thumbnail-btn:hover,
-.thumbnail-btn.active {
-    border-color: #dc3545;
-    transform: scale(1.05);
-}
-
-.nav-tabs .nav-link {
-    border: none;
-    border-radius: 0;
-    color: #6c757d;
-    background: transparent;
-}
-
-.nav-tabs .nav-link.active {
-    background: #fff;
-    color: #495057;
-    border-bottom: 3px solid #dc3545;
-}
-
-.nav-tabs .nav-link:hover {
-    border-color: transparent;
-    background: rgba(220, 53, 69, 0.1);
-}
-
-/* Custom button hover effects */
-.btn-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-}
-
-.btn-warning:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
-}
-
-/* Loading animation for add to cart */
-.btn-loading {
-    position: relative;
-    pointer-events: none;
-}
-
-.btn-loading::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    top: 50%;
-    left: 50%;
-    margin-left: -8px;
-    margin-top: -8px;
-    border: 2px solid transparent;
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-</style>
-@endpush
+    @endif
+</div>
 
 @push('scripts')
 <script>
-// Image gallery functionality
 function changeMainImage(imageSrc, thumbnail) {
     document.getElementById('main-image').src = imageSrc;
-    document.getElementById('modal-image').src = imageSrc;
     
     // Update thumbnail selection
-    document.querySelectorAll('.thumbnail-btn').forEach(btn => {
-        btn.classList.remove('active');
+    document.querySelectorAll('.thumbnail').forEach(thumb => {
+        thumb.classList.remove('ring-2', 'ring-blue-500');
     });
-    thumbnail.classList.add('active');
+    thumbnail.classList.add('ring-2', 'ring-blue-500');
 }
 
-// Quantity controls
 function changeQuantity(delta) {
     const quantityInput = document.getElementById('quantity');
     const currentValue = parseInt(quantityInput.value);
@@ -622,7 +638,7 @@ function changeQuantity(delta) {
     }
 }
 
-// Add to cart functionality
+// Add to cart form submission
 document.getElementById('add-to-cart-form').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -630,10 +646,8 @@ document.getElementById('add-to-cart-form').addEventListener('submit', function(
     const button = this.querySelector('button[type="submit"]');
     const originalText = button.innerHTML;
     
-    // Loading state
     button.disabled = true;
-    button.classList.add('btn-loading');
-    button.innerHTML = '<span class="me-2">Adicionando...</span>';
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Adicionando...';
     
     fetch(`/loja/carrinho/adicionar/{{ $product->id }}`, {
         method: 'POST',
@@ -646,103 +660,40 @@ document.getElementById('add-to-cart-form').addEventListener('submit', function(
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Success state
-            button.classList.remove('btn-loading');
-            button.classList.remove('btn-danger');
-            button.classList.add('btn-success');
-            button.innerHTML = '<i class="fas fa-check me-2"></i>Adicionado!';
+            // Show success message
+            button.innerHTML = '<i class="fas fa-check mr-2"></i>Adicionado!';
+            button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            button.classList.add('bg-green-600');
             
             // Update cart counter
             updateCartCounter(data.cart_totals.items_count);
             
-            // Show success toast
-            showToast('Produto adicionado ao carrinho!', 'success');
-            
-            // Reset button after 3 seconds
             setTimeout(() => {
                 button.innerHTML = originalText;
-                button.classList.remove('btn-success');
-                button.classList.add('btn-danger');
+                button.classList.remove('bg-green-600');
+                button.classList.add('bg-blue-600', 'hover:bg-blue-700');
                 button.disabled = false;
-            }, 3000);
+            }, 2000);
         } else {
-            // Error state
-            button.classList.remove('btn-loading');
+            alert(data.message);
             button.innerHTML = originalText;
             button.disabled = false;
-            showToast(data.message || 'Erro ao adicionar produto', 'error');
         }
     })
     .catch(error => {
-        // Error state
-        button.classList.remove('btn-loading');
+        alert('Erro ao adicionar produto ao carrinho');
         button.innerHTML = originalText;
         button.disabled = false;
-        showToast('Erro ao adicionar produto ao carrinho', 'error');
     });
 });
 
-// Update cart counter
 function updateCartCounter(count) {
     const counter = document.querySelector('.cart-counter');
     if (counter) {
         counter.textContent = count;
-        counter.classList.toggle('d-none', count === 0);
-        
-        // Animate counter
-        counter.style.transform = 'scale(1.3)';
-        setTimeout(() => {
-            counter.style.transform = 'scale(1)';
-        }, 200);
+        counter.classList.toggle('hidden', count === 0);
     }
 }
-
-// Toast notification system
-function showToast(message, type = 'info') {
-    // Create toast container if it doesn't exist
-    let toastContainer = document.querySelector('.toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-        toastContainer.style.zIndex = '9999';
-        document.body.appendChild(toastContainer);
-    }
-    
-    // Create toast
-    const toastId = 'toast-' + Date.now();
-    const toastHtml = `
-        <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
-                    ${message}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-    `;
-    
-    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
-    // Show toast
-    const toastElement = document.getElementById(toastId);
-    const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
-    toast.show();
-    
-    // Remove toast element after it's hidden
-    toastElement.addEventListener('hidden.bs.toast', () => {
-        toastElement.remove();
-    });
-}
-
-// Initialize tooltips and smooth scrolling
-document.addEventListener('DOMContentLoaded', function() {
-    // Enable Bootstrap tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-});
 </script>
 @endpush
 @endsection
