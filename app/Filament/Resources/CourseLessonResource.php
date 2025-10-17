@@ -13,6 +13,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class CourseLessonResource extends Resource
 {
@@ -179,5 +180,10 @@ class CourseLessonResource extends Resource
             'create' => Pages\CreateCourseLesson::route('/create'),
             'edit' => Pages\EditCourseLesson::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageCourses() || Auth::user()->is_admin;
     }
 }

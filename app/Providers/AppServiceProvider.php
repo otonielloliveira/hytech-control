@@ -29,5 +29,11 @@ class AppServiceProvider extends ServiceProvider
             'layouts.blog',
             'blog.*'
         ], BlogComposer::class);
+        
+        // Register event listeners
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Login::class,
+            \App\Listeners\UpdateLastLogin::class,
+        );
     }
 }

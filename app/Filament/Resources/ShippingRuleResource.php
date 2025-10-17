@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ShippingRuleResource\Pages;
+use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\ShippingRuleResource\RelationManagers;
 use App\Models\ShippingRule;
 use Filament\Forms;
@@ -27,6 +28,11 @@ class ShippingRuleResource extends Resource
     protected static ?string $pluralModelLabel = 'Regras de Frete';
     
     protected static ?string $navigationGroup = 'Loja';
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()?->canManageStore() || Auth::user()?->is_admin;
+    }
     
     protected static ?int $navigationSort = 4;
 
@@ -192,7 +198,7 @@ class ShippingRuleResource extends Resource
                     ->label('Ativo')
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
+                    ->falseIcon('heroicon-o-x-mark')
                     ->trueColor('success')
                     ->falseColor('danger'),
                     

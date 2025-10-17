@@ -152,7 +152,7 @@ class BannerResource extends Resource
                     ->label('Ativo')
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
+                    ->falseIcon('heroicon-o-x-mark')
                     ->trueColor('success')
                     ->falseColor('danger'),
                 
@@ -218,7 +218,7 @@ class BannerResource extends Resource
                                         ->label('Ativo')
                                         ->boolean()
                                         ->trueIcon('heroicon-o-check-circle')
-                                        ->falseIcon('heroicon-o-x-circle')
+                                        ->falseIcon('heroicon-o-x-mark')
                                         ->trueColor('success')
                                         ->falseColor('danger'),
                                     

@@ -83,13 +83,15 @@ class PostResource extends Resource
                                         
                                         Forms\Components\Select::make('user_id')
                                             ->label('Autor')
-                                            ->relationship('user', 'name')
+                                            ->relationship('user', 'name', fn (Builder $query) => $query->where('is_author', true)->orWhere('is_admin', true))
                                             ->default(function () {
                                                 return Auth::id();
                                             })
                                             ->required()
                                             ->searchable()
-                                            ->preload(),
+                                            ->preload()
+                                            ->disabled(fn () => !Auth::user()->is_admin && Auth::user()->can_edit_own_posts_only)
+                                            ->dehydrated(),
                                     ])->columns(2),
                                 
                                 Section::make('Conteúdo do Post')
@@ -456,7 +458,8 @@ class PostResource extends Resource
                     ->color('info'),
                 Tables\Actions\EditAction::make()
                     ->icon('heroicon-o-pencil')
-                    ->color('warning'),
+                    ->color('warning')
+                    ->visible(fn (Post $record) => Auth::user()->canEditPost($record)),
                 Tables\Actions\Action::make('signatures')
                     ->label('Assinaturas')
                     ->icon('heroicon-o-document-text')
@@ -464,13 +467,57 @@ class PostResource extends Resource
                     ->url(fn ($record) => static::getUrl('view', ['record' => $record, 'activeRelationManager' => 1]))
                     ->visible(fn ($record) => $record && $record->destination === 'peticoes'),
                 Tables\Actions\DeleteAction::make()
-                    ->icon('heroicon-o-trash'),
+                    ->icon('heroicon-o-trash')
+                    ->visible(fn (Post $record) => Auth::user()->canDeletePost($record)),
+                    
+                // Ações de status para posts
+                Tables\Actions\Action::make('publish')
+                    ->label('Publicar')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->action(fn (Post $record) => $record->update(['status' => 'published', 'published_at' => $record->published_at ?? now()]))
+                    ->requiresConfirmation()
+                    ->visible(fn (Post $record) => 
+                        Auth::user()->canPublishPosts() && 
+                        $record->status !== 'published'
+                    ),
+                    
+                Tables\Actions\Action::make('unpublish')
+                    ->label('Despublicar')
+                    ->icon('heroicon-o-x-mark')
+                    ->color('danger')
+                    ->action(fn (Post $record) => $record->update(['status' => 'draft']))
+                    ->requiresConfirmation()
+                    ->visible(fn (Post $record) => 
+                        Auth::user()->canPublishPosts() && 
+                        $record->status === 'published'
+                    ),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => Auth::user()->canDeletePosts()),
+                    Tables\Actions\RestoreBulkAction::make()
+                        ->visible(fn () => Auth::user()->canEditPosts()),
+                    Tables\Actions\ForceDeleteBulkAction::make()
+                        ->visible(fn () => Auth::user()->is_admin),
+                        
+                    // Ações em massa para status
+                    Tables\Actions\BulkAction::make('publish_selected')
+                        ->label('Publicar Selecionados')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['status' => 'published', 'published_at' => $record->published_at ?? now()])))
+                        ->requiresConfirmation()
+                        ->visible(fn () => Auth::user()->canPublishPosts()),
+                        
+                    Tables\Actions\BulkAction::make('draft_selected')
+                        ->label('Marcar como Rascunho')
+                        ->icon('heroicon-o-document')
+                        ->color('warning')
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['status' => 'draft'])))
+                        ->requiresConfirmation()
+                        ->visible(fn () => Auth::user()->canPublishPosts()),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -500,7 +547,7 @@ class PostResource extends Resource
                                         ->label('Publicado')
                                         ->boolean()
                                         ->trueIcon('heroicon-o-check-circle')
-                                        ->falseIcon('heroicon-o-x-circle')
+                                        ->falseIcon('heroicon-o-x-mark')
                                         ->trueColor('success')
                                         ->falseColor('danger'),
                                     
@@ -571,9 +618,44 @@ class PostResource extends Resource
     
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
+        $query = parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+            
+        // Se o usuário não é admin e tem restrição de editar apenas próprios posts
+        if (!Auth::user()->is_admin && Auth::user()->can_edit_own_posts_only) {
+            $query->where('user_id', Auth::id());
+        }
+        
+        return $query;
+    }
+    
+    public static function canCreate(): bool
+    {
+        return Auth::user()->canCreatePosts();
+    }
+    
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::user()->canEditPost($record);
+    }
+    
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::user()->canDeletePost($record);
+    }
+    
+    public static function canDeleteAny(): bool
+    {
+        return Auth::user()->canDeletePosts();
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canCreatePosts() || 
+               Auth::user()->canEditPosts() || 
+               Auth::user()->canDeletePosts() ||
+               Auth::user()->is_admin;
     }
 }

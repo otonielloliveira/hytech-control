@@ -15,6 +15,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class PollResource extends Resource
 {
@@ -277,7 +278,7 @@ class PollResource extends Resource
                                     ->label('Ativo')
                                     ->boolean()
                                     ->trueIcon('heroicon-o-check-circle')
-                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->falseIcon('heroicon-o-x-mark')
                                     ->trueColor('success')
                                     ->falseColor('danger'),
                                 
@@ -372,5 +373,10 @@ class PollResource extends Resource
             'view' => Pages\ViewPoll::route('/{record}'),
             'edit' => Pages\EditPoll::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageSettings() || Auth::user()->is_admin;
     }
 }

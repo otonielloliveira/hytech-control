@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class AlbumResource extends Resource
 {
@@ -202,5 +203,10 @@ class AlbumResource extends Resource
             'create' => Pages\CreateAlbum::route('/create'),
             'edit' => Pages\EditAlbum::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageSettings() || Auth::user()->is_admin;
     }
 }

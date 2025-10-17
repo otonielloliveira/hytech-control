@@ -460,15 +460,23 @@
                         </div>
 
                         <!-- Tags -->
-                        @if($post->tags && $post->tags->count() > 0)
+                        @if($post->tags && (is_array($post->tags) ? count($post->tags) > 0 : $post->tags->count() > 0))
                             <div class="post-tags mt-4">
                                 <h6>Tags:</h6>
-                                @foreach($post->tags as $tag)
-                                    <a href="{{ route('blog.tag.show', $tag->slug) }}" 
-                                       class="badge bg-secondary me-2 mb-2 text-decoration-none">
-                                        #{{ $tag->name }}
-                                    </a>
-                                @endforeach
+                                @if(is_array($post->tags))
+                                    @foreach($post->tags as $tag)
+                                        <span class="badge bg-secondary me-2 mb-2">
+                                            #{{ $tag }}
+                                        </span>
+                                    @endforeach
+                                @else
+                                    @foreach($post->tags as $tag)
+                                        <a href="{{ route('blog.tag.show', $tag->slug) }}" 
+                                           class="badge bg-secondary me-2 mb-2 text-decoration-none">
+                                            #{{ $tag->name }}
+                                        </a>
+                                    @endforeach
+                                @endif
                             </div>
                         @endif
                     </div>

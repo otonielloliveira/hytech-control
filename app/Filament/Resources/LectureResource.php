@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class LectureResource extends Resource
 {
@@ -206,7 +207,7 @@ class LectureResource extends Resource
                                         ->label('Status')
                                         ->boolean()
                                         ->trueIcon('heroicon-o-check-circle')
-                                        ->falseIcon('heroicon-o-x-circle')
+                                        ->falseIcon('heroicon-o-x-mark')
                                         ->trueColor('success')
                                         ->falseColor('danger'),
                                 ]),
@@ -260,5 +261,10 @@ class LectureResource extends Resource
             'view' => Pages\ViewLecture::route('/{record}'),
             'edit' => Pages\EditLecture::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageSettings() || Auth::user()->is_admin;
     }
 }

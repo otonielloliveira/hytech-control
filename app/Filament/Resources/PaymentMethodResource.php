@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 use Filament\Tables\Columns\IconColumn;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentMethodResource extends Resource
 {
@@ -164,7 +165,7 @@ class PaymentMethodResource extends Resource
                     ->label('Ativo')
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
+                    ->falseIcon('heroicon-o-x-mark')
                     ->trueColor('success')
                     ->falseColor('danger'),
                     
@@ -213,5 +214,10 @@ class PaymentMethodResource extends Resource
             'create' => Pages\CreatePaymentMethod::route('/create'),
             'edit' => Pages\EditPaymentMethod::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageStore() || Auth::user()->is_admin;
     }
 }

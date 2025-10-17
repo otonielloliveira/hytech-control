@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Illuminate\Support\Facades\Auth;
 
 class ClientResource extends Resource
 {
@@ -369,5 +370,10 @@ class ClientResource extends Resource
             'view' => Pages\ViewClient::route('/{record}'),
             'edit' => Pages\EditClient::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageStore() || Auth::user()->is_admin;
     }
 }

@@ -67,6 +67,14 @@
                     @endif
                 </div>
             @endif
+            @if(config('app.debug') && session('payment_result'))
+                <div class="mt-3">
+                    <h6>DEBUG: payment_result keys</h6>
+                    <pre class="small bg-light p-2">{{ json_encode(array_keys(session('payment_result')), JSON_PRETTY_PRINT) }}</pre>
+                    <h6>DEBUG: payment_result full</h6>
+                    <pre class="small bg-light p-2">{{ json_encode(session('payment_result'), JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) }}</pre>
+                </div>
+            @endif
         @endif
         
         <div class="space-y-4">

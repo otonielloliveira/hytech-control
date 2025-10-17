@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class SidebarConfigResource extends Resource
 {
@@ -197,7 +198,7 @@ class SidebarConfigResource extends Resource
                                     ->label('Ativo')
                                     ->boolean()
                                     ->trueIcon('heroicon-o-check-circle')
-                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->falseIcon('heroicon-o-x-mark')
                                     ->trueColor('success')
                                     ->falseColor('danger'),
                                 

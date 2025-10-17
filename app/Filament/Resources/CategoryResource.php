@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class CategoryResource extends Resource
 {
@@ -132,7 +133,7 @@ class CategoryResource extends Resource
                     ->label('Ativo')
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
+                    ->falseIcon('heroicon-o-x-mark')
                     ->trueColor('success')
                     ->falseColor('danger'),
                 
@@ -230,7 +231,7 @@ class CategoryResource extends Resource
                                     ->label('Visível')
                                     ->boolean()
                                     ->trueIcon('heroicon-o-check-circle')
-                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->falseIcon('heroicon-o-x-mark')
                                     ->trueColor('success')
                                     ->falseColor('danger'),
                                 

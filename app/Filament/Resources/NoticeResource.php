@@ -15,6 +15,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class NoticeResource extends Resource
 {
@@ -237,7 +238,7 @@ class NoticeResource extends Resource
                                     ->label('Ativo')
                                     ->boolean()
                                     ->trueIcon('heroicon-o-check-circle')
-                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->falseIcon('heroicon-o-x-mark')
                                     ->trueColor('success')
                                     ->falseColor('danger'),
                                 
@@ -279,5 +280,10 @@ class NoticeResource extends Resource
             'view' => Pages\ViewNotice::route('/{record}'),
             'edit' => Pages\EditNotice::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageSettings() || Auth::user()->is_admin;
     }
 }

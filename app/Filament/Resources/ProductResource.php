@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
+use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
 use Filament\Forms;
@@ -33,6 +34,11 @@ class ProductResource extends Resource
     protected static ?string $pluralModelLabel = 'Produtos';
     
     protected static ?string $navigationGroup = 'Loja';
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()?->canManageStore() || Auth::user()?->is_admin;
+    }
     
     protected static ?int $navigationSort = 1;
 

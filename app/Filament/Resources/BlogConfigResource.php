@@ -13,6 +13,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Tabs;
+use Illuminate\Support\Facades\Auth;
 
 class BlogConfigResource extends Resource
 {
@@ -376,6 +377,11 @@ class BlogConfigResource extends Resource
         return [
             'index' => Pages\ManageBlogConfigs::route('/'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageSettings() || Auth::user()->is_admin;
     }
     
     public static function canCreate(): bool

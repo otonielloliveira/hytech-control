@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class SeoMetaResource extends Resource
 {
@@ -130,5 +131,10 @@ class SeoMetaResource extends Resource
             'view' => Pages\ViewSeoMeta::route('/{record}'),
             'edit' => Pages\EditSeoMeta::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageSettings() || Auth::user()->is_admin;
     }
 }

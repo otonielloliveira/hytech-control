@@ -163,7 +163,7 @@ class PetitionSignaturesRelationManager extends RelationManager
                     ->label('FB')
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
+                    ->falseIcon('heroicon-o-x-mark')
                     ->trueColor('success')
                     ->falseColor('gray')
                     ->getStateUsing(fn ($record) => !empty($record->link_facebook)),
@@ -172,7 +172,7 @@ class PetitionSignaturesRelationManager extends RelationManager
                     ->label('IG')
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
+                    ->falseIcon('heroicon-o-x-mark')
                     ->trueColor('success')
                     ->falseColor('gray')
                     ->getStateUsing(fn ($record) => !empty($record->link_instagram)),

@@ -46,7 +46,7 @@ class EditBanner extends EditRecord
                 ->icon('heroicon-m-check'),
             $this->getCancelFormAction()
                 ->label('Cancelar')
-                ->icon('heroicon-m-x'),
+                ->icon('heroicon-o-x-mark'),
         ];
     }
 }

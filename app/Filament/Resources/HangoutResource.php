@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Illuminate\Support\Facades\Auth;
 
 class HangoutResource extends Resource
 {
@@ -261,7 +262,7 @@ class HangoutResource extends Resource
                                     ->label('Ativo')
                                     ->boolean()
                                     ->trueIcon('heroicon-o-check-circle')
-                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->falseIcon('heroicon-o-x-mark')
                                     ->trueColor('success')
                                     ->falseColor('danger'),
                             ]),
@@ -462,5 +463,10 @@ class HangoutResource extends Resource
             'view' => Pages\ViewHangout::route('/{record}'),
             'edit' => Pages\EditHangout::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageSettings() || Auth::user()->is_admin;
     }
 }

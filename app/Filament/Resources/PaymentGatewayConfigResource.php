@@ -11,6 +11,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Support\Enums\FontWeight;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentGatewayConfigResource extends Resource
 {
@@ -148,7 +149,7 @@ class PaymentGatewayConfigResource extends Resource
                     ->label('Ativo')
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle'),
+                    ->falseIcon('heroicon-o-x-mark'),
 
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
@@ -396,5 +397,10 @@ class PaymentGatewayConfigResource extends Resource
     {
         $active = static::getModel()::active()->count();
         return $active > 0 ? null : 'danger';
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageStore() || Auth::user()->is_admin;
     }
 }

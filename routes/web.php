@@ -15,6 +15,9 @@ use App\Http\Controllers\DonationController;
 
 Route::get('/', [BlogController::class, 'index'])->name('blog.index');
 
+// Posts Listing Route (Nova tela de listagem de posts)
+Route::get('/posts', [BlogController::class, 'postsList'])->name('posts.list');
+
 // Blog Routes
 Route::prefix('blog')->name('blog.')->group(function () {
     Route::get('/pesquisar', [BlogController::class, 'search'])->name('search');

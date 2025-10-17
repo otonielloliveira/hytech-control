@@ -323,4 +323,93 @@ class BlogController extends Controller
 
         return back()->with('success', 'Obrigado! Sua assinatura foi registrada com sucesso na petição.');
     }
+
+    public function postsList(Request $request)
+    {
+        $config = BlogConfig::current();
+        
+        // Construir query base
+        $query = Post::published()->with(['category', 'user']);
+        
+        // Filtro por título/conteúdo (busca)
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('title', 'like', "%{$searchTerm}%")
+                  ->orWhere('excerpt', 'like', "%{$searchTerm}%")
+                  ->orWhere('content', 'like', "%{$searchTerm}%");
+            });
+        }
+        
+        // Filtro por categoria
+        if ($request->filled('category') && $request->category !== 'all') {
+            $query->where('category_id', $request->category);
+        }
+        
+        // Filtro por destino/seção
+        if ($request->filled('destination') && $request->destination !== 'all') {
+            $query->where('destination', $request->destination);
+        }
+        
+        // Filtro por data (últimos X dias)
+        if ($request->filled('date_filter')) {
+            switch ($request->date_filter) {
+                case 'last_week':
+                    $query->where('published_at', '>=', now()->subWeek());
+                    break;
+                case 'last_month':
+                    $query->where('published_at', '>=', now()->subMonth());
+                    break;
+                case 'last_3_months':
+                    $query->where('published_at', '>=', now()->subMonths(3));
+                    break;
+                case 'last_year':
+                    $query->where('published_at', '>=', now()->subYear());
+                    break;
+            }
+        }
+        
+        // Filtro por data customizada
+        if ($request->filled('date_from')) {
+            $query->whereDate('published_at', '>=', $request->date_from);
+        }
+        
+        if ($request->filled('date_to')) {
+            $query->whereDate('published_at', '<=', $request->date_to);
+        }
+        
+        // Ordenação
+        $orderBy = $request->get('order_by', 'published_at');
+        $orderDirection = $request->get('order_direction', 'desc');
+        
+        switch ($orderBy) {
+            case 'title':
+                $query->orderBy('title', $orderDirection);
+                break;
+            case 'views':
+                $query->orderBy('views_count', $orderDirection);
+                break;
+            case 'published_at':
+            default:
+                $query->orderBy('published_at', $orderDirection);
+                break;
+        }
+        
+        // Executar query com paginação
+        $posts = $query->paginate(12)->withQueryString();
+        
+        // Dados para os filtros
+        $categories = Category::withCount(['posts' => function ($q) {
+            $q->where('status', 'published');
+        }])->orderBy('name')->get();
+        
+        $destinations = Post::getDestinationOptions();
+        
+        return view('posts.list', compact(
+            'config', 
+            'posts', 
+            'categories', 
+            'destinations'
+        ));
+    }
 }

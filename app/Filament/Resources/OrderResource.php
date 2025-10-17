@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
+use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
 use App\Models\PaymentMethod;
@@ -32,6 +33,11 @@ class OrderResource extends Resource
     protected static ?string $navigationGroup = 'Loja';
     
     protected static ?int $navigationSort = 2;
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()?->canManageStore() || Auth::user()?->is_admin;
+    }
 
     public static function form(Form $form): Form
     {

@@ -87,14 +87,22 @@
                                         </span>
                                     </div>
                                     
-                                    @if($post->tags->count() > 0)
+                                    @if($post->tags && (is_array($post->tags) ? count($post->tags) > 0 : $post->tags->count() > 0))
                                         <div class="post-tags mt-2">
-                                            @foreach($post->tags->take(3) as $postTag)
+                                            @if(is_array($post->tags))
+                                                @foreach(array_slice($post->tags, 0, 3) as $tagName)
+                                                    <span class="badge bg-secondary me-1">
+                                                        #{{ $tagName }}
+                                                    </span>
+                                                @endforeach
+                                            @else
+                                                @foreach($post->tags->take(3) as $postTag)
                                                 <a href="{{ route('blog.tag.show', $postTag->slug) }}" 
                                                    class="badge {{ $postTag->slug === $tag->slug ? 'bg-primary' : 'bg-secondary' }} text-decoration-none me-1">
                                                     #{{ $postTag->name }}
                                                 </a>
                                             @endforeach
+                                            @endif
                                         </div>
                                     @endif
                                 </div>

@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class VideoResource extends Resource
 {
@@ -333,5 +334,10 @@ class VideoResource extends Resource
             'bulk-create' => Pages\BulkCreateVideos::route('/bulk-create'),
             'edit' => Pages\EditVideo::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageSettings() || Auth::user()->is_admin;
     }
 }

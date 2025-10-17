@@ -11,6 +11,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Support\Enums\FontWeight;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentResource extends Resource
 {
@@ -255,7 +256,7 @@ class PaymentResource extends Resource
                     ->successNotificationTitle('Pagamento aprovado'),
                 Tables\Actions\Action::make('reject')
                     ->label('Rejeitar')
-                    ->icon('heroicon-o-x-circle')
+                    ->icon('heroicon-o-x-mark')
                     ->color('danger')
                     ->visible(fn (Payment $record) => $record->isPending())
                     ->requiresConfirmation()
@@ -294,5 +295,10 @@ class PaymentResource extends Resource
     public static function getNavigationBadgeColor(): ?string
     {
         return 'warning';
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageStore() || Auth::user()->is_admin;
     }
 }

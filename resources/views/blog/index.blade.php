@@ -216,6 +216,15 @@
                                     </article>
                                 @endforeach
                             </div>
+                            
+                            <!-- Botão Ver Todas as Postagens -->
+                            <div class="text-center mt-4">
+                                <a href="{{ route('posts.list') }}" 
+                                   class="btn btn-view-all-posts btn-lg rounded-pill px-5 py-3 fw-bold shadow-lg">
+                                    <i class="fas fa-list me-2"></i>
+                                    Ver Todas as Postagens
+                                </a>
+                            </div>
                         </div>
                     </section>
                 @endif
@@ -1775,6 +1784,44 @@
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
+    }
+    
+    /* Botão Ver Todas as Postagens */
+    .btn-view-all-posts {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .btn-view-all-posts::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .btn-view-all-posts:hover {
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-view-all-posts:hover::before {
+        opacity: 1;
+    }
+    
+    .btn-view-all-posts:active {
+        transform: translateY(-1px);
     }
 </style>
 @endsection

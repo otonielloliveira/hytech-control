@@ -13,6 +13,7 @@ use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Support\Enums\FontWeight;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class DonationResource extends Resource
 {
@@ -352,6 +353,11 @@ class DonationResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        return 'warning';
+        return 'success';
+    }
+    
+    public static function canAccess(): bool
+    {
+        return Auth::user()->canManageDonations() || Auth::user()->is_admin;
     }
 }
