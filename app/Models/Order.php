@@ -65,6 +65,11 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function payment()
+    {
+        return $this->morphOne(Payment::class, 'payable');
+    }
+
     // Scopes
     public function scopePending($query)
     {

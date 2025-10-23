@@ -28,8 +28,16 @@ class PaymentManager
     public function createPixPayment($payable, array $payerData, float $amount, array $options = []): array
     {
         try {
+            if (!$this->activeGateway) {
+                throw new Exception('Nenhum gateway de pagamento está ativo. Configure um gateway no painel administrativo.');
+            }
+            
+            if (!$this->activeGateway->isConfigured()) {
+                throw new Exception('Gateway ' . $this->activeGateway->name . ' está ativo mas não configurado. Adicione as credenciais necessárias.');
+            }
+            
             if (!$this->gatewayService) {
-                throw new Exception('Nenhum gateway de pagamento ativo configurado');
+                throw new Exception('Erro ao inicializar serviço do gateway de pagamento.');
             }
 
             $paymentData = $this->preparePaymentData($payable, $payerData, $amount, 'pix', $options);
@@ -110,8 +118,16 @@ class PaymentManager
     public function createCreditCardPayment($payable, array $payerData, float $amount, array $cardData, array $options = []): array
     {
         try {
+            if (!$this->activeGateway) {
+                throw new Exception('Nenhum gateway de pagamento está ativo. Configure um gateway no painel administrativo.');
+            }
+            
+            if (!$this->activeGateway->isConfigured()) {
+                throw new Exception('Gateway ' . $this->activeGateway->name . ' está ativo mas não configurado. Adicione as credenciais necessárias.');
+            }
+            
             if (!$this->gatewayService) {
-                throw new Exception('Nenhum gateway de pagamento ativo configurado');
+                throw new Exception('Erro ao inicializar serviço do gateway de pagamento.');
             }
 
             $paymentData = $this->preparePaymentData($payable, $payerData, $amount, 'credit_card', $options);
@@ -186,8 +202,16 @@ class PaymentManager
     public function createBankSlipPayment($payable, array $payerData, float $amount, array $options = []): array
     {
         try {
+            if (!$this->activeGateway) {
+                throw new Exception('Nenhum gateway de pagamento está ativo. Configure um gateway no painel administrativo.');
+            }
+            
+            if (!$this->activeGateway->isConfigured()) {
+                throw new Exception('Gateway ' . $this->activeGateway->name . ' está ativo mas não configurado. Adicione as credenciais necessárias.');
+            }
+            
             if (!$this->gatewayService) {
-                throw new Exception('Nenhum gateway de pagamento ativo configurado');
+                throw new Exception('Erro ao inicializar serviço do gateway de pagamento.');
             }
 
             $paymentData = $this->preparePaymentData($payable, $payerData, $amount, 'bank_slip', $options);

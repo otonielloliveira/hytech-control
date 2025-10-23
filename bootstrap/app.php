@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'check.permissions' => \App\Http\Middleware\CheckPermissions::class,
         ]);
+        
+        // Excluir rotas de webhook da verificação CSRF
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/payment/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

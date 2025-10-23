@@ -175,8 +175,9 @@
         </div>
     </div>
 </div>
+@endsection
 
-@push('scripts')
+@section('scripts')
 <script>
 // Confetti effect on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -233,9 +234,9 @@ function shareOnWhatsApp() {
     window.open(`https://wa.me/?text=${text}`, '_blank');
 }
 </script>
-@endpush
+@endsection
 
-@push('styles')
+@section('styles')
 <style>
 @keyframes bounce {
     0%, 20%, 50%, 80%, 100% {
@@ -266,5 +267,4 @@ function shareOnWhatsApp() {
     }
 }
 </style>
-@endpush
 @endsection

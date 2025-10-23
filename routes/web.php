@@ -12,6 +12,7 @@ use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DonationController;
+use App\Http\Controllers\PaymentWebhookController;
 
 Route::get('/', [BlogController::class, 'index'])->name('blog.index');
 
@@ -152,6 +153,16 @@ Route::prefix('loja')->name('store.')->group(function () {
     // AJAX routes for shipping calculation
     Route::post('/frete/calcular', [StoreController::class, 'calculateShipping'])->name('shipping.calculate');
     Route::post('/frete/aplicar', [StoreController::class, 'applyShipping'])->name('shipping.apply');
+});
+
+// Payment Webhook Routes (Notificações de Pagamento)
+Route::prefix('webhooks')->name('webhooks.')->group(function () {
+    Route::post('/payment/{gateway}', [PaymentWebhookController::class, 'handleWebhook'])->name('payment');
+});
+
+// Payment API Routes (Verificação de Status)
+Route::prefix('api')->name('api.')->group(function () {
+    Route::get('/payment/status', [PaymentWebhookController::class, 'checkPaymentStatus'])->name('payment.status');
 });
 
 // Donation Routes (Doações)

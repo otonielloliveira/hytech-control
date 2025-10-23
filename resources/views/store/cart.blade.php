@@ -2,7 +2,7 @@
 
 @section('title', 'Carrinho de Compras')
 
-@push('styles')
+@section('styles')
     <style>
         .cart-container {
             background: white;
@@ -37,7 +37,7 @@
             }
         }
     </style>
-@endpush
+@endsection
 
 @section('content')
 
@@ -86,7 +86,7 @@
                                             value="{{ $item['quantity'] }}" min="1"
                                             onchange="updateQuantity('{{ $itemId }}', this.value)">
                                     </td>
-                                    <td>R$ {{ number_format(16.9, 2, ',', '.') }}</td>
+                                    <td>R$ {{ number_format($cartTotals['shipping'] / count($cartItems), 2, ',', '.') }}</td>
                                     <td>R$ {{ number_format($item['product_price'], 2, ',', '.') }}</td>
                                     <td>R$ {{ number_format($item['subtotal'], 2, ',', '.') }}</td>
                                     <td>
@@ -108,27 +108,18 @@
             <div class="card-body">
                 <h5 class="fw-bold mb-3">Resumo do Pedido</h5>
 
-                @php
-                    $subtotal = 0;
-                    foreach ($cartItems as $item) {
-                        $subtotal += $item['subtotal'];
-                    }
-                    $shipping = 16.9;
-                    $total = $subtotal + $shipping;
-                @endphp
-
                 <div class="d-flex justify-content-between mb-2">
-                    <span>1 Produto:</span>
-                    <strong>R$ {{ number_format($subtotal, 2, ',', '.') }}</strong>
+                    <span>{{ count($cartItems) }} {{ count($cartItems) === 1 ? 'Produto' : 'Produtos' }}:</span>
+                    <strong>R$ {{ number_format($cartTotals['subtotal'], 2, ',', '.') }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span>Frete:</span>
-                    <strong>R$ {{ number_format($shipping, 2, ',', '.') }}</strong>
+                    <strong>R$ {{ number_format($cartTotals['shipping'], 2, ',', '.') }}</strong>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between fw-bold fs-5">
                     <span>Valor Total:</span>
-                    <span>R$ {{ number_format($total, 2, ',', '.') }}</span>
+                    <span>R$ {{ number_format($cartTotals['total'], 2, ',', '.') }}</span>
                 </div>
             </div>
         </div>
@@ -173,7 +164,7 @@
     </div>
 @endsection
 
-@push('scripts')
+@section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function updateQuantity(itemId, newQty) {
@@ -189,15 +180,45 @@
                 }
             });
 
-            // Simulação de atualização (substitua pela chamada AJAX real)
-            setTimeout(() => {
+            fetch('{{ route("store.cart.update") }}', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    items: [{
+                        id: itemId,
+                        quantity: parseInt(newQty)
+                    }]
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Quantidade atualizada!',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro ao atualizar',
+                        text: data.message || 'Tente novamente'
+                    });
+                }
+            })
+            .catch(error => {
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Quantidade atualizada!',
-                    timer: 1500,
-                    showConfirmButton: false
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Não foi possível atualizar o carrinho'
                 });
-            }, 800);
+            });
         }
 
         function removeItem(itemId) {
@@ -212,15 +233,57 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    document.querySelector(`[data-item-id="${itemId}"]`).remove();
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Item removido!',
-                        timer: 1500,
-                        showConfirmButton: false
+                        title: 'Removendo...',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch('{{ route("store.cart.remove") }}', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            cart_item_id: itemId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Item removido!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Atualiza localStorage
+                                if (data.cart_totals && data.cart_totals.items_count !== undefined) {
+                                    localStorage.setItem('cart_count', data.cart_totals.items_count);
+                                }
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Erro ao remover',
+                                text: data.message || 'Tente novamente'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro',
+                            text: 'Não foi possível remover o item'
+                        });
                     });
                 }
             });
         }
     </script>
-@endpush
+@endsection

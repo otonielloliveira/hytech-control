@@ -93,46 +93,16 @@ class StoreController extends Controller
 
     public function cart()
     {
-        // Dados de exemplo para testar a interface
-        $cartItems = [
-            'item_1' => [
-                'product_id' => 1,
-                'product_name' => 'Livro: História do Brasil',
-                'product_sku' => 'LIVRO-HB-001',
-                'product_price' => 89.90,
-                'product_image' => asset('images/livro-historia-brasil.jpg'),
-                'quantity' => 3,
-                'subtotal' => 269.70,
-            ],
-            'item_2' => [
-                'product_id' => 2,
-                'product_name' => 'Livro - Fé e Política de mãos dadass',
-                'product_sku' => 'LIVRO-FP-002',
-                'product_price' => 86.90,
-                'product_image' => asset('images/livro-fe-politica.jpg'),
-                'quantity' => 1,
-                'subtotal' => 86.90,
-            ]
-        ];
-        
-        $cartTotals = [
-            'subtotal' => 356.60,
-            'shipping' => 16.90,
-            'total' => 373.50,
-            'item_count' => 4
-        ];
+        $cartItems = $this->cartService->getCartItems();
+        $cartTotals = $this->cartService->getCartTotals();
 
-        // Tentar usar o serviço se existir, senão usar dados mock
-        try {
-            $serviceCartItems = $this->cartService->getCartItems();
-            $serviceCartTotals = $this->cartService->getCartTotals();
-            
-            if (!empty($serviceCartItems)) {
-                $cartItems = $serviceCartItems;
-                $cartTotals = $serviceCartTotals;
-            }
-        } catch (\Exception $e) {
-            // Use mock data if service fails
+        // Se for requisição AJAX, retorna JSON
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'items' => array_values($cartItems), // Converte para array indexado
+                'totals' => $cartTotals
+            ]);
         }
 
         return view('store.cart', compact('cartItems', 'cartTotals'));
@@ -304,96 +274,153 @@ class StoreController extends Controller
                 }
             }
 
-            // Processar pagamento — usar PaymentManager quando disponível
+            // Processar pagamento usando PaymentManager
             $selectedPaymentMethod = PaymentMethod::find($request->payment_method_id);
-            $gateway = $selectedPaymentMethod ? $selectedPaymentMethod->gateway : PaymentGatewayConfig::getActiveGateway();
-
-            $paymentResult = null;
-
-            if ($gateway === 'pix') {
-                // Payer data
-                $payer = [
-                    'name' => $billingAddress['name'],
-                    'email' => $billingAddress['email'],
-                    'phone' => $billingAddress['phone'],
-                ];
-                $paymentResult = $this->paymentManager->createPixPayment($order, $payer, $order->total, ['metadata' => ['order_id' => $order->id]]);
-            } elseif ($gateway === 'card' || $gateway === 'credit_card') {
-                $payer = [
-                    'name' => $billingAddress['name'],
-                    'email' => $billingAddress['email'],
-                    'phone' => $billingAddress['phone'],
-                ];
-                $cardData = $request->payment_data ? json_decode($request->payment_data, true) : [];
-                $paymentResult = $this->paymentManager->createCreditCardPayment($order, $payer, $order->total, $cardData['card'] ?? []);
-            } elseif ($gateway === 'boleto' || $gateway === 'bank_slip') {
-                $payer = [
-                    'name' => $billingAddress['name'],
-                    'email' => $billingAddress['email'],
-                    'phone' => $billingAddress['phone'],
-                ];
-                $paymentResult = $this->paymentManager->createBankSlipPayment($order, $payer, $order->total, []);
-            } else {
-                // Fallback to older service for other gateway types (e.g., asaas/mercadopago)
-                $paymentGatewayConfig = PaymentGatewayConfig::find($request->payment_method_id);
-                $paymentResult = $this->paymentGatewayService->processPayment($order, $paymentGatewayConfig, $request->payment_data ? json_decode($request->payment_data, true) : []);
+            
+            if (!$selectedPaymentMethod) {
+                throw new \Exception('Método de pagamento não encontrado');
             }
 
-            // Normalize result
-            if (!empty($paymentResult['success'])) {
+            // Verificar se há um gateway ativo e configurado
+            $activeGateway = $this->paymentManager->getActiveGateway();
+            if (!$activeGateway) {
+                throw new \Exception('Nenhum gateway de pagamento está ativo. Por favor, configure um gateway de pagamento no painel administrativo.');
+            }
+            
+            if (!$activeGateway->isConfigured()) {
+                throw new \Exception('O gateway de pagamento (' . $activeGateway->name . ') está ativo mas não está configurado corretamente. Por favor, configure as credenciais no painel administrativo.');
+            }
+
+            // Preparar dados do pagador
+            $payer = [
+                'name' => $billingAddress['name'],
+                'email' => $billingAddress['email'],
+                'phone' => $billingAddress['phone'],
+                'document' => $request->document ?? null,
+            ];
+
+            // Preparar opções do pagamento
+            $paymentOptions = [
+                'description' => "Pedido #{$order->id} - Loja Online",
+                'external_reference' => $order->id,
+                'metadata' => [
+                    'order_id' => $order->id,
+                    'customer_name' => $billingAddress['name'],
+                    'customer_email' => $billingAddress['email'],
+                ]
+            ];
+
+            // Processar pagamento baseado no gateway
+            $paymentResult = null;
+            $gateway = $selectedPaymentMethod->gateway;
+
+            switch ($gateway) {
+                case 'pix':
+                    $paymentResult = $this->paymentManager->createPixPayment(
+                        $order, 
+                        $payer, 
+                        $order->total, 
+                        $paymentOptions
+                    );
+                    break;
+
+                case 'card':
+                case 'credit_card':
+                case 'card_gateway':
+                    // Decodificar dados do cartão enviados pelo frontend
+                    $paymentData = $request->payment_data ? json_decode($request->payment_data, true) : [];
+                    $cardData = $paymentData['card'] ?? [];
+                    
+                    if (empty($cardData)) {
+                        throw new \Exception('Dados do cartão não fornecidos');
+                    }
+
+                    $paymentResult = $this->paymentManager->createCreditCardPayment(
+                        $order, 
+                        $payer, 
+                        $order->total, 
+                        $cardData,
+                        $paymentOptions
+                    );
+                    break;
+
+                case 'boleto':
+                case 'bank_slip':
+                    $paymentResult = $this->paymentManager->createBankSlipPayment(
+                        $order, 
+                        $payer, 
+                        $order->total, 
+                        $paymentOptions
+                    );
+                    break;
+
+                default:
+                    throw new \Exception("Gateway '{$gateway}' não suportado");
+            }
+
+            // Processar resultado do pagamento
+            if ($paymentResult['success']) {
+                $payment = $paymentResult['payment'];
+                $gatewayResponse = $paymentResult['gateway_response'] ?? [];
+
+                // Associar payment ao order (já foi criado pelo PaymentManager)
+                // O payment já tem payable_type e payable_id configurados
+                
+                // Atualizar pedido com informações do pagamento
+                $order->update([
+                    'payment_method_id' => $selectedPaymentMethod->id,
+                    'payment_transaction_id' => $payment->transaction_id,
+                    'payment_status' => $payment->status === 'approved' ? 'paid' : 'pending',
+                ]);
+
+                // Preparar dados para a view de sucesso
                 $normalized = [
                     'success' => true,
-                    'transaction_id' => $paymentResult['transaction_id'] ?? $paymentResult['transaction_id'] ?? null,
-                    'payment_url' => $paymentResult['payment_url'] ?? $paymentResult['payment_url'] ?? null,
-                    'message' => $paymentResult['message'] ?? ($paymentResult['gateway_response']['message'] ?? null),
-                    'qr_code' => $paymentResult['qr_code'] ?? null,
-                    'payment' => null,
+                    'transaction_id' => $payment->transaction_id,
+                    'gateway_transaction_id' => $payment->gateway_transaction_id,
+                    'payment_method' => $payment->payment_method,
+                    'status' => $payment->status,
+                    'amount' => $payment->amount,
+                    'payment' => [
+                        'qr_code_base64' => $payment->qr_code_base64,
+                        'qr_code_url' => $payment->qr_code_url,
+                        'pix_code' => $payment->pix_code,
+                        'checkout_url' => $payment->checkout_url,
+                    ],
                 ];
 
-                // If the PaymentManager returned a payment model, extract minimal fields
-                if (!empty($paymentResult['payment'])) {
-                    $p = $paymentResult['payment'];
-                    // If it's an object (Eloquent), read properties; if array, use keys
-                    $qrBase64 = is_object($p) ? ($p->qr_code_base64 ?? null) : ($p['qr_code_base64'] ?? null);
-                    $qrUrl = is_object($p) ? ($p->qr_code_url ?? null) : ($p['qr_code_url'] ?? null);
-                    $pixCode = is_object($p) ? ($p->pix_code ?? null) : ($p['pix_code'] ?? ($paymentResult['pix_code'] ?? null));
-
-                    $normalized['payment'] = [
-                        'qr_code_base64' => $qrBase64,
-                        'qr_code_url' => $qrUrl,
-                        'pix_code' => $pixCode,
+                // Para PIX, adicionar QR Code no formato legado se necessário
+                if ($gateway === 'pix' && $payment->qr_code_base64) {
+                    $normalized['qr_code'] = [
+                        'qr_code_image' => 'data:image/png;base64,' . $payment->qr_code_base64,
+                        'qr_code_text' => $payment->pix_code,
                     ];
-
-                    // If we don't yet have qr_code top-level, try to set from payment
-                    if (empty($normalized['qr_code']) && $qrBase64) {
-                        $normalized['qr_code'] = ['qr_code_image' => 'data:image/png;base64,' . $qrBase64];
-                    }
                 }
 
-                // Save payment reference on order if available
-                $order->update([
-                    'payment_method_id' => $selectedPaymentMethod ? $selectedPaymentMethod->id : null,
-                    'payment_transaction_id' => $normalized['transaction_id'],
-                    'payment_status' => 'processing',
-                ]);
+                // Para Boleto, adicionar URL
+                if (in_array($gateway, ['boleto', 'bank_slip']) && $payment->checkout_url) {
+                    $normalized['bank_slip_url'] = $payment->checkout_url;
+                }
 
                 // Limpar carrinho
                 $this->cartService->clear();
 
                 return redirect()->route('store.order.success', $order->id)
-                    ->with('payment_result', $normalized);
+                    ->with('payment_result', $normalized)
+                    ->with('success', 'Pedido realizado com sucesso!');
+
             } else {
-                // Reverter estoque em caso de erro no pagamento
+                // Erro no pagamento - reverter estoque
                 foreach ($cartItems as $item) {
                     $product = Product::find($item['product_id']);
-                    if ($product) {
+                    if ($product && $product->manage_stock) {
                         $product->increaseStock($item['quantity']);
                     }
                 }
 
                 $order->update(['payment_status' => 'failed']);
 
-                $errorMessage = $paymentResult['error'] ?? $paymentResult['message'] ?? 'Erro no pagamento';
+                $errorMessage = $paymentResult['error'] ?? 'Erro ao processar pagamento';
 
                 return redirect()->back()
                     ->with('error', 'Erro no pagamento: ' . $errorMessage)
