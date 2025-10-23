@@ -2,106 +2,202 @@
 
 @section('title', 'Checkout - Finalizar Compra')
 
-@push('styles')
+@section('styles')
     <style>
-        .checkout-container {
-            background: #f8f9fa;
-            padding: 2rem;
-            border-radius: 10px;
-            margin-top: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        body {
+            background-color: #ebebeb;
         }
 
-        .form-section {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
+        /* Header estilo ML */
+        .checkout-header {
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 1rem 0;
             margin-bottom: 1.5rem;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
 
-        .form-label {
+        .back-link {
+            color: #3483fa;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Cards limpos */
+        .card {
+            border: none;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,.1);
+            margin-bottom: 1rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 18px;
             font-weight: 600;
+            color: #333;
+            margin-bottom: 1.25rem;
+        }
+
+        /* Form controls */
+        .form-label {
+            font-size: 14px;
+            color: #333;
+            font-weight: 400;
             margin-bottom: 0.5rem;
         }
 
-        .form-control,
-        .form-select {
-            border-radius: 8px;
-            border: 1px solid #ced4da;
-            padding: 0.6rem 1rem;
+        .form-control, .form-select {
+            border: 1px solid #e6e6e6;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 16px;
         }
 
-        .form-control:focus,
-        .form-select:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        .form-control:focus, .form-select:focus {
+            border-color: #3483fa;
+            box-shadow: none;
         }
 
-        .btn-checkout {
-            background: #007bff;
-            color: white;
-            padding: 14px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            border-radius: 8px;
+        /* List group para endereços e pagamentos */
+        .list-group-item {
+            border: 1px solid #e6e6e6;
+            border-radius: 6px !important;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
             transition: all 0.2s;
-            width: 100%;
         }
 
-        .btn-checkout:hover {
-            background: #0056b3;
-            transform: translateY(-2px);
+        .list-group-item:hover {
+            border-color: #3483fa;
+            background-color: #f7f7f7;
         }
 
+        .list-group-item.active {
+            background-color: #f0f7ff;
+            border-color: #3483fa;
+            border-width: 2px;
+            color: inherit;
+        }
+
+        .list-group-item input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Resumo do pedido */
         .order-summary {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
             position: sticky;
-            top: 20px;
+            top: 1rem;
         }
 
-        /* Address list tweaks */
-        #address-list {
-            max-height: 240px;
-            overflow-y: auto;
+        .summary-product {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        .address-select:hover {
-            background: #f8f9fa;
-        }
-
-        .modal-lg {
-            max-width: 900px;
-        }
-
-        .summary-item {
-            padding: 1rem 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .summary-item:last-child {
+        .summary-product:last-of-type {
             border-bottom: none;
         }
 
-        .badge-security {
-            font-size: 0.85rem;
-            padding: 6px 12px;
+        .summary-totals {
+            border-top: 1px solid #e6e6e6;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .summary-total {
+            border-top: 1px solid #e6e6e6;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            font-size: 24px;
+            font-weight: 400;
+        }
+
+        /* Botão principal */
+        .btn-primary {
+            background-color: #3483fa;
+            border-color: #3483fa;
+            border-radius: 6px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #2968c8;
+            border-color: #2968c8;
+        }
+
+        /* Termos */
+        .terms-box {
+            background: #fff9e6;
+            border: 1px solid #ffe6a1;
+            border-radius: 6px;
+            padding: 1rem;
+        }
+
+        .terms-box .form-check-input {
+            width: 16px;
+            height: 16px;
+            margin-top: 2px;
+        }
+
+        .terms-box a {
+            color: #3483fa;
+        }
+
+        /* Security badges */
+        .security-section {
+            border-top: 1px solid #e6e6e6;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .security-badge {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+            margin: 0 4px;
+        }
+
+        .security-text {
+            font-size: 12px;
+            color: #00a650;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .order-summary {
+                position: static;
+            }
         }
     </style>
-@endpush
+@endsection
 
 @section('content')
+    <!-- Header -->
+    <div class="checkout-header">
+        <div class="container">
+            <a href="{{ route('store.cart') }}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Voltar ao carrinho
+            </a>
+        </div>
+    </div>
+
     <div class="container my-4">
-        <div class="checkout-container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="h3 mb-0"><i class="fas fa-shopping-cart me-2 text-primary"></i>Finalizar Compra</h2>
-                <a href="{{ route('store.cart') }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i>Voltar ao Carrinho
-                </a>
-            </div>
+        <h1 class="h3 mb-4">Finalizar compra</h1>
 
             <form id="checkoutForm" action="{{ route('store.checkout.process') }}" method="POST">
                 @csrf
@@ -116,8 +212,9 @@
                     <!-- Formulário de Dados -->
                     <div class="col-lg-8">
                         <!-- Informações de Cobrança -->
-                        <div class="form-section">
-                            <h3 class="h5 mb-4"><i class="fas fa-user me-2 text-primary"></i>Informações de Cobrança</h3>
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Informações de cobrança</h3>
 
                             <div class="row">
                                 @if (isset($client) && $client)
@@ -198,52 +295,104 @@
 
 
                             </div>
+                            </div>
                         </div>
 
                         <!-- Método de Pagamento -->
-                        <div class="form-section">
-                            <h3 class="h5 mb-4"><i class="fas fa-credit-card me-2 text-success"></i>Método de Pagamento</h3>
-                            <div class="mb-3">
-                                <label class="form-label">Escolha a forma de pagamento</label>
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Forma de pagamento</h3>
                                 <div class="list-group" id="payment-method-list">
                                     @foreach ($paymentMethods as $method)
-                                        <label
-                                            class="list-group-item d-flex justify-content-between align-items-center payment-method-item"
-                                            data-gateway="{{ $method->gateway }}">
+                                        <div class="list-group-item d-flex justify-content-between align-items-center {{ $loop->first ? 'active' : '' }}" 
+                                             data-gateway="{{ $method->gateway }}"
+                                             onclick="selectPayment(this, '{{ $method->gateway }}')">
                                             <div>
                                                 <strong>{{ $method->name }}</strong>
                                                 <div class="text-muted small">{{ $method->description }}</div>
                                             </div>
-                                            <div>
-                                                <input type="radio" name="payment_method_id" value="{{ $method->id }}"
-                                                    data-gateway="{{ $method->gateway }}"
-                                                    {{ $loop->first ? 'checked' : '' }}>
-                                            </div>
-                                        </label>
+                                            <input type="radio" name="payment_method_id" value="{{ $method->id }}"
+                                                data-gateway="{{ $method->gateway }}"
+                                                {{ $loop->first ? 'checked' : '' }}>
+                                        </div>
                                     @endforeach
                                 </div>
+
+                                <!-- Campos específicos para Cartão de Crédito -->
+                                <div id="card-payment-fields" class="mt-4" style="display: none;">
+                                    <h5 class="mb-3" style="font-size: 16px; font-weight: 600;">Dados do cartão</h5>
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <label for="card_number" class="form-label">Número do cartão *</label>
+                                            <input type="text" id="card_number" class="form-control" 
+                                                   placeholder="0000 0000 0000 0000" maxlength="19">
+                                        </div>
+                                        <div class="col-12 mb-3">
+                                            <label for="card_holder" class="form-label">Nome no cartão *</label>
+                                            <input type="text" id="card_holder" class="form-control" 
+                                                   placeholder="Nome como está no cartão">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="card_expiry" class="form-label">Validade *</label>
+                                            <input type="text" id="card_expiry" class="form-control" 
+                                                   placeholder="MM/AA" maxlength="5">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="card_cvv" class="form-label">CVV *</label>
+                                            <input type="text" id="card_cvv" class="form-control" 
+                                                   placeholder="000" maxlength="4">
+                                        </div>
+                                        <div class="col-12 mb-3">
+                                            <label for="card_installments" class="form-label">Parcelas *</label>
+                                            <select id="card_installments" class="form-select">
+                                                <option value="1">1x sem juros</option>
+                                                <option value="2">2x sem juros</option>
+                                                <option value="3">3x sem juros</option>
+                                                <option value="4">4x sem juros</option>
+                                                <option value="5">5x sem juros</option>
+                                                <option value="6">6x sem juros</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Campos específicos para Boleto -->
+                                <div id="boleto-payment-fields" class="mt-4" style="display: none;">
+                                    <div class="alert alert-info" style="border-radius: 6px; font-size: 14px;">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Pagamento via Boleto Bancário</strong>
+                                        <p class="mb-0 mt-2">Após finalizar a compra, você receberá o boleto por e-mail. O prazo de compensação é de até 2 dias úteis.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Campos específicos para PIX -->
+                                <div id="pix-payment-fields" class="mt-4" style="display: none;">
+                                    <div class="alert alert-success" style="border-radius: 6px; font-size: 14px;">
+                                        <i class="fas fa-qrcode me-2"></i>
+                                        <strong>Pagamento via PIX</strong>
+                                        <p class="mb-0 mt-2">Após finalizar a compra, você receberá um QR Code para pagamento instantâneo. Aprovação imediata!</p>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" name="payment_data" id="payment_data" value="">
                             </div>
-
-
-
-                            <input type="hidden" name="payment_data" id="payment_data" value="">
                         </div>
 
                         <!-- Observações -->
-                        <div class="form-section">
-                            <h3 class="h5 mb-4"><i class="fas fa-sticky-note me-2 text-warning"></i>Observações (Opcional)
-                            </h3>
-                            <textarea name="notes" class="form-control" rows="3" placeholder="Alguma observação especial sobre seu pedido?">{{ old('notes') }}</textarea>
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Observações (opcional)</h3>
+                                <textarea name="notes" class="form-control" rows="3" placeholder="Alguma observação sobre seu pedido?">{{ old('notes') }}</textarea>
+                            </div>
                         </div>
 
                         <!-- Termos de Uso -->
-                        <div class="form-section">
+                        <div class="terms-box">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="terms_accepted"
                                     name="terms_accepted" required>
-                                <label class="form-check-label fw-bold" for="terms_accepted">
-                                    Li e aceito os <a href="#" class="text-primary">Termos de Uso</a> e
-                                    <a href="#" class="text-primary">Política de Privacidade</a> *
+                                <label class="form-check-label" for="terms_accepted" style="font-size: 13px;">
+                                    Li e aceito os <a href="#">Termos de Uso</a> e a <a href="#">Política de Privacidade</a> *
                                 </label>
                             </div>
                             @error('terms_accepted')
@@ -254,8 +403,9 @@
 
                     <!-- Resumo do Pedido -->
                     <div class="col-lg-4">
-                        <div class="order-summary">
-                            <h3 class="h5 mb-4"><i class="fas fa-receipt me-2"></i>Resumo do Pedido</h3>
+                        <div class="card order-summary">
+                            <div class="card-body">
+                                <h3 class="card-title">Resumo da compra</h3>
 
                             @php
                                 $subtotal = 0;
@@ -268,64 +418,62 @@
                                 $total = $subtotal + $shipping;
                             @endphp
 
-                            <!-- Produtos -->
-                            @foreach ($cartItems as $item)
-                                <div class="summary-item">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <strong>{{ $item['product_name'] }}</strong><br>
-                                            <small class="text-muted">Qtd: {{ $item['quantity'] }}</small>
+                                <!-- Produtos -->
+                                @foreach ($cartItems as $item)
+                                    <div class="summary-product">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <div style="font-size: 14px; color: #333;">{{ $item['product_name'] }}</div>
+                                                <small class="text-muted">Quantidade: {{ $item['quantity'] }}</small>
+                                            </div>
+                                            <span style="font-size: 14px; white-space: nowrap;">R$ {{ number_format($item['subtotal'], 2, ',', '.') }}</span>
                                         </div>
-                                        <span>R$ {{ number_format($item['subtotal'], 2, ',', '.') }}</span>
+                                    </div>
+                                @endforeach
+
+                                <!-- Totais -->
+                                <div class="summary-totals">
+                                    <div class="d-flex justify-content-between mb-2" style="font-size: 14px;">
+                                        <span>Produtos ({{ $itemCount }})</span>
+                                        <span>R$ {{ number_format($subtotal, 2, ',', '.') }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2" style="font-size: 14px;">
+                                        <span>Frete</span>
+                                        <span>R$ {{ number_format($shipping, 2, ',', '.') }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between summary-total">
+                                        <span>Total</span>
+                                        <span>R$ {{ number_format($total, 2, ',', '.') }}</span>
                                     </div>
                                 </div>
-                            @endforeach
 
-                            <!-- Totais -->
-                            <div class="mt-3 pt-3 border-top">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Subtotal ({{ $itemCount }}):</span>
-                                    <strong>R$ {{ number_format($subtotal, 2, ',', '.') }}</strong>
-                                </div>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Frete:</span>
-                                    <strong>R$ {{ number_format($shipping, 2, ',', '.') }}</strong>
-                                </div>
-                                <hr>
-                                <div class="d-flex justify-content-between fs-5 fw-bold text-success">
-                                    <span>Total:</span>
-                                    <span>R$ {{ number_format($total, 2, ',', '.') }}</span>
-                                </div>
-                            </div>
+                                <!-- Botão de Finalizar -->
+                                <button type="submit" class="btn btn-primary w-100 mt-3">
+                                    Finalizar compra
+                                </button>
 
-                            <!-- Botão de Finalizar -->
-                            <button type="submit" class="btn-checkout mt-4">
-                                <i class="fas fa-check-circle me-2"></i>Finalizar Pedido
-                            </button>
+                                @if(session('payment_result'))
+                                    @php $paymentResult = session('payment_result'); @endphp
+                                    <div class="mt-3">
+                                        @include('components.qr-code', ['paymentResult' => $paymentResult])
+                                    </div>
+                                @endif
 
-                            @if(session('payment_result'))
-                                @php $paymentResult = session('payment_result'); @endphp
-                                <div class="mt-3">
-                                    @include('components.qr-code', ['paymentResult' => $paymentResult])
+                                <!-- Segurança -->
+                                <div class="security-section">
+                                    <div>
+                                        <span class="security-badge">🔒 Compra segura</span>
+                                        <span class="security-badge">💳 PIX</span>
+                                    </div>
+                                    <div class="security-text">
+                                        <i class="fas fa-shield-alt"></i> Seus dados estão protegidos
+                                    </div>
                                 </div>
-                            @endif
-
-                            <!-- Segurança -->
-                            <div class="text-center mt-4">
-                                <div class="d-flex justify-content-center gap-2 flex-wrap">
-                                    <span class="badge bg-success badge-security">🔒 SSL</span>
-                                    <span class="badge bg-primary badge-security">💳 PIX</span>
-                                    <span class="badge bg-warning text-dark badge-security">📱 Seguro</span>
-                                </div>
-                                <small class="text-muted d-block mt-2">
-                                    Seus dados estão protegidos
-                                </small>
                             </div>
                         </div>
                     </div>
                 </div>
             </form>
-        </div>
     </div>
 
     <!-- Modal para Adicionar Novo Endereço -->
@@ -435,9 +583,9 @@
     </div>
 @endsection
 
-@push('scripts')
+@section('scripts')
     <script>
-        // Server-side messages (validation errors or session error) will be exposed to JS
+        // Expose server-side messages to JavaScript
         window.SERVER_ERRORS = [];
         window.SERVER_ERROR = null;
         @if ($errors->any())
@@ -446,294 +594,8 @@
         @if (session('error'))
             window.SERVER_ERROR = {!! json_encode(session('error')) !!};
         @endif
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkoutForm = document.getElementById('checkoutForm');
-
-            // Show server-side errors (if any)
-            if (window.SERVER_ERROR) {
-                try { showToast(window.SERVER_ERROR, 'error', 5000); } catch (e) { console.error(e); }
-            }
-            if (Array.isArray(window.SERVER_ERRORS) && window.SERVER_ERRORS.length) {
-                window.SERVER_ERRORS.forEach(msg => {
-                    try { showToast(msg, 'error', 5000); } catch (e) { console.error(e); }
-                });
-            }
-
-            // Safe selectors
-            const billingPhone = document.getElementById('billing_phone');
-            const billingZip = document.getElementById('billing_zip');
-
-            // Simple toast helper using Bootstrap Toasts
-            function showToast(message, type = 'info', timeout = 3000) {
-                // container
-                let container = document.getElementById('toast-container-js');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'toast-container-js';
-                    container.style.position = 'fixed';
-                    container.style.top = '1rem';
-                    container.style.right = '1rem';
-                    container.style.zIndex = 11000;
-                    document.body.appendChild(container);
-                }
-
-                const toastEl = document.createElement('div');
-                toastEl.className = 'toast align-items-center text-bg-' + (type === 'error' ? 'danger' : (type === 'success' ? 'success' : (type === 'warning' ? 'warning text-dark' : 'primary'))) + ' border-0';
-                toastEl.setAttribute('role', 'alert');
-                toastEl.setAttribute('aria-live', 'assertive');
-                toastEl.setAttribute('aria-atomic', 'true');
-                toastEl.style.minWidth = '220px';
-
-                toastEl.innerHTML = `
-                    <div class="d-flex">
-                        <div class="toast-body">${message}</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                `;
-
-                container.appendChild(toastEl);
-                const bsToast = new bootstrap.Toast(toastEl, { delay: timeout });
-                bsToast.show();
-                // remove after hidden
-                toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
-            }
-
-            // Helper: apply phone mask
-            function applyPhoneMask(el) {
-                if (!el) return;
-                el.addEventListener('input', function(e) {
-                    let value = e.target.value.replace(/\D/g, '');
-                    if (value.length > 10) {
-                        value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-                    } else {
-                        value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-                    }
-                    e.target.value = value;
-                });
-            }
-
-            // Helper: apply CEP mask
-            function applyCepMask(el) {
-                if (!el) return;
-                el.addEventListener('input', function(e) {
-                    let value = e.target.value.replace(/\D/g, '');
-                    if (value.length > 5) {
-                        value = value.replace(/(\d{5})(\d{1,3})/, '$1-$2');
-                    }
-                    e.target.value = value;
-                });
-            }
-
-            applyPhoneMask(billingPhone);
-            applyCepMask(billingZip);
-
-            // CEP lookup helper (via ViaCEP) - accepts element id prefixes
-            function setupCepLookup(inputEl, onSuccess) {
-                if (!inputEl) return;
-
-                function lookup() {
-                    const cep = inputEl.value.replace(/\D/g, '');
-                    if (cep.length !== 8) return;
-                    inputEl.classList.remove('is-invalid');
-                    inputEl.classList.add('is-valid');
-                    fetch(`https://viacep.com.br/ws/${cep}/json/`)
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.erro) {
-                                inputEl.classList.add('is-invalid');
-                                inputEl.classList.remove('is-valid');
-                                return;
-                            }
-                            inputEl.classList.remove('is-invalid');
-                            inputEl.classList.add('is-valid');
-                            onSuccess(data);
-                        })
-                        .catch(() => {
-                            inputEl.classList.add('is-invalid');
-                            inputEl.classList.remove('is-valid');
-                        });
-                }
-
-                inputEl.addEventListener('keyup', function() {
-                    lookup();
-                });
-                inputEl.addEventListener('blur', function() {
-                    lookup();
-                });
-            }
-
-            // billing CEP -> fill billing address fields
-            setupCepLookup(billingZip, function(data) {
-                const street = data.logradouro || '';
-                const neighborhood = data.bairro || '';
-                const city = data.localidade || '';
-                const state = data.uf || '';
-                if (street) document.getElementById('new_street').value = street;
-                if (city) document.getElementById('new_city').value = city;
-                if (state) document.getElementById('new_state').value = state;
-            });
-
-            // modal CEP
-            const newPostalCode = document.getElementById('new_postal_code');
-            setupCepLookup(newPostalCode, function(data) {
-                document.getElementById('new_street').value = data.logradouro || '';
-                document.getElementById('new_neighborhood').value = data.bairro || '';
-                document.getElementById('new_city').value = data.localidade || '';
-                document.getElementById('new_state').value = data.uf || '';
-                document.getElementById('new_number').focus();
-            });
-
-            // If client has saved addresses, do not prefill billing address fields (we'll use selected address)
-            const addressList = document.getElementById('address-list');
-            if (addressList && addressList.children.length > 0) {
-                // Clear any prefilled billing address fields so user picks from saved addresses
-                ['billing_address', 'billing_city', 'billing_state', 'billing_zip'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.value = '';
-                });
-            }
-
-            // address select click handler (delegated)
-            if (addressList) {
-                addressList.addEventListener('click', function(ev) {
-                    const target = ev.target.closest('.address-select');
-                    if (!target) return;
-                    const street = target.getAttribute('data-street') || '';
-                    const number = target.getAttribute('data-number') || '';
-                    const complement = target.getAttribute('data-complement') || '';
-                    const neighborhood = target.getAttribute('data-neighborhood') || '';
-                    let fullAddress = street;
-                    if (number) fullAddress += ', ' + number;
-                    if (complement) fullAddress += ' - ' + complement;
-                    if (neighborhood) fullAddress += ' - ' + neighborhood;
-                    document.getElementById('billing_address').value = fullAddress;
-                    document.getElementById('billing_city').value = target.getAttribute('data-city') || '';
-                    document.getElementById('billing_state').value = target.getAttribute('data-state') ||
-                    '';
-                    document.getElementById('billing_zip').value = target.getAttribute(
-                        'data-postal-code') || '';
-                    // mark radio
-                    const radio = target.querySelector('input[type=radio]');
-                    if (radio) radio.checked = true;
-                });
-            }
-
-            // Save address via AJAX
-            const saveAddressBtn = document.getElementById('saveAddressBtn');
-            if (saveAddressBtn) {
-                saveAddressBtn.addEventListener('click', function() {
-                    const form = document.getElementById('newAddressForm');
-                    const requiredFields = ['name', 'new_postal_code', 'new_street', 'new_number', 'new_neighborhood',
-                        'new_city', 'new_state'
-                    ];
-                    let isValid = true;
-                    requiredFields.forEach(field => {
-                        const input = form.querySelector(`[name="${field}"]`);
-                        if (!input || !input.value.trim()) {
-                            isValid = false;
-                            if (input) input.classList.add('is-invalid');
-                        } else {
-                            input.classList.remove('is-invalid');
-                        }
-                    });
-                    if (!isValid) {
-                        showToast('Por favor, preencha todos os campos obrigatórios.', 'warning', 3500);
-                        return;
-                    }
-
-                    const payload = {
-                        name: form.querySelector('[name="name"]').value,
-                        postal_code: form.querySelector('[name="postal_code"]').value,
-                        street: form.querySelector('[name="street"]').value,
-                        number: form.querySelector('[name="number"]').value,
-                        complement: form.querySelector('[name="complement"]').value,
-                        neighborhood: form.querySelector('[name="neighborhood"]').value,
-                        city: form.querySelector('[name="city"]').value,
-                        state: form.querySelector('[name="state"]').value,
-                        is_default: form.querySelector('[name="is_default"]').checked ? 1 : 0
-                    };
-
-                    this.disabled = true;
-                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
-
-                    fetch('{{ route('client.addresses.store') }}', {
-                            method: 'POST',
-                            body: JSON.stringify(payload),
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                    .content,
-                                'Accept': 'application/json'
-                            }
-                        })
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data && data.success) {
-                                // Show success toast and reload shortly after so user sees feedback
-                                showToast('Endereço adicionado com sucesso!', 'success', 1200);
-                                setTimeout(() => window.location.reload(), 1200);
-                                return;
-                            } else {
-                                showToast('Erro ao salvar endereço: ' + (data.message || 'Erro desconhecido'), 'error', 4000);
-                            }
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            showToast('Erro ao salvar endereço. Tente novamente.', 'error', 4000);
-                        })
-                        .finally(() => {
-                            this.disabled = false;
-                            this.innerHTML = '<i class="fas fa-save me-1"></i>Salvar Endereço';
-                        });
-                });
-            }
-
-
-            // Payment method change handling
-            function handlePaymentMethodChange() {
-                const selected = document.querySelector('input[name=payment_method_id]:checked');
-                const gateway = selected ? selected.getAttribute('data-gateway') : null;
-                const cardForm = document.getElementById('card-form');
-                if (cardForm) cardForm.style.display = (gateway === 'card' || gateway === 'card_gateway') ?
-                    'block' : 'none';
-            }
-            document.querySelectorAll('input[name=payment_method_id]').forEach(r => r.addEventListener('change',
-                handlePaymentMethodChange));
-
-            // Serialize payment card data before submit and validate terms
-            if (checkoutForm) {
-                checkoutForm.addEventListener('submit', function(e) {
-                    const termsAccepted = document.getElementById('terms_accepted').checked;
-                    if (!termsAccepted) {
-                        e.preventDefault();
-                        showToast('Você deve aceitar os termos de uso para continuar.', 'warning', 3500);
-                        return;
-                    }
-
-                    const selected = document.querySelector('input[name=payment_method_id]:checked');
-                    const gateway = selected ? selected.getAttribute('data-gateway') : null;
-                    const paymentDataField = document.getElementById('payment_data');
-                    if (gateway === 'card' || gateway === 'card_gateway') {
-                        const card = {
-                            card: {
-                                holder: document.getElementById('card_holder').value,
-                                number: document.getElementById('card_number').value,
-                                expiry: document.getElementById('card_expiry').value,
-                                cvv: document.getElementById('card_cvv').value,
-                                installments: parseInt(document.getElementById('card_installments')
-                                    .value) || 1
-                            }
-                        };
-                        if (paymentDataField) paymentDataField.value = JSON.stringify(card);
-                    } else if (paymentDataField) {
-                        paymentDataField.value = '';
-                    }
-                });
-            }
-
-            // Initialize
-            handlePaymentMethodChange();
-        });
     </script>
-@endpush
+    
+    <!-- Main checkout script - handles all interactions -->
+    <script src="{{ asset('js/checkout.js') }}"></script>
+@endsection
