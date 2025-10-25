@@ -221,7 +221,7 @@
             </div>
             
             <!-- Learning Objectives -->
-            @if($course->what_you_will_learn)
+            @if($course->what_you_will_learn && is_array($course->what_you_will_learn) && count($course->what_you_will_learn) > 0)
             <div class="course-section mb-5">
                 <h3 class="mb-4">O que você vai aprender</h3>
                 <div class="learning-objectives">
@@ -235,7 +235,7 @@
             @endif
             
             <!-- Requirements -->
-            @if($course->requirements)
+            @if($course->requirements && is_array($course->requirements) && count($course->requirements) > 0)
             <div class="course-section mb-5">
                 <h3 class="mb-4">Requisitos</h3>
                 <div class="requirements">
