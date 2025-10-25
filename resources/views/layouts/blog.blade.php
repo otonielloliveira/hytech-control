@@ -35,12 +35,16 @@
 
     <style>
         :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1e40af;
-            --accent-color: #f59e0b;
-            --text-color: #1f2937;
-            --light-bg: #f8fafc;
-            --border-color: #e5e7eb;
+            --primary-color: #c41e3a;
+            --secondary-color: #8b1428;
+            --accent-color: #1a73e8;
+            --text-color: #1a1a1a;
+            --light-bg: #fafafa;
+            --border-color: #e0e0e0;
+            --gray-900: #111827;
+            --gray-800: #1f2937;
+            --gray-700: #374151;
+            --gray-100: #f3f4f6;
         }
 
         * {
@@ -50,31 +54,47 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
             color: var(--text-color);
+            background: #fff;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Header fixo */
+        /* Header profissional */
         .navbar {
             background: #fff !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 0.5rem 0;
+            border-bottom: 3px solid var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 0.75rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 24px;
+            letter-spacing: -0.5px;
         }
 
         .navbar-brand img {
-            height: 40px;
+            height: 45px;
         }
 
         .navbar-nav .nav-link {
-            color: var(--text-color) !important;
-            font-weight: 500;
-            padding: 0.5rem 1rem !important;
-            transition: color 0.3s ease;
+            color: var(--gray-700) !important;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 0.5rem 0.65rem !important;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
         .navbar-nav .nav-link:hover {
             color: var(--primary-color) !important;
+            background: rgba(196, 30, 58, 0.05);
+            border-radius: 4px;
         }
 
         /* Badges de Notificação e Carrinho - Estilo Mercado Livre */
@@ -84,19 +104,19 @@
 
         .navbar-nav .nav-link .badge {
             position: absolute;
-            top: 5px !important;
-            right: -2px !important;
-            min-width: 16px;
-            height: 16px;
+            top: 3px !important;
+            right: -5px !important;
+            min-width: 14px;
+            height: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 4px;
-            font-size: 10px;
+            padding: 0 3px;
+            font-size: 9px;
             font-weight: 600;
-            border-radius: 8px;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            border-radius: 7px;
+            border: 1.5px solid #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
         }
 
         .navbar-nav .nav-link .badge.bg-danger {
@@ -111,20 +131,46 @@
             font-size: 1.2rem;
         }
 
-        /* Banner Carousel */
+        /* Banner Carousel Estilo Editorial */
         .hero-carousel {
             margin-top: 76px;
-            /* altura do navbar fixo */
-            height: 500px;
-            margin-bottom: 2rem;
+            height: 450px;
+            margin-bottom: 0;
             position: relative;
             overflow: hidden;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        /* Breaking News Bar */
+        .breaking-news {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.75rem 0;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .breaking-news .badge {
+            background: white;
+            color: var(--primary-color);
+            font-weight: 700;
+            padding: 0.4rem 0.8rem;
+            margin-right: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
         }
 
         /* Layout com Sidebar */
         .main-content {
             padding: 2rem 0;
             min-height: calc(100vh - 200px);
+            background: var(--light-bg);
         }
 
         .main-content .container {
@@ -151,23 +197,26 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(45deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
+            background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.85) 100%);
             display: flex;
-            align-items: center;
+            align-items: flex-end;
         }
 
         .carousel-content {
             color: white;
-            max-width: 600px;
+            max-width: 800px;
             z-index: 2;
             position: relative;
+            padding-bottom: 3rem;
         }
 
         .carousel-content h1 {
-            font-size: 3rem;
-            font-weight: 700;
+            font-size: 2.75rem;
+            font-weight: 800;
             margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+            line-height: 1.2;
+            letter-spacing: -0.5px;
         }
 
         .carousel-content h2 {
@@ -235,48 +284,56 @@
 
         /* Seções */
         .section {
-            padding: 4rem 0;
+            padding: 3rem 0;
         }
 
         .section-title {
-            text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 1rem;
         }
 
         .section-title h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text-color);
-            margin-bottom: 1rem;
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: 0;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
         }
 
         .section-title p {
-            font-size: 1.1rem;
-            color: #6b7280;
-            max-width: 600px;
-            margin: 0 auto;
+            font-size: 1rem;
+            color: var(--gray-700);
+            margin: 0.5rem 0 0 0;
         }
 
-        /* Additional Blog Styles */
+        /* Cards de posts estilo editorial */
         .post-card {
             background: white;
-            border-radius: 15px;
+            border-radius: 4px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: all 0.25s ease;
             height: 100%;
-            border: none;
+            border: 1px solid var(--border-color);
         }
 
         .post-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-color);
         }
 
         .post-card img {
             width: 100%;
-            height: 200px;
+            height: 220px;
             object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .post-card:hover img {
+            transform: scale(1.05);
         }
 
         .post-card-body {
@@ -285,23 +342,29 @@
 
         .post-category {
             display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
+            padding: 0.25rem 0.75rem;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 700;
             color: white;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            background: var(--primary-color);
         }
 
         .post-title {
-            font-size: 1.2rem;
-            margin-bottom: 0.8rem;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
             line-height: 1.4;
+            font-weight: 700;
+            letter-spacing: -0.3px;
         }
 
         .post-title a {
-            color: var(--text-color);
+            color: var(--gray-900);
             text-decoration: none;
+            transition: color 0.2s ease;
         }
 
         .post-title a:hover {
@@ -309,13 +372,14 @@
         }
 
         .post-excerpt {
-            color: #6c757d;
-            font-size: 0.9rem;
+            color: var(--gray-700);
+            font-size: 0.95rem;
             margin-bottom: 1rem;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            line-height: 1.6;
         }
 
         .post-meta {
@@ -323,7 +387,15 @@
             flex-wrap: wrap;
             gap: 1rem;
             font-size: 0.8rem;
-            color: #6c757d;
+            color: var(--gray-700);
+            font-weight: 500;
+            border-top: 1px solid var(--border-color);
+            padding-top: 0.75rem;
+            margin-top: auto;
+        }
+
+        .post-meta i {
+            color: var(--primary-color);
         }
 
         .section {
@@ -364,57 +436,41 @@
             padding: 0.75rem 2rem;
         }
 
-        /* Footer */
+        /* Footer Profissional */
         .footer {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f172a 100%);
-            color: white;
-            padding: 4rem 0 1.5rem;
+            background: var(--gray-900);
+            color: #e5e7eb;
+            padding: 3rem 0 1.5rem;
             position: relative;
-            border-top: 1px solid #334155;
-        }
-
-        .footer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="0.5" fill="%23ffffff" opacity="0.02"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
-            pointer-events: none;
-        }
-
-        .footer .container {
-            position: relative;
-            z-index: 1;
+            border-top: 3px solid var(--primary-color);
         }
 
         .footer h5 {
-            color: #60a5fa;
+            color: white;
             margin-bottom: 1.5rem;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1rem;
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
 
         .footer p {
-            color: #cbd5e1;
+            color: #9ca3af;
             margin-bottom: 1rem;
-            line-height: 1.6;
-            font-size: 0.95rem;
+            line-height: 1.7;
+            font-size: 0.9rem;
         }
 
         .footer a {
-            color: #94a3b8;
+            color: #d1d5db;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             font-weight: 500;
         }
 
         .footer a:hover {
-            color: #60a5fa;
-            text-shadow: 0 0 8px rgba(96, 165, 250, 0.3);
+            color: white;
+            padding-left: 5px;
         }
 
         .footer small {
@@ -998,6 +1054,139 @@
                 transform: scale(1);
             }
         }
+
+        /* Cores de Categorias Políticas */
+        .cat-politica { background: #c41e3a; }
+        .cat-economia { background: #059669; }
+        .cat-sociedade { background: #1a73e8; }
+        .cat-internacional { background: #7c3aed; }
+        .cat-justica { background: #d97706; }
+        .cat-eleicoes { background: #dc2626; }
+        .cat-analise { background: #6366f1; }
+        .cat-opiniao { background: #8b5cf6; }
+
+        /* Featured Post Destacado */
+        .featured-post {
+            position: relative;
+            height: 500px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .featured-post img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .featured-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+            padding: 3rem 2rem 2rem;
+            color: white;
+        }
+
+        .featured-overlay .category {
+            background: var(--primary-color);
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .featured-overlay h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .featured-overlay p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            opacity: 0.95;
+        }
+
+        /* Grid de Notícias */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Sidebar Widgets */
+        .sidebar-widget {
+            background: white;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-widget h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-widget ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-widget ul li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-widget ul li:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar-widget ul li a {
+            color: var(--gray-700);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .sidebar-widget ul li a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Trending Badge */
+        .trending {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .trending::before {
+            content: '🔥';
+            animation: pulse 1.5s infinite;
+        }
     </style>
 
     @if ($config->custom_head_code)
@@ -1006,6 +1195,20 @@
 </head>
 
 <body>
+    <!-- Breaking News Bar -->
+    @if(isset($breakingNews) && $breakingNews)
+    <div class="breaking-news">
+        <div class="container">
+            <div class="d-flex align-items-center">
+                <span class="badge">URGENTE</span>
+                <marquee behavior="scroll" direction="left" scrollamount="5">
+                    {{ $breakingNews }}
+                </marquee>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Header Fixo -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
@@ -1025,47 +1228,47 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('blog.index') }}">
-                            <i class="fas fa-home me-1"></i>Início
+                            Início
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('courses.index') }}">
-                            <i class="fas fa-graduation-cap me-1"></i>Cursos
+                            Cursos
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('store.index') }}">
-                            <i class="fas fa-shopping-bag me-1"></i>Loja
+                            Loja
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('lectures.index') }}">
-                            <i class="fas fa-microphone me-1"></i>Palestras
+                            Palestras
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('albums.index') }}">
-                            <i class="fas fa-camera me-1"></i>Álbuns
+                            Álbuns
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('videos.index') }}">
-                            <i class="fas fa-video me-1"></i>Vídeos
+                            Vídeos
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('downloads.index') }}">
-                            <i class="fas fa-download me-1"></i>Download
+                            Downloads
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-warning" href="{{ route('donations.index') }}">
-                            <i class="fas fa-heart me-1"></i>Ajudar Projeto
+                            Apoiar
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">
-                            <i class="fas fa-envelope me-1"></i>Contatos
+                            Contato
                         </a>
                     </li>
 
