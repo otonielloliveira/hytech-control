@@ -21,6 +21,9 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Rupadana\ApiService\ApiServicePlugin;
 use App\Models\BlogConfig;
+use Filament\Support\Facades\FilamentView;
+use Illuminate\Support\Facades\Blade;
+use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -48,6 +51,10 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->maxContentWidth('full')
+            ->globalSearch(true)
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            ->globalSearchFieldSuffix(fn (): ?string => 'Buscar no menu...')
+            ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -85,5 +92,13 @@ class AdminPanelProvider extends PanelProvider
                 ApiServicePlugin::make(), //Plugin que cria o serviço de API RESTful para o painel admin do Filament
                 FilamentNordThemePlugin::make(), //Plugin que aplica o tema Nord ao painel admin do Filament
             ])->viteTheme('resources/css/filament/admin/theme.css'); //Não alterar essa linha
+    }
+    
+    public function boot(): void
+    {
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::TOPBAR_START,
+            fn (): string => Blade::render('@livewire(\'navigation-search\')')
+        );
     }
 }
