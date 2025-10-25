@@ -10,12 +10,40 @@ class EditBanner extends EditRecord
 {
     protected static string $resource = BannerResource::class;
 
-    protected static ?string $title = 'Editar Banner';
+    protected static ?string $title = 'Editar Banner Moderno';
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\Action::make('preview')
+                ->label('👁️ Visualizar Banner')
+                ->icon('heroicon-o-eye')
+                ->color('info')
+                ->url(fn () => route('blog.index'), shouldOpenInNewTab: true)
+                ->tooltip('Abrir página principal para ver o banner'),
+            
+            Actions\Action::make('duplicate')
+                ->label('📋 Duplicar')
+                ->icon('heroicon-o-document-duplicate')
+                ->color('gray')
+                ->requiresConfirmation()
+                ->action(function () {
+                    $newBanner = $this->record->replicate();
+                    $newBanner->title = $this->record->title . ' (Cópia)';
+                    $newBanner->is_active = false;
+                    $newBanner->save();
+                    
+                    \Filament\Notifications\Notification::make()
+                        ->success()
+                        ->title('Banner duplicado!')
+                        ->body('Uma cópia do banner foi criada.')
+                        ->send();
+                    
+                    return redirect()->to($this->getResource()::getUrl('edit', ['record' => $newBanner]));
+                }),
+            
+            Actions\DeleteAction::make()
+                ->label('Excluir'),
         ];
     }
 

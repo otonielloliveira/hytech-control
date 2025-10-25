@@ -35,79 +35,433 @@ class BannerResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Conteúdo do Banner')
+                Forms\Components\Section::make('📚 Guia Rápido')
+                    ->description('Sistema de criação de banners com camadas (layers) estilo WordPress. Crie banners profissionais com textos, imagens, botões e mais!')
                     ->schema([
-                        Forms\Components\TextInput::make('title')
-                            ->label('Título')
-                            ->required()
-                            ->columnSpanFull(),
-                        
-                        Forms\Components\TextInput::make('subtitle')
-                            ->label('Subtítulo')
-                            ->columnSpanFull(),
-                        
-                        Forms\Components\Textarea::make('description')
-                            ->label('Descrição')
-                            ->rows(3)
-                            ->columnSpanFull(),
-                        
-                        Forms\Components\FileUpload::make('image')
-                            ->label('Imagem do Banner')
-                            ->image()
-                            ->imageEditor()
-                            ->directory('blog/banners')
-                            ->visibility('public')
-                            ->required()
-                            ->columnSpanFull(),
-                    ]),
+                        Forms\Components\Placeholder::make('help')
+                            ->label('')
+                            ->content(new \Illuminate\Support\HtmlString('
+                                <div style="line-height: 1.8;">
+                                    <h4 style="margin-bottom: 1rem; color: #c41e3a;">
+                                        <strong>🎨 Como usar o Editor de Banners:</strong>
+                                    </h4>
+                                    <ol style="margin-left: 1.5rem;">
+                                        <li><strong>Background & Layout:</strong> Configure a imagem de fundo, cores, altura e overlay</li>
+                                        <li><strong>Content Layers:</strong> Adicione camadas de conteúdo (textos, botões, imagens, badges)</li>
+                                        <li><strong>Configurações:</strong> Defina título interno, status e ordem de exibição</li>
+                                    </ol>
+                                    <h4 style="margin: 1.5rem 0 1rem; color: #c41e3a;">
+                                        <strong>💡 Dicas:</strong>
+                                    </h4>
+                                    <ul style="margin-left: 1.5rem;">
+                                        <li>Use os <strong>templates prontos</strong> acima para começar rapidamente</li>
+                                        <li><strong>Arraste as camadas</strong> para reordenar (drag & drop)</li>
+                                        <li>Use <strong>Espaçadores</strong> para criar distância entre elementos</li>
+                                        <li>Recomendação: Imagens de fundo com <strong>1920x800px</strong></li>
+                                        <li>Altura ideal do banner: <strong>400-600px</strong> para desktop</li>
+                                        <li>O <strong>preview ao vivo</strong> atualiza automaticamente!</li>
+                                    </ul>
+                                </div>
+                            ')),
+                    ])
+                    ->collapsed()
+                    ->persistCollapsed()
+                    ->columnSpanFull(),
                 
-                Forms\Components\Section::make('Link de Destino')
-                    ->schema([
-                        Forms\Components\Select::make('link_type')
-                            ->label('Tipo de Link')
-                            ->options([
-                                'url' => 'URL Externa',
-                                'post' => 'Post do Blog',
-                            ])
-                            ->default('url')
-                            ->live()
-                            ->required(),
+                Forms\Components\Tabs::make('Banner Editor')
+                    ->tabs([
+                        // Tab 1: Background & Layout
+                        Forms\Components\Tabs\Tab::make('🎨 Background & Layout')
+                            ->schema([
+                                Forms\Components\Section::make('Imagem de Fundo')
+                                    ->schema([
+                                        Forms\Components\FileUpload::make('background_image')
+                                            ->label('Imagem de Fundo')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->directory('blog/banners/backgrounds')
+                                            ->visibility('public')
+                                            ->columnSpanFull()
+                                            ->helperText('Recomendado: 1920x800px'),
+                                        
+                                        Forms\Components\Grid::make(3)
+                                            ->schema([
+                                                Forms\Components\ColorPicker::make('background_color')
+                                                    ->label('Cor de Fundo')
+                                                    ->helperText('Exibida quando não houver imagem'),
+                                                
+                                                Forms\Components\Select::make('background_position')
+                                                    ->label('Posição do Fundo')
+                                                    ->options([
+                                                        'top left' => 'Superior Esquerda',
+                                                        'top center' => 'Superior Centro',
+                                                        'top right' => 'Superior Direita',
+                                                        'center left' => 'Centro Esquerda',
+                                                        'center center' => 'Centro',
+                                                        'center right' => 'Centro Direita',
+                                                        'bottom left' => 'Inferior Esquerda',
+                                                        'bottom center' => 'Inferior Centro',
+                                                        'bottom right' => 'Inferior Direita',
+                                                    ])
+                                                    ->default('center center'),
+                                                
+                                                Forms\Components\Select::make('background_size')
+                                                    ->label('Tamanho do Fundo')
+                                                    ->options([
+                                                        'cover' => 'Cobrir (Cover)',
+                                                        'contain' => 'Conter (Contain)',
+                                                        'auto' => 'Automático',
+                                                        '100% 100%' => 'Esticar (100%)',
+                                                    ])
+                                                    ->default('cover'),
+                                            ]),
+                                    ]),
+                                
+                                Forms\Components\Section::make('Overlay')
+                                    ->schema([
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\ColorPicker::make('overlay_color')
+                                                    ->label('Cor do Overlay')
+                                                    ->helperText('Sobreposição de cor sobre a imagem'),
+                                                
+                                                Forms\Components\TextInput::make('overlay_opacity')
+                                                    ->label('Opacidade do Overlay (%)')
+                                                    ->numeric()
+                                                    ->minValue(0)
+                                                    ->maxValue(100)
+                                                    ->default(0)
+                                                    ->suffix('%'),
+                                            ]),
+                                    ])
+                                    ->collapsed(),
+                                
+                                Forms\Components\Section::make('Dimensões e Alinhamento')
+                                    ->schema([
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\TextInput::make('banner_height')
+                                                    ->label('Altura do Banner (px)')
+                                                    ->numeric()
+                                                    ->default(500)
+                                                    ->suffix('px')
+                                                    ->helperText('Desktop: 400-600px recomendado'),
+                                                
+                                                Forms\Components\Select::make('content_alignment')
+                                                    ->label('Alinhamento do Conteúdo')
+                                                    ->options([
+                                                        'flex-start' => 'Topo',
+                                                        'center' => 'Centro',
+                                                        'flex-end' => 'Base',
+                                                    ])
+                                                    ->default('center'),
+                                            ]),
+                                    ]),
+                            ]),
                         
-                        Forms\Components\TextInput::make('link_url')
-                            ->label('URL')
-                            ->url()
-                            ->visible(fn (callable $get) => $get('link_type') === 'url')
-                            ->required(fn (callable $get) => $get('link_type') === 'url'),
+                        // Tab 2: Content Layers
+                        Forms\Components\Tabs\Tab::make('📝 Content Layers')
+                            ->schema([
+                                Forms\Components\Section::make('🎭 Preview em Tempo Real')
+                                    ->description('Visualize como seu banner ficará antes de salvar!')
+                                    ->schema([
+                                        Forms\Components\Placeholder::make('preview_placeholder')
+                                            ->label('')
+                                            ->content(new \Illuminate\Support\HtmlString('
+                                                <div style="background: #f0fdf4; border: 2px dashed #10b981; border-radius: 8px; padding: 1.5rem; text-align: center;">
+                                                    <p style="margin: 0; color: #059669; font-weight: 600;">
+                                                        <i class="fas fa-magic"></i> 
+                                                        O preview acima atualiza automaticamente conforme você edita!
+                                                    </p>
+                                                    <p style="margin: 0.5rem 0 0; color: #047857; font-size: 13px;">
+                                                        Arraste as camadas abaixo para reordenar. A ordem define como aparecem no banner.
+                                                    </p>
+                                                </div>
+                                            ')),
+                                    ])
+                                    ->collapsed(),
+                                
+                                Forms\Components\Section::make('Camadas de Conteúdo')
+                                    ->description('🎨 Adicione textos, imagens, botões e mais. ⬆️⬇️ Arraste para reordenar.')
+                                    ->schema([
+                                        Forms\Components\Builder::make('layers')
+                                            ->label('')
+                                            ->blocks([
+                                                // Text Block
+                                                Forms\Components\Builder\Block::make('text')
+                                                    ->label('📄 Texto')
+                                                    ->icon('heroicon-o-document-text')
+                                                    ->schema([
+                                                        Forms\Components\RichEditor::make('content')
+                                                            ->label('Conteúdo')
+                                                            ->required()
+                                                            ->columnSpanFull(),
+                                                        
+                                                        Forms\Components\Grid::make(4)
+                                                            ->schema([
+                                                                Forms\Components\Select::make('tag')
+                                                                    ->label('Tag HTML')
+                                                                    ->options([
+                                                                        'h1' => 'Título H1',
+                                                                        'h2' => 'Título H2',
+                                                                        'h3' => 'Título H3',
+                                                                        'h4' => 'Título H4',
+                                                                        'p' => 'Parágrafo',
+                                                                        'span' => 'Span',
+                                                                    ])
+                                                                    ->default('p'),
+                                                                
+                                                                Forms\Components\ColorPicker::make('color')
+                                                                    ->label('Cor do Texto'),
+                                                                
+                                                                Forms\Components\TextInput::make('font_size')
+                                                                    ->label('Tamanho da Fonte')
+                                                                    ->numeric()
+                                                                    ->suffix('px')
+                                                                    ->default(16),
+                                                                
+                                                                Forms\Components\Select::make('font_weight')
+                                                                    ->label('Peso da Fonte')
+                                                                    ->options([
+                                                                        '300' => 'Leve (300)',
+                                                                        '400' => 'Normal (400)',
+                                                                        '500' => 'Médio (500)',
+                                                                        '600' => 'Semi-Bold (600)',
+                                                                        '700' => 'Bold (700)',
+                                                                        '800' => 'Extra-Bold (800)',
+                                                                    ])
+                                                                    ->default('400'),
+                                                            ]),
+                                                        
+                                                        Forms\Components\Grid::make(3)
+                                                            ->schema([
+                                                                Forms\Components\Select::make('text_align')
+                                                                    ->label('Alinhamento')
+                                                                    ->options([
+                                                                        'left' => 'Esquerda',
+                                                                        'center' => 'Centro',
+                                                                        'right' => 'Direita',
+                                                                    ])
+                                                                    ->default('center'),
+                                                                
+                                                                Forms\Components\TextInput::make('margin_top')
+                                                                    ->label('Margem Superior')
+                                                                    ->numeric()
+                                                                    ->default(0)
+                                                                    ->suffix('px'),
+                                                                
+                                                                Forms\Components\TextInput::make('margin_bottom')
+                                                                    ->label('Margem Inferior')
+                                                                    ->numeric()
+                                                                    ->default(0)
+                                                                    ->suffix('px'),
+                                                            ]),
+                                                    ]),
+                                                
+                                                // Button Block
+                                                Forms\Components\Builder\Block::make('button')
+                                                    ->label('🔘 Botão')
+                                                    ->icon('heroicon-o-cursor-arrow-rays')
+                                                    ->schema([
+                                                        Forms\Components\Grid::make(2)
+                                                            ->schema([
+                                                                Forms\Components\TextInput::make('text')
+                                                                    ->label('Texto do Botão')
+                                                                    ->required()
+                                                                    ->default('Saiba Mais'),
+                                                                
+                                                                Forms\Components\TextInput::make('url')
+                                                                    ->label('URL')
+                                                                    ->url()
+                                                                    ->required(),
+                                                            ]),
+                                                        
+                                                        Forms\Components\Grid::make(4)
+                                                            ->schema([
+                                                                Forms\Components\ColorPicker::make('bg_color')
+                                                                    ->label('Cor de Fundo')
+                                                                    ->default('#c41e3a'),
+                                                                
+                                                                Forms\Components\ColorPicker::make('text_color')
+                                                                    ->label('Cor do Texto')
+                                                                    ->default('#ffffff'),
+                                                                
+                                                                Forms\Components\Select::make('size')
+                                                                    ->label('Tamanho')
+                                                                    ->options([
+                                                                        'sm' => 'Pequeno',
+                                                                        'md' => 'Médio',
+                                                                        'lg' => 'Grande',
+                                                                    ])
+                                                                    ->default('md'),
+                                                                
+                                                                Forms\Components\Select::make('align')
+                                                                    ->label('Alinhamento')
+                                                                    ->options([
+                                                                        'left' => 'Esquerda',
+                                                                        'center' => 'Centro',
+                                                                        'right' => 'Direita',
+                                                                    ])
+                                                                    ->default('center'),
+                                                            ]),
+                                                        
+                                                        Forms\Components\Grid::make(3)
+                                                            ->schema([
+                                                                Forms\Components\TextInput::make('border_radius')
+                                                                    ->label('Borda Arredondada')
+                                                                    ->numeric()
+                                                                    ->default(5)
+                                                                    ->suffix('px'),
+                                                                
+                                                                Forms\Components\Toggle::make('target_blank')
+                                                                    ->label('Abrir em Nova Aba')
+                                                                    ->default(false),
+                                                                
+                                                                Forms\Components\Toggle::make('full_width')
+                                                                    ->label('Largura Total')
+                                                                    ->default(false),
+                                                            ]),
+                                                    ]),
+                                                
+                                                // Image Block
+                                                Forms\Components\Builder\Block::make('image')
+                                                    ->label('🖼️ Imagem')
+                                                    ->icon('heroicon-o-photo')
+                                                    ->schema([
+                                                        Forms\Components\FileUpload::make('image')
+                                                            ->label('Imagem')
+                                                            ->image()
+                                                            ->imageEditor()
+                                                            ->directory('blog/banners/layers')
+                                                            ->visibility('public')
+                                                            ->required()
+                                                            ->columnSpanFull(),
+                                                        
+                                                        Forms\Components\Grid::make(3)
+                                                            ->schema([
+                                                                Forms\Components\TextInput::make('width')
+                                                                    ->label('Largura')
+                                                                    ->numeric()
+                                                                    ->suffix('px')
+                                                                    ->helperText('Deixe vazio para automático'),
+                                                                
+                                                                Forms\Components\TextInput::make('height')
+                                                                    ->label('Altura')
+                                                                    ->numeric()
+                                                                    ->suffix('px')
+                                                                    ->helperText('Deixe vazio para automático'),
+                                                                
+                                                                Forms\Components\Select::make('align')
+                                                                    ->label('Alinhamento')
+                                                                    ->options([
+                                                                        'left' => 'Esquerda',
+                                                                        'center' => 'Centro',
+                                                                        'right' => 'Direita',
+                                                                    ])
+                                                                    ->default('center'),
+                                                            ]),
+                                                    ]),
+                                                
+                                                // Spacer Block
+                                                Forms\Components\Builder\Block::make('spacer')
+                                                    ->label('↕️ Espaçador')
+                                                    ->icon('heroicon-o-arrows-up-down')
+                                                    ->schema([
+                                                        Forms\Components\TextInput::make('height')
+                                                            ->label('Altura do Espaço')
+                                                            ->numeric()
+                                                            ->default(30)
+                                                            ->suffix('px')
+                                                            ->helperText('Cria um espaço vertical entre elementos'),
+                                                    ]),
+                                                
+                                                // Badge Block
+                                                Forms\Components\Builder\Block::make('badge')
+                                                    ->label('🏷️ Badge/Tag')
+                                                    ->icon('heroicon-o-tag')
+                                                    ->schema([
+                                                        Forms\Components\Grid::make(2)
+                                                            ->schema([
+                                                                Forms\Components\TextInput::make('text')
+                                                                    ->label('Texto')
+                                                                    ->required()
+                                                                    ->default('NOVO'),
+                                                                
+                                                                Forms\Components\ColorPicker::make('bg_color')
+                                                                    ->label('Cor de Fundo')
+                                                                    ->default('#c41e3a'),
+                                                            ]),
+                                                        
+                                                        Forms\Components\Grid::make(3)
+                                                            ->schema([
+                                                                Forms\Components\ColorPicker::make('text_color')
+                                                                    ->label('Cor do Texto')
+                                                                    ->default('#ffffff'),
+                                                                
+                                                                Forms\Components\Select::make('align')
+                                                                    ->label('Alinhamento')
+                                                                    ->options([
+                                                                        'left' => 'Esquerda',
+                                                                        'center' => 'Centro',
+                                                                        'right' => 'Direita',
+                                                                    ])
+                                                                    ->default('center'),
+                                                                
+                                                                Forms\Components\TextInput::make('margin_bottom')
+                                                                    ->label('Margem Inferior')
+                                                                    ->numeric()
+                                                                    ->default(15)
+                                                                    ->suffix('px'),
+                                                            ]),
+                                                    ]),
+                                            ])
+                                            ->collapsible()
+                                            ->cloneable()
+                                            ->reorderable()
+                                            ->blockNumbers(false)
+                                            ->addActionLabel('➕ Adicionar Elemento')
+                                            ->columnSpanFull(),
+                                    ]),
+                            ]),
                         
-                        Forms\Components\Select::make('post_id')
-                            ->label('Post')
-                            ->relationship('post', 'title')
-                            ->searchable()
-                            ->preload()
-                            ->visible(fn (callable $get) => $get('link_type') === 'post')
-                            ->required(fn (callable $get) => $get('link_type') === 'post'),
-                        
-                        Forms\Components\TextInput::make('button_text')
-                            ->label('Texto do Botão')
-                            ->default('Saiba Mais'),
-                        
-                        Forms\Components\Toggle::make('target_blank')
-                            ->label('Abrir em Nova Aba')
-                            ->default(false),
-                    ])->columns(2),
-                
-                Forms\Components\Section::make('Configurações')
-                    ->schema([
-                        Forms\Components\Toggle::make('is_active')
-                            ->label('Ativo')
-                            ->default(true),
-                        
-                        Forms\Components\TextInput::make('sort_order')
-                            ->label('Ordem de Exibição')
-                            ->numeric()
-                            ->default(0)
-                            ->helperText('Menor número aparece primeiro'),
-                    ])->columns(2),
+                        // Tab 3: Settings
+                        Forms\Components\Tabs\Tab::make('⚙️ Configurações')
+                            ->schema([
+                                Forms\Components\Section::make('Informações Básicas')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('title')
+                                            ->label('Título do Banner')
+                                            ->required()
+                                            ->helperText('Apenas para identificação administrativa')
+                                            ->columnSpanFull(),
+                                        
+                                        Forms\Components\Textarea::make('description')
+                                            ->label('Descrição Interna')
+                                            ->rows(2)
+                                            ->helperText('Descrição para uso interno')
+                                            ->columnSpanFull(),
+                                    ]),
+                                
+                                Forms\Components\Section::make('Status e Ordem')
+                                    ->schema([
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\Toggle::make('is_active')
+                                                    ->label('Banner Ativo')
+                                                    ->default(true)
+                                                    ->helperText('Desative para ocultar temporariamente'),
+                                                
+                                                Forms\Components\TextInput::make('sort_order')
+                                                    ->label('Ordem de Exibição')
+                                                    ->numeric()
+                                                    ->default(0)
+                                                    ->helperText('Menor número = maior prioridade'),
+                                            ]),
+                                    ]),
+                            ]),
+                    ])
+                    ->columnSpanFull()
+                    ->persistTabInQueryString(),
             ]);
     }
 

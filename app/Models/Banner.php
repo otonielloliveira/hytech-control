@@ -15,6 +15,15 @@ class Banner extends Model
         'subtitle',
         'description',
         'image',
+        'layers',
+        'background_color',
+        'background_image',
+        'background_position',
+        'background_size',
+        'overlay_color',
+        'overlay_opacity',
+        'banner_height',
+        'content_alignment',
         'link_type',
         'link_url',
         'post_id',
@@ -28,6 +37,9 @@ class Banner extends Model
         'is_active' => 'boolean',
         'target_blank' => 'boolean',
         'sort_order' => 'integer',
+        'layers' => 'array',
+        'overlay_opacity' => 'integer',
+        'banner_height' => 'integer',
     ];
 
     // Relationships
