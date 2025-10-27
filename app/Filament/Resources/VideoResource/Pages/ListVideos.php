@@ -15,11 +15,11 @@ class ListVideos extends ListRecords
         return [
             Actions\CreateAction::make()
                 ->label('Criar Vídeo'),
-            Actions\Action::make('bulk_create')
-                ->label('Upload em Lote')
-                ->icon('heroicon-o-plus-circle')
-                ->color('success')
-                ->url(VideoResource::getUrl('bulk-create')),
+            // Actions\Action::make('bulk_create')
+            //     ->label('Upload em Lote')
+            //     ->icon('heroicon-o-plus-circle')
+            //     ->color('success')
+            //     ->url(VideoResource::getUrl('bulk-create')),
         ];
     }
 }

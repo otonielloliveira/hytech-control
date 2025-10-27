@@ -146,13 +146,15 @@
                                     </a>
                                 </h5>
                                 
-                                @if($video->description)
-                                    <p class="video-description">
-                                        {{ Str::limit($video->description, 80) }}
-                                    </p>
-                                @endif
+                                <div class="video-description">
+                                    @if($video->description)
+                                        <p>{{ Str::limit($video->description, 80) }}</p>
+                                    @else
+                                        <p class="text-muted">Sem descrição disponível.</p>
+                                    @endif
+                                </div>
                                 
-                                <div class="video-meta">
+                                <div class="video-meta mt-auto">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="video-info">
                                             @if($video->category)
@@ -269,6 +271,9 @@
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             transition: box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         .video-card:hover {
@@ -279,6 +284,7 @@
             position: relative;
             overflow: hidden;
             aspect-ratio: 16/9;
+            flex-shrink: 0;
         }
 
         .video-image {
@@ -355,10 +361,19 @@
 
         .video-content {
             padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
         }
 
         .video-title {
             margin-bottom: 0.75rem;
+            min-height: 3rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.5rem;
         }
 
         .video-title a {
@@ -378,10 +393,22 @@
             font-size: 0.9rem;
             line-height: 1.4;
             margin-bottom: 1rem;
+            min-height: 4rem;
+            flex-grow: 0;
+        }
+
+        .video-description p {
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .video-meta {
             font-size: 0.85rem;
+            flex-shrink: 0;
+            margin-top: auto !important;
         }
 
         .category-tag {

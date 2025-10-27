@@ -157,7 +157,7 @@ class ProductResource extends Resource
                                     ->required(),
                                     
                                 Forms\Components\Toggle::make('featured')
-                                    ->label('Produto em Destaque')
+                                    ->label('Produto em Destaque(loja) / Produto Exclusivo(home)')
                                     ->default(false),
                                     
                                 Forms\Components\TextInput::make('sort_order')

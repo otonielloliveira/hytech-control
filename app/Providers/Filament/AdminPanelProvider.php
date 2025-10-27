@@ -37,6 +37,17 @@ class AdminPanelProvider extends PanelProvider
             return asset('/images/default-login-bg.jpg');
         }
     }
+    
+    private function getAdminBrandName(): string
+    {
+        try {
+            $config = BlogConfig::current();
+            return $config->admin_brand_name ?? 'Admin Foro do Brasil';
+        } catch (\Exception $e) {
+            // Return default name if BlogConfig table doesn't exist yet (during migrations)
+            return 'Admin Foro do Brasil';
+        }
+    }
 
     public function panel(Panel $panel): Panel
     {
@@ -46,7 +57,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->darkMode(false)
-            ->brandName('Admin Foro do Brasil')
+            ->brandName($this->getAdminBrandName())
             ->colors([
                 'primary' => Color::Amber,
             ])

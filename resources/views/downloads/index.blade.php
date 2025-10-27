@@ -43,13 +43,13 @@
                     @forelse($downloads as $download)
                         <div class="col-lg-4 col-md-6 mb-4">
                             <div class="card h-100 download-card">
-                                <div class="card-body">
+                                <div class="card-body d-flex flex-column">
                                     <div class="d-flex align-items-start mb-3">
                                         <div class="download-icon me-3">
                                             <i class="{{ $download->icon_class }} fa-2x text-primary"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h5 class="card-title mb-1">{{ $download->title }}</h5>
+                                            <h5 class="card-title mb-1 download-title">{{ $download->title }}</h5>
                                             @if ($download->category)
                                                 <span
                                                     class="badge bg-secondary mb-2">{{ ucfirst($download->category) }}</span>
@@ -57,11 +57,15 @@
                                         </div>
                                     </div>
 
-                                    @if ($download->description)
-                                        <p class="card-text">{{ Str::limit($download->description, 100) }}</p>
-                                    @endif
+                                    <div class="download-description mb-3">
+                                        @if ($download->description)
+                                            <p class="card-text">{{ Str::limit($download->description, 100) }}</p>
+                                        @else
+                                            <p class="card-text text-muted">Sem descrição disponível.</p>
+                                        @endif
+                                    </div>
 
-                                    <div class="download-meta mb-3">
+                                    <div class="download-meta mb-3 mt-auto">
                                         <small class="text-muted d-block">
                                             <i
                                                 class="fas fa-file me-1"></i>{{ strtoupper($download->file_type ?? 'Arquivo') }}
@@ -121,6 +125,14 @@
         .download-card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             border: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .download-card .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .download-card:hover {
@@ -131,6 +143,35 @@
         .download-icon {
             width: 60px;
             text-align: center;
+            flex-shrink: 0;
+        }
+
+        .download-title {
+            min-height: 3rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .download-description {
+            min-height: 4.5rem;
+            flex-grow: 0;
+        }
+
+        .download-description p {
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.5rem;
+        }
+
+        .download-meta {
+            flex-shrink: 0;
         }
 
         .download-meta small {

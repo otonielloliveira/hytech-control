@@ -27,6 +27,7 @@ class BlogConfig extends Model
         'facebook_pixel_id',
         'custom_head_code',
         'custom_footer_code',
+        'admin_brand_name',
         // Sidebar fields
         'youtube_channel_url',
         'youtube_channel_name',

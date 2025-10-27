@@ -47,12 +47,18 @@ class BlogConfigResource extends Resource
                                             ->required()
                                             ->placeholder('HyTech Control Blog'),
                                         
+                                        Forms\Components\TextInput::make('admin_brand_name')
+                                            ->label('Nome da Marca no Admin')
+                                            ->placeholder('Admin Foro do Brasil')
+                                            ->helperText('Nome exibido no painel administrativo. Deixe vazio para usar "Admin Foro do Brasil"')
+                                            ->maxLength(255),
+                                        
                                         Forms\Components\Textarea::make('site_description')
                                             ->label('Descrição do Site')
                                             ->rows(3)
                                             ->placeholder('Blog oficial da HyTech Control - Tecnologia e Inovação')
                                             ->columnSpanFull(),
-                                    ])->columns(1),
+                                    ])->columns(2),
                                 
                                 Section::make('Logotipo e Ícone')
                                     ->schema([
