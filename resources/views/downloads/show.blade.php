@@ -55,12 +55,26 @@
                                         <p>{{ $download->created_at->format('d/m/Y') }}</p>
                                     </div>
                                 </div>
+                                @if($download->requires_login)
+                                    <div class="col-12">
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-lock me-2"></i>
+                                            <strong>Atenção:</strong> Este download requer que você esteja logado como cliente no sistema.
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                             <div class="text-center">
-                                <a href="{{ route('downloads.download', $download) }}" class="btn btn-primary btn-lg me-3">
-                                    <i class="fas fa-download me-2"></i>Baixar Agora
-                                </a>
+                                @if($download->requires_login && !auth()->guard('client')->check())
+                                    <a href="{{ route('client.login') }}" class="btn btn-warning btn-lg me-3">
+                                        <i class="fas fa-lock me-2"></i>Login de Cliente para Baixar
+                                    </a>
+                                @else
+                                    <a href="{{ route('downloads.download', $download) }}" class="btn btn-primary btn-lg me-3">
+                                        <i class="fas fa-download me-2"></i>Baixar Agora
+                                    </a>
+                                @endif
                                 <a href="{{ route('downloads.index') }}" class="btn btn-outline-secondary">
                                     <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
                                 </a>

@@ -76,6 +76,11 @@
                                         <small class="text-muted d-block">
                                             <i class="fas fa-download me-1"></i>{{ $download->download_count }} downloads
                                         </small>
+                                        @if($download->requires_login)
+                                            <small class="text-warning d-block">
+                                                <i class="fas fa-lock me-1"></i>Requer login de cliente
+                                            </small>
+                                        @endif
                                     </div>
                                 </div>
 
@@ -85,10 +90,16 @@
                                             class="btn btn-outline-primary btn-sm">
                                             <i class="fas fa-eye me-1"></i>Ver Detalhes
                                         </a>
-                                        <a href="{{ route('downloads.download', $download) }}"
-                                            class="btn btn-primary btn-sm">
-                                            <i class="fas fa-download me-1"></i>Baixar Agora
-                                        </a>
+                                        @if($download->requires_login && !auth()->guard('client')->check())
+                                            <a href="{{ route('client.login') }}" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-lock me-1"></i>Login de Cliente para Baixar
+                                            </a>
+                                        @else
+                                            <a href="{{ route('downloads.download', $download) }}"
+                                                class="btn btn-primary btn-sm">
+                                                <i class="fas fa-download me-1"></i>Baixar Agora
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

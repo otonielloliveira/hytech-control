@@ -40,10 +40,6 @@ class EditDownload extends EditRecord
                     ->label('Continuar editando')
                     ->button()
                     ->close(),
-                \Filament\Notifications\Actions\Action::make('view_property')
-                    ->label('Visualizar propriedade')
-                    ->url($this->getResource()::getUrl('view', ['record' => $this->record]))
-                    ->button(),
             ]);
     }
 

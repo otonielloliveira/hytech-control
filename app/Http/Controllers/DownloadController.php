@@ -34,9 +34,10 @@ class DownloadController extends Controller
     {
         Log::info('Download request for: ' . $download->id);
         
-        if (!Auth::check()) {
-            Log::info('User not authenticated for download: ' . $download->id);
-            return redirect()->route('login')->with('error', 'Você precisa estar logado para fazer download.');
+        // Verificar se o download requer autenticação de cliente
+        if ($download->requires_login && !Auth::guard('client')->check()) {
+            Log::info('Client not authenticated for download: ' . $download->id);
+            return redirect()->route('client.login')->with('error', 'Você precisa estar logado como cliente para fazer download deste arquivo.');
         }
 
         $filePath = $download->file_path;
