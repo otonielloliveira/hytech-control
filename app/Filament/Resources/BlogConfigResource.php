@@ -273,13 +273,24 @@ class BlogConfigResource extends Resource
                                                 ->label('Testar API Key')
                                                 ->icon('heroicon-o-play')
                                                 ->color('success')
-                                                ->action(function (array $data) {
+                                                ->action(function (Forms\Get $get) {
+                                                    $apiKey = $get('youtube_api_key');
+                                                    
+                                                    if (!$apiKey) {
+                                                        \Filament\Notifications\Notification::make()
+                                                            ->title('API Key não informada')
+                                                            ->body('Por favor, preencha a API Key antes de testar.')
+                                                            ->warning()
+                                                            ->send();
+                                                        return;
+                                                    }
+                                                    
                                                     $youtubeService = new \App\Services\YouTubeService();
                                                     
                                                     // Atualizar temporariamente a config para teste
                                                     $config = \App\Models\BlogConfig::current();
                                                     $oldApiKey = $config->youtube_api_key;
-                                                    $config->update(['youtube_api_key' => $data['youtube_api_key']]);
+                                                    $config->update(['youtube_api_key' => $apiKey]);
                                                     
                                                     $isValid = $youtubeService->validateApiKey();
                                                     
