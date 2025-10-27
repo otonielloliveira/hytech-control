@@ -1413,6 +1413,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    
+    <!-- Configurar CSRF token para jQuery AJAX -->
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
+    
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -1681,69 +1691,61 @@
 
         // Handle register form submission
         document.getElementById('registerForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const form = this;
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            
+             e.preventDefault();
+
+            const form = $(this);
+            const submitBtn = form.find('button[type="submit"]');
+            const originalText = submitBtn.html();
+
             // Clear previous errors
-            form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-            form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
-            
+            form.find('.is-invalid').removeClass('is-invalid');
+            form.find('.invalid-feedback').text('');
+
             // Disable submit button
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Criando conta...';
-            
-            const formData = new FormData(form);
-            
-            fetch('{{ route("client.auth.register") }}', {
-                method: 'POST',
+            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Criando conta...');
+
+            $.ajax({
+                url: '{{ route('client.auth.register') }}',
+                type: 'POST',
+                data: form.serialize(),
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Conta criada!',
-                        text: data.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = data.redirect;
-                    });
-                } else {
-                    if (data.errors) {
-                        for (const field in data.errors) {
-                            const input = form.querySelector(`[name="${field}"]`);
-                            if (input) {
-                                input.classList.add('is-invalid');
-                                const feedback = input.nextElementSibling;
-                                if (feedback && feedback.classList.contains('invalid-feedback')) {
-                                    feedback.textContent = data.errors[field][0];
-                                }
-                            }
-                        }
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Conta criada!',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = response.redirect;
+                        });
                     }
-                    throw new Error(data.message || 'Erro ao criar conta');
+                },
+                error: function(xhr) {
+                    console.log(xhr);
+                    if (xhr.status === 422) {
+                        const errors = xhr.responseJSON.errors;
+                        for (const field in errors) {
+                            const input = form.find(`[name="${field}"]`);
+                            input.addClass('is-invalid');
+                            input.siblings('.invalid-feedback').text(errors[field][0]);
+                        }
+                        return;
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro!',
+                            text: 'Ocorreu um erro. Tente novamente.'
+                        });
+                    }
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false).html(originalText);
                 }
-            })
-            .catch(error => {
-                if (!error.message.includes('Erro ao criar conta')) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro!',
-                        text: error.message || 'Ocorreu um erro. Tente novamente.'
-                    });
-                }
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
             });
         });
     </script>

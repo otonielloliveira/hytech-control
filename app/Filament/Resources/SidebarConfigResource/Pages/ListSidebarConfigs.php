@@ -13,10 +13,10 @@ class ListSidebarConfigs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo Widget')
-                ->icon('heroicon-o-plus')
-                ->button(),
+            // Actions\CreateAction::make()
+            //     ->label('Novo Widget')
+            //     ->icon('heroicon-o-plus')
+            //     ->button(),
         ];
     }
 }

@@ -13,6 +13,7 @@ class SidebarConfig extends Model
 
     protected $fillable = [
         'widget_name',
+        'display_name',
         'is_active',
         'sort_order',
         'title_color',
@@ -47,7 +48,30 @@ class SidebarConfig extends Model
 
     public static function getWidgetConfig(string $widgetName)
     {
-        return static::where('widget_name', $widgetName)->first();
+        $config = static::where('widget_name', $widgetName)->first();
+        
+        // Se não existir, cria com valores padrão
+        if (!$config) {
+            $defaultName = match($widgetName) {
+                'notices' => 'RECADOS',
+                'tags' => 'TAGS',
+                'youtube' => 'CANAL YOUTUBE',
+                'polls' => 'ENQUETES',
+                'lectures' => 'PALESTRAS',
+                'hangouts' => 'HANGOUTS',
+                'books' => 'LIVROS RECOMENDADOS',
+                'downloads' => 'DOWNLOADS',
+                default => strtoupper($widgetName),
+            };
+            
+            $config = static::create([
+                'widget_name' => $widgetName,
+                'display_name' => $defaultName,
+                'is_active' => true,
+                'sort_order' => 0,
+            ]);
+        }
+        return $config;
     }
 
     public function getSettingValue(string $key, $default = null)
@@ -60,5 +84,29 @@ class SidebarConfig extends Model
         $settings = $this->widget_settings ?? [];
         data_set($settings, $key, $value);
         $this->update(['widget_settings' => $settings]);
+    }
+
+    /**
+     * Retorna o nome de exibição do widget
+     * Se display_name estiver vazio, retorna o nome padrão baseado no widget_name
+     */
+    public function getDisplayName(): string
+    {
+        if (!empty($this->display_name)) {
+            return $this->display_name;
+        }
+
+        // Nomes padrão baseados no widget_name
+        return match($this->widget_name) {
+            'notices' => 'RECADOS',
+            'tags' => 'TAGS',
+            'youtube' => 'CANAL YOUTUBE',
+            'polls' => 'ENQUETES',
+            'lectures' => 'PALESTRAS',
+            'hangouts' => 'HANGOUTS',
+            'books' => 'LIVROS RECOMENDADOS',
+            'downloads' => 'DOWNLOADS',
+            default => strtoupper($this->widget_name),
+        };
     }
 }

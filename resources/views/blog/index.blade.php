@@ -1535,6 +1535,7 @@
                     }
                 },
                 error: function(xhr) {
+                    console.log(xhr);
                     if (xhr.status === 422) {
                         const errors = xhr.responseJSON.errors;
                         for (const field in errors) {
@@ -1542,6 +1543,7 @@
                             input.addClass('is-invalid');
                             input.siblings('.invalid-feedback').text(errors[field][0]);
                         }
+                        return;
                     } else {
                         Swal.fire({
                             icon: 'error',

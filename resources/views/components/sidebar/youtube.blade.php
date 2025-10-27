@@ -18,7 +18,7 @@ if ($config->youtube_channel_id) {
     <div class="widget-header" 
          style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
         <h5 class="widget-title">
-            <i class="fab fa-youtube me-2"></i>CANAL NO YOUTUBE
+            <i class="fab fa-youtube me-2"></i>{{ $widgetConfig?->display_name ?? 'CANAL NO YOUTUBE' }}
         </h5>
     </div>
     

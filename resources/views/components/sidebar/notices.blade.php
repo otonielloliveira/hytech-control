@@ -10,7 +10,7 @@ $widgetConfig = App\Models\SidebarConfig::getWidgetConfig('notices');
     <div class="widget-header" 
          style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
         <h5 class="widget-title">
-            <i class="fas fa-bullhorn me-2"></i>RECADOS
+            <i class="fas fa-bullhorn me-2"></i>{{ $widgetConfig?->display_name ?? 'RECADOS' }}
         </h5>
     </div>
     

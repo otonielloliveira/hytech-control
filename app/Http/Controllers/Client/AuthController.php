@@ -23,14 +23,39 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        try {
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
+            ], [
+                'email.required' => 'O e-mail é obrigatório.',
+                'email.email' => 'O e-mail deve ser um endereço válido.',
+                'password.required' => 'A senha é obrigatória.',
+            ]);
+        } catch (ValidationException $e) {
+            if ($request->wantsJson() || $request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        }
 
         $client = Client::where('email', $request->email)->first();
 
         if (!$client || !Hash::check($request->password, $client->password)) {
+            if ($request->wantsJson() || $request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'As credenciais fornecidas não conferem com nossos registros.',
+                    'errors' => [
+                        'email' => ['As credenciais fornecidas não conferem com nossos registros.']
+                    ]
+                ], 422);
+            }
+            
             throw ValidationException::withMessages([
                 'email' => ['As credenciais fornecidas não conferem com nossos registros.'],
             ]);
@@ -43,7 +68,7 @@ class AuthController extends Controller
 
         Auth::guard('client')->login($client, $request->boolean('remember'));
 
-        if ($request->wantsJson()) {
+        if ($request->wantsJson() || $request->ajax() || $request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Login realizado com sucesso!',
@@ -56,14 +81,37 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:clients',
-            'password' => 'required|string|min:8|confirmed',
-            'phone' => 'nullable|string|max:20',
-            'birth_date' => 'nullable|date',
-            'gender' => 'nullable|in:masculino,feminino,outro,nao_informar',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:clients',
+                'password' => 'required|string|min:8|confirmed',
+                'phone' => 'nullable|string|max:20',
+                'birth_date' => 'nullable|date',
+                'gender' => 'nullable|in:masculino,feminino,outro,nao_informar',
+            ], [
+                'name.required' => 'O nome é obrigatório.',
+                'name.max' => 'O nome não pode ter mais de 255 caracteres.',
+                'email.required' => 'O e-mail é obrigatório.',
+                'email.email' => 'O e-mail deve ser um endereço válido.',
+                'email.unique' => 'Este e-mail já está cadastrado.',
+                'password.required' => 'A senha é obrigatória.',
+                'password.min' => 'A senha deve ter no mínimo 8 caracteres.',
+                'password.confirmed' => 'A confirmação da senha não confere.',
+                'phone.max' => 'O telefone não pode ter mais de 20 caracteres.',
+                'birth_date.date' => 'A data de nascimento deve ser uma data válida.',
+                'gender.in' => 'O gênero selecionado é inválido.',
+            ]);
+        } catch (ValidationException $e) {
+            if ($request->wantsJson() || $request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        }
 
         $client = Client::create([
             'name' => $request->name,
@@ -76,7 +124,7 @@ class AuthController extends Controller
 
         Auth::guard('client')->login($client);
 
-        if ($request->wantsJson()) {
+        if ($request->wantsJson() || $request->ajax() || $request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Conta criada com sucesso!',
