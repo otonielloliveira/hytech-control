@@ -8,6 +8,8 @@ use App\Services\Gateways\PaymentGatewayInterface;
 use App\Services\Gateways\MercadoPagoService;
 use App\Services\Gateways\EfiPayService;
 use App\Services\Gateways\PagSeguroService;
+use App\Services\Payment\Gateways\AsaasService;
+use App\Services\Payment\Gateways\PixManualService;
 use Illuminate\Database\Eloquent\Model;
 use Exception;
 
@@ -35,6 +37,8 @@ class PaymentManager
     private function createGatewayService(PaymentGatewayConfig $config): PaymentGatewayInterface
     {
         return match($config->gateway) {
+            'asaas' => new AsaasService(array_merge($config->credentials ?? [], ['is_sandbox' => $config->is_sandbox])),
+            'pix_manual' => new PixManualService($config->credentials ?? []),
             'mercadopago' => new MercadoPagoService($config),
             'efipay' => new EfiPayService($config),
             'pagseguro' => new PagSeguroService($config),
@@ -159,6 +163,43 @@ class PaymentManager
     public function testGatewayConnection(PaymentGatewayConfig $config): array
     {
         try {
+            // Para ASAAS e PIX Manual, passar as credenciais como array
+            if (in_array($config->gateway, ['asaas', 'pix_manual'])) {
+                $credentials = $config->credentials ?? [];
+                
+                if ($config->gateway === 'asaas') {
+                    $credentials['is_sandbox'] = $config->is_sandbox;
+                    $service = new AsaasService($credentials);
+                    $result = $service->testConnection();
+                    
+                    if ($result) {
+                        return [
+                            'success' => true,
+                            'message' => 'Conexão com ASAAS estabelecida com sucesso!',
+                            'details' => 'API Key válida e conta ativa.'
+                        ];
+                    } else {
+                        return [
+                            'success' => false,
+                            'message' => 'Falha ao conectar com ASAAS',
+                            'details' => 'Verifique se a API Key está correta e se a conta está ativa.'
+                        ];
+                    }
+                }
+                
+                if ($config->gateway === 'pix_manual') {
+                    $service = new PixManualService($credentials);
+                    $result = $service->testConnection();
+                    
+                    return [
+                        'success' => $result,
+                        'message' => $result ? 'Configuração PIX Manual válida!' : 'Configuração PIX Manual inválida',
+                        'details' => $result ? 'Chave PIX configurada corretamente.' : 'Verifique a chave PIX configurada.'
+                    ];
+                }
+            }
+            
+            // Para outros gateways, usar o método original
             $gateway = $this->createGatewayService($config);
             return $gateway->testConnection();
         } catch (Exception $e) {
