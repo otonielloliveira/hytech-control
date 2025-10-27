@@ -32,7 +32,10 @@ class DatabaseSeeder extends Seeder
             // 6. Cursos e materiais educacionais
             CourseSeeder::class,
             
-            // 7. Loja (produtos, métodos de pagamento, frete)
+            // 7. Vídeos e tutoriais
+            VideoSeeder::class,
+            
+            // 8. Loja (produtos, métodos de pagamento, frete)
             StoreSeeder::class,
         ]);
         
@@ -47,6 +50,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('💳 Gateway de pagamento ASAAS ativo');
         $this->command->info('📝 Blog com categorias, posts e banners');
         $this->command->info('🎓 Cursos de exemplo criados');
+        $this->command->info('🎥 Vídeos e tutoriais disponíveis');
         $this->command->info('🛒 Loja com produtos de exemplo');
         $this->command->info('⚙️  Configurações de seções e sidebar');
     }
