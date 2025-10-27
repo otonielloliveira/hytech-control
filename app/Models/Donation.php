@@ -16,6 +16,7 @@ class Donation extends Model
         'name',
         'email',
         'phone',
+        'document',
         'amount',
         'message',
         'payment_method',

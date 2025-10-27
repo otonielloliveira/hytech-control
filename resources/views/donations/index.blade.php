@@ -96,8 +96,24 @@
                                     @enderror
                                 </div>
 
-                                <!-- Valor -->
+                                <!-- CPF/CNPJ -->
                                 <div class="col-md-6 mb-3">
+                                    <label for="document" class="form-label">
+                                        <i class="fas fa-id-card me-1"></i>CPF/CNPJ *
+                                    </label>
+                                    <input type="text" class="form-control @error('document') is-invalid @enderror"
+                                        id="document" name="document" value="{{ old('document') }}"
+                                        placeholder="000.000.000-00 ou 00.000.000/0000-00" required>
+                                    @error('document')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="text-muted">Necessário para geração do QR Code PIX</small>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- Valor -->
+                                <div class="col-md-12 mb-3">
                                     <label for="amount" class="form-label">
                                         <i class="fas fa-dollar-sign me-1"></i>Valor da Doação * (R$)
                                     </label>
@@ -241,6 +257,37 @@
                 } else if (value.length >= 2) {
                     value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
                 }
+                e.target.value = value;
+            });
+
+            // Formatação do campo CPF/CNPJ
+            const documentInput = document.getElementById('document');
+            documentInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                
+                if (value.length <= 11) {
+                    // CPF: 000.000.000-00
+                    if (value.length >= 9) {
+                        value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+                    } else if (value.length >= 6) {
+                        value = value.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
+                    } else if (value.length >= 3) {
+                        value = value.replace(/(\d{3})(\d{0,3})/, '$1.$2');
+                    }
+                } else {
+                    // CNPJ: 00.000.000/0000-00
+                    value = value.substring(0, 14); // Limita a 14 dígitos
+                    if (value.length >= 12) {
+                        value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/, '$1.$2.$3/$4-$5');
+                    } else if (value.length >= 8) {
+                        value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{0,4})/, '$1.$2.$3/$4');
+                    } else if (value.length >= 5) {
+                        value = value.replace(/(\d{2})(\d{3})(\d{0,3})/, '$1.$2.$3');
+                    } else if (value.length >= 2) {
+                        value = value.replace(/(\d{2})(\d{0,3})/, '$1.$2');
+                    }
+                }
+                
                 e.target.value = value;
             });
         });

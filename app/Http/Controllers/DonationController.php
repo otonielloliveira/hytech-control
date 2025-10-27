@@ -37,12 +37,14 @@ class DonationController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
+            'document' => 'required|string|max:18',
             'amount' => 'required|numeric|min:1|max:10000',
             'message' => 'nullable|string|max:500',
         ], [
             'name.required' => 'O nome é obrigatório.',
             'email.required' => 'O email é obrigatório.',
             'email.email' => 'Por favor, insira um email válido.',
+            'document.required' => 'O CPF/CNPJ é obrigatório.',
             'amount.required' => 'O valor da doação é obrigatório.',
             'amount.min' => 'O valor mínimo para doação é R$ 1,00.',
             'amount.max' => 'O valor máximo para doação é R$ 10.000,00.',
@@ -57,6 +59,7 @@ class DonationController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
+            'document' => preg_replace('/\D/', '', $request->document), // Remove formatação e salva
             'amount' => $request->amount,
             'message' => $request->message,
             'status' => Donation::STATUS_PENDING,
@@ -69,7 +72,7 @@ class DonationController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'document' => '', // Pode ser implementado depois
+            'document' => preg_replace('/\D/', '', $request->document), // Remove formatação
         ];
 
         // Criar pagamento PIX usando o PaymentManager
