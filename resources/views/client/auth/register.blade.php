@@ -18,7 +18,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('client.register') }}" method="POST">
+                    <form id="registerForm" action="{{ route('client.auth.register') }}" method="POST">
                         @csrf
                         
                         <div class="row">
