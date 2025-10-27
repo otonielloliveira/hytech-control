@@ -24,8 +24,7 @@ class AlbumController extends Controller
     {
         // Load photos with pagination
         $photos = $album->photos()
-            ->ordered()
-            ->paginate(20);
+            ->ordered()->get();
         
         return view('albums.show', compact('album', 'photos'));
     }
