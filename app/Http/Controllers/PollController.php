@@ -7,6 +7,8 @@ use App\Models\PollOption;
 use App\Models\PollVote;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PollController extends Controller
 {
@@ -122,13 +124,46 @@ class PollController extends Controller
             ], 400);
         }
 
-        // Remover voto anterior se existir
-        PollVote::removeVoteFromPoll($poll->id, $ipAddress);
+        // Verificar se o usuário JÁ VOTOU nesta enquete
+        $existingVote = PollVote::getUserVoteInPoll($poll->id, $ipAddress);
+        
+        if (!$existingVote) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Você ainda não votou nesta enquete.'
+            ], 400);
+        }
 
-        // Adicionar o novo voto
-        $voted = $option->addVote($ipAddress, $userAgent);
+        // Verificar se está tentando votar na mesma opção
+        if ($existingVote->poll_option_id == $optionId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Você já votou nesta opção. Selecione uma opção diferente para alterar seu voto.'
+            ], 400);
+        }
 
-        if ($voted) {
+        // Usar transação para garantir atomicidade
+        DB::beginTransaction();
+        
+        try {
+            // Decrementar o contador da opção anterior
+            $oldOption = PollOption::find($existingVote->poll_option_id);
+            if ($oldOption) {
+                $oldOption->decrement('votes_count');
+            }
+
+            // Atualizar o voto existente com a nova opção
+            $existingVote->update([
+                'poll_option_id' => $optionId,
+                'user_agent' => $userAgent,
+                'voted_at' => now(),
+            ]);
+
+            // Incrementar o contador da nova opção
+            $option->increment('votes_count');
+
+            DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Voto alterado com sucesso!',
@@ -137,11 +172,15 @@ class PollController extends Controller
                     'total_votes' => $poll->fresh()->total_votes
                 ]
             ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Erro ao alterar voto: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao alterar o voto. Tente novamente.'
+            ], 500);
         }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Erro ao alterar o voto. Tente novamente.'
-        ], 500);
     }
 }

@@ -43,10 +43,6 @@ class EditSidebarConfig extends EditRecord
                     ->label('Continuar editando')
                     ->button()
                     ->close(),
-                \Filament\Notifications\Actions\Action::make('view_widget')
-                    ->label('Visualizar widget')
-                    ->url($this->getResource()::getUrl('view', ['record' => $this->record]))
-                    ->button(),
             ]);
     }
 
