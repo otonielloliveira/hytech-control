@@ -93,9 +93,10 @@ class AlbumResource extends Resource
                             ->orderColumn('order')
                             ->collapsible()
                             ->cloneable()
-                            ->addActionLabel('Adicionar Foto')
+                            ->addActionLabel('Nova Foto')
                             ->defaultItems(0)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->itemLabel(fn (array $state): ?string => $state['title'] ?? 'Nova Foto'),
                     ])->collapsible()
                     ->collapsed(),
                     

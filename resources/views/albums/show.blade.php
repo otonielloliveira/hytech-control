@@ -3,150 +3,137 @@
 @section('title', $album->title . ' - Álbuns de Fotos')
 
 @section('content')
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-light rounded p-3">
+            <li class="breadcrumb-item">
+                <a href="{{ route('albums.index') }}" class="text-decoration-none">
+                    <i class="fas fa-images me-1"></i>Álbuns
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ $album->title }}
+            </li>
+        </ol>
+    </nav>
 
-
-
-    <!-- Compact Header -->
-    <div class="album-header-bg">
-        <div class="container">
-            <div class="row align-items-center py-4">
-                <div class="col-md-6">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-2">
-                            <li class="breadcrumb-item">
-                                <a href="{{ route('albums.index') }}" class="text-white-50">
-                                    <i class="fas fa-images me-1"></i>Álbuns
-                                </a>
-                            </li>
-                            <li class="breadcrumb-item active text-white" aria-current="page">
-                                {{ Str::limit($album->title, 30) }}
-                            </li>
-                        </ol>
-                    </nav>
-                    <h1 class="text-white mb-0">{{ $album->title }}</h1>
-                </div>
-                <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                    <a href="{{ route('albums.index') }}" class="btn btn-outline-light btn-sm">
-                        <i class="fas fa-arrow-left me-1"></i>Voltar
-                    </a>
+    <!-- Album Header -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="h3 mb-1">{{ $album->title }}</h1>
+                            @if ($album->description)
+                                <p class="mb-0 opacity-75">{{ $album->description }}</p>
+                            @endif
+                        </div>
+                        <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                            <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                                @if ($album->event_date)
+                                    <small class="badge bg-light text-dark">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ $album->formatted_event_date }}
+                                    </small>
+                                @endif
+                                <small class="badge bg-light text-dark">
+                                    <i class="fas fa-images me-1"></i>
+                                    {{ $photos->total() }} {{ Str::plural('foto', $photos->total()) }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Photos Section -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Test Button -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Galeria de Fotos</h5>
+                <div>
+                    <button type="button" id="testModal" class="btn btn-success btn-sm me-2">
+                        <i class="fas fa-eye me-1"></i>
+                        Ver Slide
+                    </button>
+                    <a href="{{ route('albums.index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Voltar
+                    </a>
+                </div>
+            </div>
 
+            @if ($photos->count() > 0)
+                <!-- Photos Container with Smart Height -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="photos-scrollable-container" id="photosScrollableContainer">
+                            <div class="row g-3 p-3" id="photosGrid">
+                                @foreach ($photos as $index => $photo)
+                                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
+                                        <div class="photo-item">
+                                            <div class="photo-wrapper">
+                                                <img src="{{ $photo->thumbnail_url }}" 
+                                                     class="photo-thumbnail photo-clickable img-fluid"
+                                                     alt="{{ $photo->alt_text ?: $photo->title }}" 
+                                                     data-photo-index="{{ $index }}"
+                                                     data-photo-id="{{ $photo->id }}"
+                                                     data-photo-url="{{ $photo->image_url }}"
+                                                     data-photo-title="{{ e($photo->title ?: '') }}"
+                                                     data-photo-description="{{ e($photo->description ?: '') }}">
 
-    <div class="container-fluid py-4">
-        <div class="row justify-content-center">
-            <div class="col-12">
-                <!-- Album Header -->
-                <div class="mb-4">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="{{ route('albums.index') }}">Álbuns</a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">
-                                {{ $album->title }}
-                            </li>
-                        </ol>
-                    </nav>
+                                                @if ($photo->is_featured)
+                                                    <div class="photo-badge">
+                                                        <i class="fas fa-star"></i>
+                                                    </div>
+                                                @endif
 
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h1 class="mb-2">{{ $album->title }}</h1>
-
-                            @if ($album->description)
-                                <p class="text-muted mb-3">{{ $album->description }}</p>
-                            @endif
-
-                            <div class="d-flex flex-wrap gap-3 small text-muted">
-                                @if ($album->event_date)
-                                    <span>
-                                        <i class="fas fa-calendar me-1"></i>
-                                        {{ $album->formatted_event_date }}
-                                    </span>
-                                @endif
-
-                                @if ($album->location)
-                                    <span>
-                                        <i class="fas fa-map-marker-alt me-1"></i>
-                                        {{ $album->location }}
-                                    </span>
-                                @endif
-
-                                <span>
-                                    <i class="fas fa-images me-1"></i>
-                                    {{ $photos->total() }} {{ Str::plural('foto', $photos->total()) }}
-                                </span>
+                                                <div class="photo-overlay">
+                                                    <div class="photo-overlay-content">
+                                                        <i class="fas fa-expand fa-lg"></i>
+                                                        @if ($photo->title)
+                                                            <span class="photo-title">{{ Str::limit($photo->title, 20) }}</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="col-md-4 text-md-end">
-                            <button type="button" id="testModal" class="btn btn-info btn-sm me-2">
-                                <i class="fas fa-test"></i> Ver Fotos do Álbum
-                            </button>
-                            <a href="{{ route('albums.index') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-1"></i>
-                                Voltar aos Álbuns
+                <!-- Pagination -->
+                @if ($photos->hasPages())
+                    <div class="d-flex justify-content-center mt-4">
+                        {{ $photos->links() }}
+                    </div>
+                @endif
+            @else
+                <!-- Empty State -->
+                <div class="text-center py-5">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body py-5">
+                            <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted mb-2">Álbum vazio</h4>
+                            <p class="text-muted mb-3">Este álbum ainda não possui fotos.</p>
+                            <a href="{{ route('albums.index') }}" class="btn btn-primary">
+                                <i class="fas fa-arrow-left me-1"></i>Ver outros álbuns
                             </a>
                         </div>
                     </div>
                 </div>
-
-        <!-- Photos Grid -->
-        @if ($photos->count() > 0)
-            <div class="photos-grid" id="photosGrid">
-                @foreach ($photos as $index => $photo)
-                    <div class="photo-item">
-                        <div class="photo-wrapper">
-                            <img src="{{ $photo->thumbnail_url }}" 
-                                 class="photo-thumbnail photo-clickable"
-                                 alt="{{ $photo->alt_text ?: $photo->title }}" 
-                                 data-photo-index="{{ $index }}"
-                                 data-photo-id="{{ $photo->id }}"
-                                 data-photo-url="{{ $photo->image_url }}"
-                                 data-photo-title="{{ e($photo->title ?: '') }}"
-                                 data-photo-description="{{ e($photo->description ?: '') }}">
-
-                            @if ($photo->is_featured)
-                                <div class="photo-badge">
-                                    <i class="fas fa-star"></i>
-                                </div>
-                            @endif
-
-                            <div class="photo-overlay">
-                                <div class="photo-overlay-content">
-                                    <i class="fas fa-expand fa-lg"></i>
-                                    @if ($photo->title)
-                                        <span class="photo-title">{{ Str::limit($photo->title, 20) }}</span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>            <!-- Pagination -->
-            @if ($photos->hasPages())
-                <div class="d-flex justify-content-center mt-5">
-                    <div class="pagination-wrapper">
-                        {{ $photos->links() }}
-                    </div>
-                </div>
             @endif
-        @else
-            <div class="empty-album">
-                <div class="empty-album-content">
-                    <i class="fas fa-camera fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted mb-2">Álbum vazio</h4>
-                    <p class="text-muted">Este álbum ainda não possui fotos.</p>
-                    <a href="{{ route('albums.index') }}" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-arrow-left me-1"></i>Ver outros álbuns
-                    </a>
-                </div>
-            </div>
-        @endif
+        </div>
     </div>
+</div>
     
     <!-- Photo Modal with Slider -->
     <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
@@ -160,15 +147,15 @@
                             aria-label="Close"></button>
                     </div>
                 </div>
-                <div class="modal-body p-0 text-center position-relative">
-                    <img id="modalPhoto" class="img-fluid" alt="" style="max-height: 80vh; width: auto;">
+                <div class="modal-body p-0 text-center position-relative d-flex align-items-center justify-content-center" style="min-height: 400px;">
+                    <img id="modalPhoto" class="img-fluid" alt="" style="max-height: 80vh; max-width: calc(100% - 120px); width: auto; object-fit: contain;">
                     
                     <!-- Navigation Buttons -->
-                    <button type="button" id="prevPhoto" class="btn btn-outline-light position-absolute top-50 start-0 translate-middle-y ms-3" style="z-index: 10;">
-                        <i class="fas fa-chevron-left"></i>
+                    <button type="button" id="prevPhoto" class="btn btn-outline-light position-absolute top-50 start-0 translate-middle-y ms-3" style="z-index: 10; width: 50px; height: 50px;">
+                        <i class="fas fa-chevron-left fa-lg"></i>
                     </button>
-                    <button type="button" id="nextPhoto" class="btn btn-outline-light position-absolute top-50 end-0 translate-middle-y me-3" style="z-index: 10;">
-                        <i class="fas fa-chevron-right"></i>
+                    <button type="button" id="nextPhoto" class="btn btn-outline-light position-absolute top-50 end-0 translate-middle-y me-3" style="z-index: 10; width: 50px; height: 50px;">
+                        <i class="fas fa-chevron-right fa-lg"></i>
                     </button>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
@@ -194,37 +181,88 @@
             border-left: 4px solid #667eea;
         }
 
-        /* Photos Grid */
-        .photos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
+        /* Photos Container - Smart Scroll after 2 rows */
+        .photos-scrollable-container {
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        /* Diferentes alturas baseadas no número de colunas por breakpoint */
+        /* XL: 4 colunas = 2 linhas = altura para 8 fotos */
+        @media (min-width: 1200px) {
+            .photos-scrollable-container {
+                max-height: calc(2 * (200px + 1rem) + 1.5rem); /* 2 linhas de 200px + gaps + padding */
+                overflow-y: auto;
+            }
+        }
+
+        /* LG: 3 colunas = 2 linhas = altura para 6 fotos */
+        @media (min-width: 992px) and (max-width: 1199.98px) {
+            .photos-scrollable-container {
+                max-height: calc(2 * (200px + 1rem) + 1.5rem);
+                overflow-y: auto;
+            }
+        }
+
+        /* MD: 2 colunas = 2 linhas = altura para 4 fotos */
+        @media (min-width: 768px) and (max-width: 991.98px) {
+            .photos-scrollable-container {
+                max-height: calc(2 * (150px + 1rem) + 1.5rem);
+                overflow-y: auto;
+            }
+        }
+
+        /* SM: 2 colunas = 2 linhas = altura para 4 fotos */
+        @media (max-width: 767.98px) {
+            .photos-scrollable-container {
+                max-height: calc(2 * (120px + 1rem) + 1.5rem);
+                overflow-y: auto;
+            }
+        }
+        
+        .photos-scrollable-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .photos-scrollable-container::-webkit-scrollbar-track {
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .photos-scrollable-container::-webkit-scrollbar-thumb {
+            background: #dee2e6;
+            border-radius: 4px;
+        }
+        
+        .photos-scrollable-container::-webkit-scrollbar-thumb:hover {
+            background: #adb5bd;
         }
 
         .photo-item {
-            border-radius: 12px;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            transition: transform 0.2s ease;
         }
 
         .photo-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
         }
 
         .photo-wrapper {
             position: relative;
             overflow: hidden;
-            border-radius: 12px;
-            aspect-ratio: 4/3;
+            border-radius: 0.5rem;
+            aspect-ratio: 1;
+            height: 200px;
+            background: #f8f9fa;
         }
 
         .photo-thumbnail {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.4s ease;
+            object-position: center;
+            transition: transform 0.3s ease;
+            border-radius: 0.5rem;
         }
 
         .photo-item:hover .photo-thumbnail {
@@ -233,15 +271,16 @@
 
         .photo-badge {
             position: absolute;
-            top: 12px;
-            left: 12px;
-            background: linear-gradient(45deg, #ffd700, #ffed4e);
-            color: #333;
+            top: 8px;
+            left: 8px;
+            background: #ffc107;
+            color: #212529;
             padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
             z-index: 3;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .photo-overlay {
@@ -250,24 +289,61 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+            background: linear-gradient(
+                180deg,
+                transparent 0%,
+                transparent 40%,
+                rgba(0, 0, 0, 0.3) 70%,
+                rgba(0, 0, 0, 0.8) 100%
+            );
             opacity: 0;
             transition: opacity 0.3s ease;
-            pointer-events: none;
             display: flex;
             align-items: flex-end;
-            padding: 1rem;
-            z-index: 2;
-        }
-
-        .photo-item:hover .photo-overlay {
+            justify-content: center;
+            padding: 12px;
+            border-radius: 0.5rem;
+            pointer-events: none;
+        }        .photo-item:hover .photo-overlay {
             opacity: 1;
         }
 
         .photo-overlay-content {
-            color: white;
             text-align: center;
-            width: 100%;
+            color: white;
+            transform: translateY(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .photo-item:hover .photo-overlay-content {
+            transform: translateY(0);
+        }
+
+        .photo-title {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* Modal Improvements */
+        .modal-body {
+            background: #000;
+        }
+
+        #modalPhoto {
+            border-radius: 8px;
+        }
+
+        .btn-outline-light {
+            border-width: 2px;
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-outline-light:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #fff;
         }
 
         .photo-overlay-content i {

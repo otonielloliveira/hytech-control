@@ -5,6 +5,7 @@ namespace App\Filament\Resources\AlbumResource\Pages;
 use App\Filament\Resources\AlbumResource;
 use App\Models\Photo;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditAlbum extends EditRecord
@@ -52,5 +53,40 @@ class EditAlbum extends EditRecord
                 'photo_count' => $this->record->photos()->count()
             ]);
         }
+    }
+
+    protected function getSavedNotification(): ?Notification
+    {
+        return Notification::make()
+            ->success()
+            ->title('Álbum atualizado com sucesso!')
+            ->body('As informações do álbum foram salvas.')
+            ->duration(5000)
+            ->actions([
+                \Filament\Notifications\Actions\Action::make('view')
+                    ->label('Ver listagem')
+                    ->url($this->getResource()::getUrl('index'))
+                    ->button(),
+                \Filament\Notifications\Actions\Action::make('continue')
+                    ->label('Continuar editando')
+                    ->button()
+                    ->close(),
+                \Filament\Notifications\Actions\Action::make('view_album')
+                    ->label('Visualizar Álbum')
+                    ->url($this->getResource()::getUrl('view', ['record' => $this->record]))
+                    ->button(),
+            ]);
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getSaveFormAction()
+                ->label('Salvar Alterações')
+                ->icon('heroicon-m-check'),
+            $this->getCancelFormAction()
+                ->label('Cancelar')
+                ->url($this->getResource()::getUrl('index')),
+        ];
     }
 }

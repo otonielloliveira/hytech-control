@@ -102,11 +102,22 @@ class PhotosRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Nova Foto'),
+                    ->label('Nova Foto')
+                    ->modalHeading('Nova Foto')
+                    ->modalSubmitActionLabel('Salvar')
+                    ->modalCancelActionLabel('Cancelar')
+                    ->successNotificationTitle('Imagem salva com sucesso'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label('Editar')
+                    ->modalHeading('Editar Foto')
+                    ->modalSubmitActionLabel('Salvar')
+                    ->modalCancelActionLabel('Cancelar')
+                    ->successNotificationTitle('Imagem atualizada com sucesso'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Excluir')
+                    ->successNotificationTitle('Imagem excluída com sucesso'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
