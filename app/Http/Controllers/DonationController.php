@@ -37,14 +37,26 @@ class DonationController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'document' => 'required|string|max:18',
+            'document' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $document = preg_replace('/\D/', '', $value);
+                    if (strlen($document) < 11 || strlen($document) > 14) {
+                        $fail('O CPF deve ter 11 dígitos ou o CNPJ deve ter 14 dígitos.');
+                    }
+                    if (strlen($document) != 11 && strlen($document) != 14) {
+                        $fail('Digite um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.');
+                    }
+                },
+            ],
             'amount' => 'required|numeric|min:1|max:10000',
             'message' => 'nullable|string|max:500',
         ], [
             'name.required' => 'O nome é obrigatório.',
             'email.required' => 'O email é obrigatório.',
             'email.email' => 'Por favor, insira um email válido.',
-            'document.required' => 'O CPF/CNPJ é obrigatório.',
+            'document.required' => 'O CPF/CNPJ é obrigatório para gerar o QR Code PIX.',
             'amount.required' => 'O valor da doação é obrigatório.',
             'amount.min' => 'O valor mínimo para doação é R$ 1,00.',
             'amount.max' => 'O valor máximo para doação é R$ 10.000,00.',
@@ -74,6 +86,12 @@ class DonationController extends Controller
             'phone' => $request->phone,
             'document' => preg_replace('/\D/', '', $request->document), // Remove formatação
         ];
+
+        Log::info('DonationController - Dados do pagador preparados:', [
+            'payer_data' => $payerData,
+            'document_length' => strlen($payerData['document']),
+            'amount' => $request->amount,
+        ]);
 
         // Criar pagamento PIX usando o PaymentManager
         try {

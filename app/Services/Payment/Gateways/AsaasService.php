@@ -511,30 +511,34 @@ class AsaasService implements PaymentGatewayInterface
                 throw new Exception('Email is required for customer creation');
             }
             
+            // Validate and prepare document (REQUIRED for PIX)
+            if (empty($payerData['document'])) {
+                throw new Exception('CPF/CNPJ é obrigatório para criar pagamento PIX');
+            }
+            
+            $document = preg_replace('/[^0-9]/', '', $payerData['document']);
+            
+            if (strlen($document) < 11 || strlen($document) > 14) {
+                throw new Exception('CPF/CNPJ inválido. Deve conter 11 dígitos (CPF) ou 14 dígitos (CNPJ)');
+            }
+            
             $email = $payerData['email'];
             
-            // Try to find existing customer by email
-            $result = $this->makeRequest('GET', '/customers', ['email' => $email]);
+            // Try to find existing customer by CPF/CNPJ first (more reliable)
+            $existingResult = $this->makeRequest('GET', '/customers', ['cpfCnpj' => $document]);
             
-            // Check if customer exists and return it
-            if ($result['successful'] && !empty($result['json']['data']) && is_array($result['json']['data'])) {
-                $customer = $result['json']['data'][0];
+            if ($existingResult['successful'] && !empty($existingResult['json']['data']) && is_array($existingResult['json']['data'])) {
+                $customer = $existingResult['json']['data'][0];
+                Log::info('ASAAS Customer found by document:', ['customer_id' => $customer['id'], 'document' => $document]);
                 return $this->ensureValidCustomer($customer, $payerData);
             }
 
-            // Create new customer
+            // Create new customer with required document
             $customerData = [
                 'name' => $payerData['name'] ?? 'Cliente',
                 'email' => $email,
+                'cpfCnpj' => $document, // ALWAYS required for PIX
             ];
-
-            // Only add document if it's not empty and valid
-            if (isset($payerData['document']) && !empty(trim($payerData['document']))) {
-                $document = preg_replace('/[^0-9]/', '', $payerData['document']);
-                if (strlen($document) >= 11) { // CPF has 11 digits, CNPJ has 14
-                    $customerData['cpfCnpj'] = $document;
-                }
-            }
 
             // Only add phone if it's not empty
             if (isset($payerData['phone']) && !empty(trim($payerData['phone']))) {
@@ -582,8 +586,7 @@ class AsaasService implements PaymentGatewayInterface
                     'customer_data' => $customerData
                 ]);
                 
-                // Return fallback customer instead of throwing exception
-                return $this->createFallbackCustomer($payerData);
+                throw new Exception('Falha ao criar cliente no ASAAS: ' . ($result['json']['errors'][0]['description'] ?? 'Erro desconhecido'));
             }
 
             Log::info('ASAAS Customer created successfully:', [
@@ -602,8 +605,8 @@ class AsaasService implements PaymentGatewayInterface
                 'line' => $e->getLine()
             ]);
             
-            // Return a fallback customer structure
-            return $this->createFallbackCustomer($payerData);
+            // Re-throw the exception instead of returning fallback
+            throw $e;
         }
     }
 
