@@ -41,7 +41,17 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <form action="{{ route('donations.store') }}" method="POST">
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                        
+                        <form action="{{ route('donations.store') }}" method="POST" id="donationForm">
                             @csrf
 
                             <div class="row">
@@ -143,8 +153,14 @@
 
                             <!-- Botão -->
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-qrcode me-2"></i>Gerar PIX para Doação
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                    <span class="btn-text">
+                                        <i class="fas fa-qrcode me-2"></i>Gerar PIX para Doação
+                                    </span>
+                                    <span class="btn-loading d-none">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Processando...
+                                    </span>
                                 </button>
                             </div>
                         </form>
@@ -181,10 +197,23 @@
             </div>
         </div>
     </div>
+@endsection
 
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('donationForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+            
+            // Mostrar loading ao enviar formulário
+            form.addEventListener('submit', function() {
+                submitBtn.disabled = true;
+                btnText.classList.add('d-none');
+                btnLoading.classList.remove('d-none');
+            });
+            
             // Botões de valor sugerido
             const amountSuggestions = document.querySelectorAll('.amount-suggestion');
             const amountInput = document.getElementById('amount');

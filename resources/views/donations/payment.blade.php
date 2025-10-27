@@ -8,22 +8,99 @@
             <div class="col-lg-10">
                 <!-- Header -->
                 <div class="text-center mb-4">
-                    <i class="fas fa-qrcode text-primary" style="font-size: 3rem;"></i>
+                    <i class="fas {{ $isPixManual ? 'fa-hand-holding-usd' : 'fa-qrcode' }} text-primary" style="font-size: 3rem;"></i>
                     <h1 class="h2 mt-3">Finalize sua Doação</h1>
-                    <p class="text-muted">Escaneie o QR Code abaixo com o app do seu banco</p>
+                    <p class="text-muted">
+                        @if ($isPixManual)
+                            Faça uma transferência PIX usando os dados abaixo
+                        @else
+                            Escaneie o QR Code abaixo com o app do seu banco
+                        @endif
+                    </p>
                 </div>
 
                 <div class="row">
-                    <!-- QR Code -->
+                    <!-- QR Code ou Dados PIX Manual -->
                     <div class="col-lg-6 mb-4">
                         <div class="card h-100">
                             <div class="card-header bg-primary text-white text-center">
                                 <h5 class="mb-0">
-                                    <i class="fas fa-mobile-alt me-2"></i>QR Code PIX
+                                    @if ($isPixManual)
+                                        <i class="fas fa-key me-2"></i>Dados para Transferência PIX
+                                    @else
+                                        <i class="fas fa-mobile-alt me-2"></i>QR Code PIX
+                                    @endif
                                 </h5>
                             </div>
                             <div class="card-body text-center d-flex flex-column justify-content-center">
-                                @if ($qrCode)
+                                @if ($isPixManual && $pixManualData)
+                                    <!-- Dados do PIX Manual -->
+                                    <div class="pix-manual-info">
+                                        <div class="alert alert-info mb-4">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>Instruções:</strong> Abra o app do seu banco e faça uma transferência PIX usando os dados abaixo.
+                                        </div>
+
+                                        <!-- Tipo de Chave -->
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold text-muted small">TIPO DE CHAVE PIX</label>
+                                            <div class="p-3 bg-light rounded">
+                                                <h6 class="mb-0 text-primary">
+                                                    <i class="fas fa-tag me-2"></i>{{ $pixManualData['pix_key_type'] }}
+                                                </h6>
+                                            </div>
+                                        </div>
+
+                                        <!-- Chave PIX -->
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold text-muted small">CHAVE PIX</label>
+                                            <div class="input-group input-group-lg">
+                                                <input type="text" class="form-control text-center fw-bold" id="pixKey"
+                                                    value="{{ $pixManualData['pix_key'] }}" readonly>
+                                                <button class="btn btn-primary" type="button" onclick="copyPixKey()"
+                                                    title="Copiar chave PIX">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Nome do Beneficiário -->
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold text-muted small">BENEFICIÁRIO</label>
+                                            <div class="p-3 bg-light rounded">
+                                                <h6 class="mb-0">
+                                                    <i class="fas fa-user me-2 text-success"></i>{{ $pixManualData['beneficiary_name'] }}
+                                                </h6>
+                                            </div>
+                                        </div>
+
+                                        <!-- Valor -->
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold text-muted small">VALOR A TRANSFERIR</label>
+                                            <div class="p-3 bg-success bg-opacity-10 rounded border border-success">
+                                                <h3 class="mb-0 text-success">
+                                                    R$ {{ number_format($pixManualData['amount'], 2, ',', '.') }}
+                                                </h3>
+                                            </div>
+                                        </div>
+
+                                        <!-- Status do pagamento -->
+                                        <div class="payment-status">
+                                            <div class="alert alert-warning d-flex align-items-center" id="statusAlert">
+                                                <div class="spinner-border spinner-border-sm me-2" role="status">
+                                                    <span class="visually-hidden">Verificando...</span>
+                                                </div>
+                                                <span id="statusText">Aguardando confirmação do pagamento...</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="alert alert-secondary small">
+                                            <i class="fas fa-clock me-2"></i>
+                                            Após realizar a transferência, aguarde alguns minutos para a confirmação automática.
+                                        </div>
+                                    </div>
+                                @elseif ($qrCode)
+                                    <!-- QR Code para outros gateways -->
                                     <div class="qr-code-container mb-3">
                                         {!! $qrCode !!}
                                     </div>
@@ -53,7 +130,7 @@
                                 @else
                                     <div class="alert alert-danger">
                                         <i class="fas fa-exclamation-triangle me-2"></i>
-                                        Erro ao gerar QR Code. Tente novamente.
+                                        Erro ao gerar informações de pagamento. Tente novamente.
                                     </div>
                                 @endif
                             </div>
@@ -150,15 +227,19 @@
             </div>
         </div>
     </div>
+@endsection
 
 @section('scripts')
     <script>
         let checkInterval;
         let countdownInterval;
+        const isPixManual = {{ $isPixManual ? 'true' : 'false' }};
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Iniciar verificação automática
-            startPaymentCheck();
+            // Iniciar verificação automática apenas se NÃO for PIX Manual
+            if (!isPixManual) {
+                startPaymentCheck();
+            }
 
             // Iniciar countdown
             startCountdown();
@@ -198,6 +279,8 @@
             const statusAlert = document.getElementById('statusAlert');
             const statusText = document.getElementById('statusText');
 
+            if (!statusAlert || !statusText) return;
+
             statusAlert.className = 'alert d-flex align-items-center';
 
             if (data.is_paid) {
@@ -215,6 +298,8 @@
 
         function showExpiredMessage() {
             const statusAlert = document.getElementById('statusAlert');
+            if (!statusAlert) return;
+            
             statusAlert.className = 'alert alert-danger';
             statusAlert.innerHTML =
                 '<i class="fas fa-exclamation-triangle me-2"></i>Esta doação expirou. <a href="{{ route('donations.index') }}" class="alert-link">Faça uma nova doação</a>';
@@ -243,6 +328,33 @@
                 if (typeof bootstrap !== 'undefined') {
                     showToast('Código PIX copiado!', 'success');
                 }
+            });
+        }
+
+        function copyPixKey() {
+            const pixKey = document.getElementById('pixKey');
+            pixKey.select();
+            pixKey.setSelectionRange(0, 99999);
+
+            navigator.clipboard.writeText(pixKey.value).then(function() {
+                // Feedback visual
+                const button = event.target.closest('button');
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-success');
+
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-primary');
+                }, 2000);
+
+                // Show success message
+                alert('Chave PIX copiada! Cole no app do seu banco para fazer a transferência.');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Copie manualmente a chave PIX.');
             });
         }
 

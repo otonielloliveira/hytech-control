@@ -8,6 +8,7 @@ use App\Services\Payment\Gateways\MercadoPagoService;
 use App\Services\Payment\Gateways\EfiPayService;
 use App\Services\Payment\Gateways\PagSeguroService;
 use App\Services\Payment\Gateways\AsaasService;
+use App\Services\Payment\Gateways\PixManualService;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -511,6 +512,9 @@ class PaymentManager
                 'client_secret' => $config->getCredential('client_secret'),
                 'email' => $config->getCredential('email'),
                 'token' => $config->getCredential('token'),
+                'pix_key' => $config->getCredential('pix_key'),
+                'pix_key_type' => $config->getCredential('pix_key_type'),
+                'pix_beneficiary_name' => $config->getCredential('pix_beneficiary_name'),
                 'is_sandbox' => $config->is_sandbox,
             ];
 
@@ -519,6 +523,7 @@ class PaymentManager
                 'asaas' => new AsaasService($gatewayConfig),
                 'efipay' => new EfiPayService($gatewayConfig),
                 'pagseguro' => new PagSeguroService($gatewayConfig),
+                'pix_manual' => new PixManualService($gatewayConfig),
                 default => throw new Exception("Gateway '{$config->gateway}' não suportado")
             };
         } catch (Exception $e) {

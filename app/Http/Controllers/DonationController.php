@@ -6,6 +6,7 @@ use App\Models\Donation;
 use App\Services\Payment\PaymentManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Carbon\Carbon;
 
@@ -30,6 +31,8 @@ class DonationController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('Iniciando criação de doação', $request->all());
+        
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -70,18 +73,32 @@ class DonationController extends Controller
         ];
 
         // Criar pagamento PIX usando o PaymentManager
-        $paymentResult = $this->paymentManager->createPixPayment(
-            $donation, 
-            $payerData, 
-            $request->amount,
-            [
-                'description' => 'Doação para o projeto',
-                'metadata' => [
-                    'donation_id' => $donation->id,
-                    'message' => $request->message,
+        try {
+            $paymentResult = $this->paymentManager->createPixPayment(
+                $donation, 
+                $payerData, 
+                $request->amount,
+                [
+                    'description' => 'Doação para o projeto',
+                    'metadata' => [
+                        'donation_id' => $donation->id,
+                        'message' => $request->message,
+                    ]
                 ]
-            ]
-        );
+            );
+        } catch (\Exception $e) {
+            \Log::error('Erro ao criar pagamento PIX:', [
+                'donation_id' => $donation->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            $donation->update(['status' => Donation::STATUS_CANCELLED]);
+            
+            return back()
+                ->withErrors(['payment' => 'Erro ao processar pagamento: ' . $e->getMessage()])
+                ->withInput();
+        }
 
         if ($paymentResult['success']) {
             return redirect()->route('donations.payment', $donation->id)
@@ -114,24 +131,84 @@ class DonationController extends Controller
                            ->with('error', 'Esta doação expirou. Por favor, faça uma nova doação.');
         }
 
-        // Gerar QR Code se tiver código PIX
-        $qrCode = null;
-        if ($payment && $payment->qr_code_base64) {
-            // Se tiver QR Code em base64, use diretamente
-            $qrCode = '<img src="data:image/png;base64,' . $payment->qr_code_base64 . '" alt="QR Code PIX" class="img-fluid" />';
-        } elseif ($payment && $payment->qr_code_url) {
-            // Se for uma URL de QR Code, use diretamente
-            $qrCode = '<img src="' . $payment->qr_code_url . '" alt="QR Code PIX" class="img-fluid" />';
-        } elseif ($payment && $payment->pix_code) {
-            // Gerar QR Code usando o código PIX
-            $qrCode = QrCode::size(300)
-                           ->style('round')
-                           ->eye('circle')
-                           ->margin(1)
-                           ->generate($payment->pix_code);
+        // Verificar se é PIX Manual
+        $isPixManual = $payment && $payment->gateway === 'pix_manual';
+        
+        // Dados do PIX Manual
+        $pixManualData = null;
+        if ($isPixManual && $payment->gateway_response) {
+            $gatewayResponse = is_string($payment->gateway_response) 
+                ? json_decode($payment->gateway_response, true) 
+                : $payment->gateway_response;
+                
+            $pixManualData = [
+                'pix_key' => $gatewayResponse['pix_key'] ?? $payment->pix_code,
+                'pix_key_type' => $this->getPixKeyType($gatewayResponse['pix_key'] ?? $payment->pix_code),
+                'beneficiary_name' => $gatewayResponse['beneficiary_name'] ?? 'Destinatário',
+                'amount' => $payment->amount,
+            ];
         }
 
-        return view('donations.payment', compact('donation', 'payment', 'qrCode'));
+        // Gerar QR Code apenas se NÃO for PIX Manual
+        $qrCode = null;
+        if (!$isPixManual) {
+            if ($payment && $payment->qr_code_base64) {
+                // Se tiver QR Code em base64, use diretamente
+                $qrCode = '<img src="data:image/png;base64,' . $payment->qr_code_base64 . '" alt="QR Code PIX" class="img-fluid" />';
+            } elseif ($payment && $payment->qr_code_url) {
+                // Se for uma URL de QR Code, use diretamente
+                $qrCode = '<img src="' . $payment->qr_code_url . '" alt="QR Code PIX" class="img-fluid" />';
+            } elseif ($payment && $payment->pix_code) {
+                // Gerar QR Code usando o código PIX
+                $qrCode = QrCode::size(300)
+                               ->style('round')
+                               ->eye('circle')
+                               ->margin(1)
+                               ->generate($payment->pix_code);
+            }
+        }
+
+        return view('donations.payment', compact('donation', 'payment', 'qrCode', 'isPixManual', 'pixManualData'));
+    }
+    
+    /**
+     * Detecta o tipo de chave PIX
+     */
+    private function getPixKeyType($pixKey)
+    {
+        if (!$pixKey) {
+            return 'Chave PIX';
+        }
+        
+        // Remove caracteres não numéricos para verificar CPF/CNPJ/Telefone
+        $numbersOnly = preg_replace('/\D/', '', $pixKey);
+        
+        // CPF (11 dígitos)
+        if (strlen($numbersOnly) === 11 && is_numeric($numbersOnly)) {
+            return 'CPF';
+        }
+        
+        // CNPJ (14 dígitos)
+        if (strlen($numbersOnly) === 14 && is_numeric($numbersOnly)) {
+            return 'CNPJ';
+        }
+        
+        // Telefone (10 ou 11 dígitos com DDD)
+        if ((strlen($numbersOnly) === 10 || strlen($numbersOnly) === 11) && is_numeric($numbersOnly)) {
+            return 'Telefone';
+        }
+        
+        // Email
+        if (filter_var($pixKey, FILTER_VALIDATE_EMAIL)) {
+            return 'E-mail';
+        }
+        
+        // Chave Aleatória (UUID format)
+        if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $pixKey)) {
+            return 'Chave Aleatória';
+        }
+        
+        return 'Chave PIX';
     }
 
     /**
