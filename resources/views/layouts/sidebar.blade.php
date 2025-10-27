@@ -17,7 +17,7 @@ $activeWidgets = SidebarService::getActiveWidgets();
 <style>
 .blog-sidebar {
     flex-shrink: 0;
-    padding: 0 15px;
+    padding: 0 0px;
 }
 
 .sidebar-widget {

@@ -195,19 +195,15 @@ class PostResource extends Resource
                                         Forms\Components\Select::make('destination')
                                             ->label('Destino da Postagem')
                                             ->required()
-                                            ->options([
-                                                'artigos' => 'Artigos - Seção Principal',
-                                                'peticoes' => 'Petições - Bloco especial com vídeos',
-                                                'ultimas_noticias' => 'Últimas Notícias - Destaque',
-                                                'noticias_mundiais' => 'Notícias Mundiais - Coluna',
-                                                'noticias_nacionais' => 'Notícias Nacionais - Coluna',
-                                                'noticias_regionais' => 'Notícias Regionais - Coluna',
-                                                'politica' => 'Política - Seção compacta',
-                                                'economia' => 'Economia - Seção compacta'
-                                            ])
-                                            ->default('artigos')
+                                            ->options(function () {
+                                                return \App\Models\SectionConfig::active()
+                                                    ->ordered()
+                                                    ->pluck('section_name', 'section_key')
+                                                    ->toArray();
+                                            })
+                                            ->searchable()
                                             ->live()
-                                            ->helperText('Define onde esta postagem será exibida no site'),
+                                            ->helperText('Define em qual seção esta postagem será exibida no site'),
                                         
                                         Forms\Components\DateTimePicker::make('published_at')
                                             ->label('Data de Publicação')

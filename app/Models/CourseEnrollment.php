@@ -17,6 +17,8 @@ class CourseEnrollment extends Model
         'paid_amount',
         'payment_method',
         'payment_transaction_id',
+        'pix_code',
+        'pix_data',
         'progress_percentage',
         'started_at',
         'completed_at',
@@ -30,6 +32,7 @@ class CourseEnrollment extends Model
 
     protected $casts = [
         'paid_amount' => 'decimal:2',
+        'pix_data' => 'array',
         'progress_percentage' => 'integer',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
@@ -197,5 +200,52 @@ class CourseEnrollment extends Model
         return count($scores) > 0 ? round(array_sum($scores) / count($scores), 2) : null;
     }
 
+    /**
+     * Gera código PIX para pagamento do curso
+     */
+    public function generatePixCode()
+    {
+        $pixService = app(\App\Services\PixService::class);
+        
+        try {
+            $courseName = $this->course->name ?? 'Curso';
+            
+            $pixData = $pixService->generatePixCode(
+                amount: $this->paid_amount,
+                description: substr("Inscricao {$courseName}", 0, 25),
+                txid: "CRS{$this->id}" . time()
+            );
+            
+            $this->update([
+                'pix_code' => $pixData['payload'],
+                'pix_data' => [
+                    'qr_code' => $pixData['qr_code_base64'],
+                    'pix_key' => $pixData['pix_key'] ?? null,
+                    'beneficiary_name' => $pixData['beneficiary_name'] ?? null,
+                    'generated_at' => now()->toIso8601String(),
+                ],
+            ]);
+            
+            return $pixData;
+        } catch (\Exception $e) {
+            logger()->error('Erro ao gerar código PIX para inscrição no curso: ' . $e->getMessage());
+            throw $e;
+        }
+    }
 
+    /**
+     * Retorna o QR Code PIX
+     */
+    public function getPixQrCode()
+    {
+        return $this->pix_data['qr_code'] ?? null;
+    }
+
+    /**
+     * Verifica se tem código PIX gerado
+     */
+    public function hasPixCode()
+    {
+        return !empty($this->pix_code);
+    }
 }

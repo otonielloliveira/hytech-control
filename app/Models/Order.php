@@ -223,4 +223,61 @@ class Order extends Model
             'delivered_at' => now(),
         ]);
     }
+
+    /**
+     * Gera código PIX para pagamento do pedido
+     */
+    public function generatePixCode()
+    {
+        $pixService = app(\App\Services\PixService::class);
+        
+        try {
+            $pixData = $pixService->generatePixCode(
+                amount: $this->total,
+                description: "Pedido {$this->order_number}",
+                txid: "ORD{$this->id}" . time()
+            );
+            
+            // Armazenar dados do PIX no billing_address ou criar campo separado
+            $billingAddress = $this->billing_address ?? [];
+            $billingAddress['pix_data'] = [
+                'payload' => $pixData['payload'],
+                'qr_code' => $pixData['qr_code_base64'],
+                'pix_key' => $pixData['pix_key'] ?? null,
+                'beneficiary_name' => $pixData['beneficiary_name'] ?? null,
+                'generated_at' => now()->toIso8601String(),
+            ];
+            
+            $this->update(['billing_address' => $billingAddress]);
+            
+            return $pixData;
+        } catch (\Exception $e) {
+            logger()->error('Erro ao gerar código PIX para pedido: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Retorna o QR Code PIX
+     */
+    public function getPixQrCode()
+    {
+        return $this->billing_address['pix_data']['qr_code'] ?? null;
+    }
+
+    /**
+     * Retorna o payload PIX
+     */
+    public function getPixPayload()
+    {
+        return $this->billing_address['pix_data']['payload'] ?? null;
+    }
+
+    /**
+     * Verifica se tem código PIX gerado
+     */
+    public function hasPixCode()
+    {
+        return isset($this->billing_address['pix_data']['payload']);
+    }
 }

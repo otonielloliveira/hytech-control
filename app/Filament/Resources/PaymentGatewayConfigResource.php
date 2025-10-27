@@ -34,12 +34,14 @@ class PaymentGatewayConfigResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Informações Básicas')
+                    ->description('Configure o gateway de pagamento que deseja utilizar. Apenas um gateway pode estar ativo por vez.')
                     ->schema([
                         Forms\Components\Select::make('gateway')
-                            ->label('Gateway')
+                            ->label('Gateway de Pagamento')
                             ->options(PaymentGatewayConfig::getAvailableGateways())
                             ->required()
                             ->reactive()
+                            ->helperText('Escolha o método de pagamento. Para PIX, você pode usar ASAAS (integração automática), EFI Pay, ou PIX Manual (sua própria chave PIX).')
                             ->afterStateUpdated(fn ($state, callable $set) => [
                                 $set('name', PaymentGatewayConfig::getAvailableGateways()[$state] ?? '')
                             ]),
@@ -83,17 +85,28 @@ class PaymentGatewayConfigResource extends Resource
                     ])->columns(2),
 
                 Forms\Components\Section::make('Credenciais')
+                    ->description('Preencha as credenciais do gateway selecionado. Os dados são criptografados e armazenados com segurança.')
                     ->schema([
                         // ASAAS
+                        Forms\Components\Placeholder::make('asaas_info')
+                            ->label('ℹ️ ASAAS - Gateway Completo')
+                            ->content('O ASAAS oferece PIX, Boleto e Cartão de Crédito. Obtenha sua API Key em: https://www.asaas.com')
+                            ->visible(fn ($get) => $get('gateway') === 'asaas'),
+                        
                         Forms\Components\TextInput::make('credentials.api_key')
-                            ->label('API Key')
+                            ->label('API Key do ASAAS')
                             ->password()
                             ->revealable()
                             ->visible(fn ($get) => $get('gateway') === 'asaas')
                             ->required(fn ($get) => $get('gateway') === 'asaas')
-                            ->helperText('Chave API do ASAAS'),
+                            ->helperText('Cole aqui a chave API obtida no painel do ASAAS'),
                         
                         // PIX Manual
+                        Forms\Components\Placeholder::make('pix_manual_info')
+                            ->label('💰 PIX Manual - Use Sua Própria Chave')
+                            ->content('Configure sua própria chave PIX. Os clientes verão o QR Code PIX com sua chave para pagamento manual.')
+                            ->visible(fn ($get) => $get('gateway') === 'pix_manual'),
+                        
                         Forms\Components\Select::make('credentials.pix_key_type')
                             ->label('Tipo de Chave PIX')
                             ->options([
@@ -105,13 +118,29 @@ class PaymentGatewayConfigResource extends Resource
                             ])
                             ->visible(fn ($get) => $get('gateway') === 'pix_manual')
                             ->required(fn ($get) => $get('gateway') === 'pix_manual')
-                            ->helperText('Tipo da sua chave PIX'),
+                            ->reactive()
+                            ->helperText('Selecione o tipo da sua chave PIX cadastrada'),
                         
                         Forms\Components\TextInput::make('credentials.pix_key')
                             ->label('Chave PIX')
                             ->visible(fn ($get) => $get('gateway') === 'pix_manual')
                             ->required(fn ($get) => $get('gateway') === 'pix_manual')
-                            ->helperText('Digite sua chave PIX conforme o tipo selecionado')
+                            ->placeholder(fn ($get) => match($get('credentials.pix_key_type')) {
+                                'cpf' => 'Ex: 123.456.789-01 ou 12345678901',
+                                'cnpj' => 'Ex: 12.345.678/0001-99 ou 12345678000199',
+                                'email' => 'Ex: seu@email.com',
+                                'phone' => 'Ex: +5511999999999 ou 11999999999',
+                                'random' => 'Ex: 123e4567-e89b-12d3-a456-426614174000',
+                                default => 'Digite sua chave PIX'
+                            })
+                            ->helperText(fn ($get) => match($get('credentials.pix_key_type')) {
+                                'cpf' => 'Digite seu CPF com ou sem pontuação',
+                                'cnpj' => 'Digite seu CNPJ com ou sem pontuação',
+                                'email' => 'Digite o email cadastrado como chave PIX',
+                                'phone' => 'Digite o telefone com DDD (pode incluir +55)',
+                                'random' => 'Cole a chave aleatória gerada pelo seu banco (32 caracteres)',
+                                default => 'Digite sua chave PIX conforme o tipo selecionado'
+                            })
                             ->rules(function ($get) {
                                 if ($get('gateway') !== 'pix_manual') {
                                     return [];
@@ -133,42 +162,62 @@ class PaymentGatewayConfigResource extends Resource
                             ->label('Nome do Beneficiário')
                             ->visible(fn ($get) => $get('gateway') === 'pix_manual')
                             ->required(fn ($get) => $get('gateway') === 'pix_manual')
-                            ->helperText('Nome que aparecerá no PIX'),
+                            ->helperText('Nome que aparecerá para o cliente no momento do pagamento PIX'),
                         
                         // MercadoPago
+                        Forms\Components\Placeholder::make('mercadopago_info')
+                            ->label('💳 MercadoPago')
+                            ->content('Aceite pagamentos com cartão de crédito, débito e mais. Obtenha o Access Token em: https://www.mercadopago.com.br/developers')
+                            ->visible(fn ($get) => $get('gateway') === 'mercadopago'),
+                        
                         Forms\Components\TextInput::make('credentials.access_token')
                             ->label('Access Token')
                             ->password()
                             ->revealable()
                             ->visible(fn ($get) => $get('gateway') === 'mercadopago')
-                            ->required(fn ($get) => $get('gateway') === 'mercadopago'),
+                            ->required(fn ($get) => $get('gateway') === 'mercadopago')
+                            ->helperText('Cole o Access Token obtido no painel de desenvolvedores do MercadoPago'),
                         
                         // EFI Pay
+                        Forms\Components\Placeholder::make('efipay_info')
+                            ->label('⚡ EFI Pay (Gerencianet)')
+                            ->content('Gateway focado em PIX com confirmação instantânea. Configure suas credenciais em: https://sejaefi.com.br')
+                            ->visible(fn ($get) => $get('gateway') === 'efipay'),
+                        
                         Forms\Components\TextInput::make('credentials.client_id')
                             ->label('Client ID')
                             ->visible(fn ($get) => $get('gateway') === 'efipay')
-                            ->required(fn ($get) => $get('gateway') === 'efipay'),
+                            ->required(fn ($get) => $get('gateway') === 'efipay')
+                            ->helperText('Client ID fornecido pela EFI Pay'),
                         
                         Forms\Components\TextInput::make('credentials.client_secret')
                             ->label('Client Secret')
                             ->password()
                             ->revealable()
                             ->visible(fn ($get) => $get('gateway') === 'efipay')
-                            ->required(fn ($get) => $get('gateway') === 'efipay'),
+                            ->required(fn ($get) => $get('gateway') === 'efipay')
+                            ->helperText('Client Secret fornecido pela EFI Pay'),
                         
                         // PagSeguro
+                        Forms\Components\Placeholder::make('pagseguro_info')
+                            ->label('🛡️ PagSeguro')
+                            ->content('Gateway tradicional com múltiplas opções de pagamento. Configure em: https://pagseguro.uol.com.br')
+                            ->visible(fn ($get) => $get('gateway') === 'pagseguro'),
+                        
                         Forms\Components\TextInput::make('credentials.email')
                             ->label('Email')
                             ->email()
                             ->visible(fn ($get) => $get('gateway') === 'pagseguro')
-                            ->required(fn ($get) => $get('gateway') === 'pagseguro'),
+                            ->required(fn ($get) => $get('gateway') === 'pagseguro')
+                            ->helperText('Email cadastrado no PagSeguro'),
                         
                         Forms\Components\TextInput::make('credentials.token')
                             ->label('Token')
                             ->password()
                             ->revealable()
                             ->visible(fn ($get) => $get('gateway') === 'pagseguro')
-                            ->required(fn ($get) => $get('gateway') === 'pagseguro'),
+                            ->required(fn ($get) => $get('gateway') === 'pagseguro')
+                            ->helperText('Token de integração do PagSeguro'),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Informações Adicionais')

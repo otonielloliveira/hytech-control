@@ -1228,7 +1228,7 @@
                 <ul class="navbar-nav ms-auto">
                     @auth('web')
                         <li class="nav-item">
-                            <a class="nav-link text-primary" href="{{ route('filament.admin.pages.dashboard') }}" title="Acessar Painel Administrativo">
+                            <a class="nav-link text-primary" href="{{ route('filament.admin.pages.custom-dashboard') }}" title="Acessar Painel Administrativo">
                                 <i class="fas fa-cog"></i> Painel
                             </a>
                         </li>

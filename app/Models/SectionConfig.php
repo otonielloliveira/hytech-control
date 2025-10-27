@@ -23,6 +23,17 @@ class SectionConfig extends Model
         'sort_order' => 'integer',
     ];
 
+    // Relationships
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'destination', 'section_key');
+    }
+
+    public function publishedPosts()
+    {
+        return $this->posts()->published();
+    }
+
     // Scopes
     public function scopeActive($query)
     {

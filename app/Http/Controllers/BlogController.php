@@ -11,6 +11,7 @@ use App\Models\Newsletter;
 use App\Models\Comment;
 use App\Models\PetitionSignature;
 use App\Models\Product;
+use App\Models\SectionConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,71 +29,34 @@ class BlogController extends Controller
             ->take(3)
             ->get();
         
-        // Posts por destino para diferentes seções
-        $artigosPosts = Post::published()
-            ->artigos()
-            ->with(['category', 'user'])
-            ->latest('published_at')
-            ->take(6)
-            ->get();
-            
-        $peticoesPosts = Post::published()
-            ->peticoes()
-            ->with(['category', 'user'])
-            ->latest('published_at')
-            ->take(4)
-            ->get();
-            
-        $ultimasNoticiasPosts = Post::published()
-            ->ultimasNoticias()
-            ->with(['category', 'user'])
-            ->latest('published_at')
-            ->take(6)
-            ->get();
-            
-        $noticiasMundiaisPosts = Post::published()
-            ->noticiasMundiais()
-            ->with(['category', 'user'])
-            ->latest('published_at')
-            ->take(4)
-            ->get();
-            
-        $noticiasNacionaisPosts = Post::published()
-            ->noticiasNacionais()
-            ->with(['category', 'user'])
-            ->latest('published_at')
-            ->take(4)
-            ->get();
-            
-        $noticiasRegionaisPosts = Post::published()
-            ->noticiasRegionais()
-            ->with(['category', 'user'])
-            ->latest('published_at')
-            ->take(4)
-            ->get();
-            
-        $politicaPosts = Post::published()
-            ->politica()
-            ->with(['category', 'user'])
-            ->latest('published_at')
-            ->take(4)
-            ->get();
-            
-        $economiaPosts = Post::published()
-            ->economia()
-            ->with(['category', 'user'])
-            ->latest('published_at')
-            ->take(4)
-            ->get();
-            
-        $amigosApoiadoresPosts = Post::published()
-            ->amigosApoiadores()
-            ->with(['category', 'user'])
-            ->latest('published_at')
-            ->take(4)
-            ->get();
+        // Obter todas as seções ativas e ordenadas
+        $sections = SectionConfig::active()->ordered()->get();
         
-        // Posts mais recentes (fallback para quando não há posts suficientes por destino)
+        // Criar array para armazenar posts de cada seção
+        $sectionPosts = [];
+        
+        foreach ($sections as $section) {
+            $sectionKey = $section->section_key;
+            
+            // Buscar posts da seção (limite padrão de 6 posts por seção)
+            $posts = Post::published()
+                ->where('destination', $sectionKey)
+                ->with(['category', 'user'])
+                ->latest('published_at')
+                ->take(6)
+                ->get();
+            
+            // Somente adicionar se houver posts
+            if ($posts->count() > 0) {
+                $sectionPosts[] = [
+                    'config' => $section,
+                    'posts' => $posts,
+                    'key' => $sectionKey,
+                ];
+            }
+        }
+        
+        // Posts mais recentes (fallback)
         $latestPosts = Post::published()
             ->with(['category', 'user', 'tags'])
             ->latest('published_at')
@@ -104,7 +68,7 @@ class BlogController extends Controller
             $query->where('status', 'published');
         }])->get();
         
-        // Produtos em destaque para a homepage
+        // Produtos em destaque
         $featuredProducts = Product::active()
             ->featured()
             ->inStock()
@@ -117,15 +81,7 @@ class BlogController extends Controller
             'banners', 
             'featuredPosts', 
             'latestPosts',
-            'artigosPosts',
-            'peticoesPosts',
-            'ultimasNoticiasPosts',
-            'noticiasMundiaisPosts',
-            'noticiasNacionaisPosts',
-            'noticiasRegionaisPosts',
-            'politicaPosts',
-            'economiaPosts',
-            'amigosApoiadoresPosts',
+            'sectionPosts',
             'categories',
             'featuredProducts'
         ));

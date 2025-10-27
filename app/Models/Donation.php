@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class Donation extends Model
@@ -124,32 +125,39 @@ class Donation extends Model
 
     public function generatePixCode()
     {
-        // Aqui você pode integrar com seu gateway de pagamento favorito
-        // Por enquanto, vou usar um formato básico do PIX
-        $pixKey = config('services.pix.key', 'seu@email.com'); // Configure no .env
-        $merchantName = config('services.pix.merchant_name', 'Seu Projeto');
-        $merchantCity = config('services.pix.merchant_city', 'Sua Cidade');
+        $pixService = app(\App\Services\PixService::class);
         
-        // Gerar código PIX básico (você pode usar bibliotecas específicas)
-        $pixCode = $this->generateBasicPixCode($pixKey, $merchantName, $merchantCity, $this->amount);
-        
-        $this->update(['pix_code' => $pixCode]);
-        
-        return $pixCode;
+        try {
+            $pixData = $pixService->generatePixCode(
+                amount: $this->amount,
+                description: "Doacao #{$this->id}",
+                txid: "DON{$this->id}" . time()
+            );
+            
+            $this->update([
+                'pix_code' => $pixData['payload'],
+                'payment_data' => array_merge($this->payment_data ?? [], [
+                    'pix_qr_code' => $pixData['qr_code_base64'],
+                    'pix_key' => $pixData['pix_key'] ?? null,
+                    'beneficiary_name' => $pixData['beneficiary_name'] ?? null,
+                    'generated_at' => now()->toIso8601String(),
+                ]),
+            ]);
+            
+            return $pixData;
+        } catch (\Exception $e) {
+            logger()->error('Erro ao gerar código PIX para doação: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
-    private function generateBasicPixCode($pixKey, $merchantName, $merchantCity, $amount)
+    public function getPixQrCode()
     {
-        // Implementação básica do PIX - recomendo usar uma biblioteca específica
-        return "00020126" . 
-               "580014br.gov.bcb.pix" . 
-               "0136" . $pixKey . 
-               "5204" . "0000" . 
-               "5303986" . 
-               "54" . sprintf("%02d", strlen($amount)) . $amount . 
-               "5802BR" . 
-               "59" . sprintf("%02d", strlen($merchantName)) . $merchantName . 
-               "60" . sprintf("%02d", strlen($merchantCity)) . $merchantCity . 
-               "6304" . "0000"; // CRC16 simplificado
+        return $this->payment_data['pix_qr_code'] ?? null;
+    }
+
+    public function hasPixCode()
+    {
+        return !empty($this->pix_code);
     }
 }

@@ -27,7 +27,7 @@ class DonationResource extends Resource
 
     protected static ?string $modelLabel = 'Doação';
 
-    protected static ?string $navigationGroup = 'Financeiro';
+    protected static ?string $navigationGroup = 'Loja';
 
     protected static ?int $navigationSort = 1;
 
