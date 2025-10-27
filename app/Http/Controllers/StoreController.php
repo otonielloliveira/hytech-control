@@ -168,7 +168,20 @@ class StoreController extends Controller
         }
 
         $cartTotals = $this->cartService->getCartTotals();
-        $paymentMethods = PaymentMethod::active()->orderBy('sort_order')->get();
+        
+        // Verificar se PIX Manual está ativo
+        $activeGateway = $this->paymentManager->getActiveGateway();
+        $isPixManual = $activeGateway && $activeGateway->gateway_type === 'pix_manual';
+        
+        // Se PIX Manual estiver ativo, mostrar apenas opção PIX
+        if ($isPixManual) {
+            $paymentMethods = PaymentMethod::active()
+                ->where('gateway', 'pix')
+                ->orderBy('sort_order')
+                ->get();
+        } else {
+            $paymentMethods = PaymentMethod::active()->orderBy('sort_order')->get();
+        }
 
         $client = null;
         $addresses = [];
@@ -177,7 +190,7 @@ class StoreController extends Controller
             $addresses = $client->addresses()->orderBy('is_default', 'desc')->get();
         }
 
-        return view('store.checkout', compact('cartItems', 'cartTotals', 'paymentMethods', 'client', 'addresses'));
+        return view('store.checkout', compact('cartItems', 'cartTotals', 'paymentMethods', 'client', 'addresses', 'isPixManual'));
     }
 
     public function processCheckout(Request $request)
@@ -313,6 +326,9 @@ class StoreController extends Controller
             // Processar pagamento baseado no gateway
             $paymentResult = null;
             $gateway = $selectedPaymentMethod->gateway;
+            
+            // Verificar se é PIX Manual
+            $isPixManual = $activeGateway->gateway_type === 'pix_manual';
 
             switch ($gateway) {
                 case 'pix':
@@ -322,6 +338,23 @@ class StoreController extends Controller
                         $order->total, 
                         $paymentOptions
                     );
+                    
+                    // Se for PIX Manual, adicionar dados da chave ao resultado
+                    if ($isPixManual && $paymentResult['success']) {
+                        $payment = $paymentResult['payment'];
+                        $gatewayConfig = $activeGateway->config;
+                        
+                        // Detectar tipo de chave PIX
+                        $pixKey = $gatewayConfig['pix_key'] ?? '';
+                        $pixKeyType = $this->detectPixKeyType($pixKey);
+                        
+                        // Adicionar ao resultado do pagamento
+                        $paymentResult['pix_manual_data'] = [
+                            'pix_key' => $pixKey,
+                            'pix_key_type' => $pixKeyType,
+                            'beneficiary_name' => $gatewayConfig['beneficiary_name'] ?? 'Não informado',
+                        ];
+                    }
                     break;
 
                 case 'card':
@@ -381,6 +414,7 @@ class StoreController extends Controller
                     'payment_method' => $payment->payment_method,
                     'status' => $payment->status,
                     'amount' => $payment->amount,
+                    'is_pix_manual' => $isPixManual,
                     'payment' => [
                         'qr_code_base64' => $payment->qr_code_base64,
                         'qr_code_url' => $payment->qr_code_url,
@@ -388,6 +422,11 @@ class StoreController extends Controller
                         'checkout_url' => $payment->checkout_url,
                     ],
                 ];
+                
+                // Se for PIX Manual, adicionar dados da chave
+                if ($isPixManual && isset($paymentResult['pix_manual_data'])) {
+                    $normalized['pix_manual_data'] = $paymentResult['pix_manual_data'];
+                }
 
                 // Para PIX, adicionar QR Code no formato legado se necessário
                 if ($gateway === 'pix' && $payment->qr_code_base64) {
@@ -477,5 +516,41 @@ class StoreController extends Controller
         }
 
         return $client;
+    }
+    
+    /**
+     * Detecta o tipo de chave PIX baseado no formato
+     */
+    private function detectPixKeyType($key)
+    {
+        // Remove espaços e caracteres especiais para análise
+        $cleanKey = preg_replace('/[^a-zA-Z0-9@.\-]/', '', $key);
+        
+        // CPF (11 dígitos)
+        if (preg_match('/^\d{11}$/', $cleanKey)) {
+            return 'CPF';
+        }
+        
+        // CNPJ (14 dígitos)
+        if (preg_match('/^\d{14}$/', $cleanKey)) {
+            return 'CNPJ';
+        }
+        
+        // Email
+        if (filter_var($key, FILTER_VALIDATE_EMAIL)) {
+            return 'Email';
+        }
+        
+        // Telefone (10 ou 11 dígitos, com ou sem código do país)
+        if (preg_match('/^\d{10,13}$/', $cleanKey)) {
+            return 'Telefone';
+        }
+        
+        // Chave aleatória (UUID format)
+        if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $cleanKey)) {
+            return 'Chave Aleatória';
+        }
+        
+        return 'Outro';
     }
 }

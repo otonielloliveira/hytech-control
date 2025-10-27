@@ -215,58 +215,113 @@
             <!-- PIX Payment -->
             @if($paymentMethod === 'pix')
                 <div class="card">
-                    <div class="pix-container">
-                        <h2 style="margin-bottom: 0.5rem; font-size: 24px;">
-                            <i class="fas fa-qrcode me-2"></i>Pagamento via PIX
-                        </h2>
-                        <p style="margin-bottom: 1.5rem; opacity: 0.9;">
-                            Escaneie o QR Code ou copie o código abaixo
-                        </p>
+                    @php
+                        $isPixManual = $paymentResult['is_pix_manual'] ?? false;
+                        $pixManualData = $paymentResult['pix_manual_data'] ?? null;
+                    @endphp
 
-                        @php
-                            $qrCodeImage = null;
-                            $pixCode = null;
-
-                            // Tentar obter QR Code de diferentes fontes
-                            if (isset($paymentResult['qr_code']['qr_code_image'])) {
-                                $qrCodeImage = $paymentResult['qr_code']['qr_code_image'];
-                            } elseif (isset($paymentResult['payment']['qr_code_base64'])) {
-                                $qrCodeImage = 'data:image/png;base64,' . $paymentResult['payment']['qr_code_base64'];
-                            }
-
-                            // Tentar obter código PIX
-                            if (isset($paymentResult['qr_code']['qr_code_text'])) {
-                                $pixCode = $paymentResult['qr_code']['qr_code_text'];
-                            } elseif (isset($paymentResult['payment']['pix_code'])) {
-                                $pixCode = $paymentResult['payment']['pix_code'];
-                            }
-                        @endphp
-
-                        @if($qrCodeImage)
-                            <div class="qr-code-wrapper">
-                                <img src="{{ $qrCodeImage }}" alt="QR Code PIX" id="pixQrCode">
-                            </div>
-                        @endif
-
-                        @if($pixCode)
-                            <div>
-                                <p style="font-size: 14px; margin-bottom: 0.5rem; opacity: 0.9;">
-                                    Código PIX (Copia e Cola):
-                                </p>
-                                <div class="pix-code-box" id="pixCode">{{ $pixCode }}</div>
-                                <button class="copy-button" onclick="copyPixCode()">
-                                    <i class="fas fa-copy me-2"></i>
-                                    <span id="copyButtonText">Copiar código PIX</span>
-                                </button>
-                            </div>
-                        @endif
-
-                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.2);">
-                            <p style="font-size: 13px; opacity: 0.8; margin: 0;">
-                                ⏱️ O pagamento será confirmado automaticamente após a aprovação
+                    @if($isPixManual && $pixManualData)
+                        <!-- PIX Manual - Mostrar dados da chave -->
+                        <div class="pix-container">
+                            <h2 style="margin-bottom: 0.5rem; font-size: 24px;">
+                                <i class="fas fa-qrcode me-2"></i>Pagamento via PIX Manual
+                            </h2>
+                            <p style="margin-bottom: 1.5rem; opacity: 0.9;">
+                                Use os dados abaixo para fazer a transferência PIX
                             </p>
+
+                            <!-- Informações do PIX -->
+                            <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0;">
+                                <div style="margin-bottom: 1rem;">
+                                    <p style="font-size: 13px; opacity: 0.8; margin-bottom: 0.25rem;">Tipo de Chave:</p>
+                                    <p style="font-size: 18px; font-weight: 600; margin: 0;">{{ $pixManualData['pix_key_type'] }}</p>
+                                </div>
+
+                                <div style="margin-bottom: 1rem;">
+                                    <p style="font-size: 13px; opacity: 0.8; margin-bottom: 0.25rem;">Chave PIX:</p>
+                                    <div style="background: rgba(255,255,255,0.2); border: 1px dashed rgba(255,255,255,0.5); border-radius: 6px; padding: 1rem; word-break: break-all; font-family: monospace; font-size: 16px; font-weight: 600;">
+                                        <span id="pixKeyValue">{{ $pixManualData['pix_key'] }}</span>
+                                    </div>
+                                    <button class="copy-button" onclick="copyPixKey()" style="margin-top: 0.75rem;">
+                                        <i class="fas fa-copy me-2"></i>
+                                        <span id="copyKeyButtonText">Copiar Chave PIX</span>
+                                    </button>
+                                </div>
+
+                                <div style="margin-bottom: 0;">
+                                    <p style="font-size: 13px; opacity: 0.8; margin-bottom: 0.25rem;">Beneficiário:</p>
+                                    <p style="font-size: 18px; font-weight: 600; margin: 0;">{{ $pixManualData['beneficiary_name'] }}</p>
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(255,255,255,0.1); border-radius: 6px; padding: 1rem; margin-top: 1.5rem;">
+                                <p style="font-size: 13px; opacity: 0.9; margin: 0;">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Após realizar a transferência, seu pedido será processado em até 24 horas úteis.
+                                </p>
+                            </div>
+
+                            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.2);">
+                                <p style="font-size: 13px; opacity: 0.8; margin: 0;">
+                                    💰 Valor a transferir: <strong style="font-size: 20px;">R$ {{ number_format($paymentResult['amount'], 2, ',', '.') }}</strong>
+                                </p>
+                            </div>
                         </div>
-                    </div>
+                    @else
+                        <!-- PIX com QR Code (gateways automáticos) -->
+                        <div class="pix-container">
+                            <h2 style="margin-bottom: 0.5rem; font-size: 24px;">
+                                <i class="fas fa-qrcode me-2"></i>Pagamento via PIX
+                            </h2>
+                            <p style="margin-bottom: 1.5rem; opacity: 0.9;">
+                                Escaneie o QR Code ou copie o código abaixo
+                            </p>
+
+                            @php
+                                $qrCodeImage = null;
+                                $pixCode = null;
+
+                                // Tentar obter QR Code de diferentes fontes
+                                if (isset($paymentResult['qr_code']['qr_code_image'])) {
+                                    $qrCodeImage = $paymentResult['qr_code']['qr_code_image'];
+                                } elseif (isset($paymentResult['payment']['qr_code_base64'])) {
+                                    $qrCodeImage = 'data:image/png;base64,' . $paymentResult['payment']['qr_code_base64'];
+                                }
+
+                                // Tentar obter código PIX
+                                if (isset($paymentResult['qr_code']['qr_code_text'])) {
+                                    $pixCode = $paymentResult['qr_code']['qr_code_text'];
+                                } elseif (isset($paymentResult['payment']['pix_code'])) {
+                                    $pixCode = $paymentResult['payment']['pix_code'];
+                                }
+                            @endphp
+
+                            @if($qrCodeImage)
+                                <div class="qr-code-wrapper">
+                                    <img src="{{ $qrCodeImage }}" alt="QR Code PIX" id="pixQrCode">
+                                </div>
+                            @endif
+
+                            @if($pixCode)
+                                <div>
+                                    <p style="font-size: 14px; margin-bottom: 0.5rem; opacity: 0.9;">
+                                        Código PIX (Copia e Cola):
+                                    </p>
+                                    <div class="pix-code-box" id="pixCode">{{ $pixCode }}</div>
+                                    <button class="copy-button" onclick="copyPixCode()">
+                                        <i class="fas fa-copy me-2"></i>
+                                        <span id="copyButtonText">Copiar código PIX</span>
+                                    </button>
+                                </div>
+                            @endif
+
+                            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.2);">
+                                <p style="font-size: 13px; opacity: 0.8; margin: 0;">
+                                    ⏱️ O pagamento será confirmado automaticamente após a aprovação
+                                </p>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             @endif
 
@@ -366,6 +421,25 @@
     </div>
 
     <script>
+        function copyPixKey() {
+            const pixKey = document.getElementById('pixKeyValue').textContent;
+            const button = event.target.closest('.copy-button');
+            const buttonText = document.getElementById('copyKeyButtonText');
+            
+            navigator.clipboard.writeText(pixKey).then(() => {
+                button.classList.add('copied');
+                buttonText.innerHTML = '<i class="fas fa-check me-2"></i>Chave copiada!';
+                
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    buttonText.innerHTML = '<i class="fas fa-copy me-2"></i>Copiar Chave PIX';
+                }, 3000);
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar chave. Por favor, copie manualmente.');
+            });
+        }
+
         function copyPixCode() {
             const pixCode = document.getElementById('pixCode').textContent;
             const button = document.querySelector('.copy-button');
@@ -393,9 +467,10 @@
                 $transactionId = $paymentResult['payment']['transaction_id'] ?? 
                                $paymentResult['payment']['id'] ?? 
                                $paymentResult['transaction_id'] ?? null;
+                $isPixManual = $paymentResult['is_pix_manual'] ?? false;
             @endphp
 
-            @if(in_array($paymentMethod, ['pix', 'boleto', 'bank_slip']) && $transactionId)
+            @if(in_array($paymentMethod, ['pix', 'boleto', 'bank_slip']) && $transactionId && !$isPixManual)
                 let checkInterval = null;
                 let checkAttempts = 0;
                 const maxAttempts = 240; // 20 minutos (5 segundos * 240)
