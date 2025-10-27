@@ -306,11 +306,7 @@ class VideoResource extends Resource
                         ->icon('heroicon-o-pencil'),
                     Tables\Actions\DeleteAction::make()
                         ->icon('heroicon-o-trash'),
-                ])->label('Ações')
-                    ->icon('heroicon-m-ellipsis-vertical')
-                    ->size('sm')
-                    ->color('gray')
-                    ->button(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
