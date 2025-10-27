@@ -37,7 +37,7 @@ class SidebarConfigResource extends Resource
                 Forms\Components\Section::make('Widget')
                     ->schema([
                         Forms\Components\Select::make('widget_name')
-                            ->label('Nome do Widget')
+                            ->label('Tipo do Widget')
                             ->options([
                                 'notices' => 'Recados',
                                 'tags' => 'Tags',
@@ -49,7 +49,15 @@ class SidebarConfigResource extends Resource
                                 'downloads' => 'Downloads',
                             ])
                             ->required()
-                            ->disabled(fn ($record) => $record?->exists),
+                            ->disabled(fn ($record) => $record?->exists)
+                            ->helperText('Tipo do widget (não pode ser alterado após criação)'),
+                        
+                        Forms\Components\TextInput::make('display_name')
+                            ->label('Nome de Exibição')
+                            ->placeholder('Ex: ENQUETES, VOTAÇÕES, etc.')
+                            ->helperText('Nome que aparecerá no site. Deixe vazio para usar o nome padrão.')
+                            ->maxLength(255)
+                            ->columnSpanFull(),
                         
                         Forms\Components\Toggle::make('is_active')
                             ->label('Ativo')
@@ -102,7 +110,7 @@ class SidebarConfigResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('widget_name')
-                    ->label('Widget')
+                    ->label('Tipo')
                     ->formatStateUsing(fn (string $state): string => match($state) {
                         'notices' => 'Recados',
                         'tags' => 'Tags',
@@ -116,6 +124,12 @@ class SidebarConfigResource extends Resource
                     })
                     ->badge()
                     ->color('info'),
+                
+                Tables\Columns\TextColumn::make('display_name')
+                    ->label('Nome de Exibição')
+                    ->default(fn ($record) => $record->getDisplayName())
+                    ->description(fn ($record) => $record->display_name ? 'Personalizado' : 'Padrão')
+                    ->searchable(),
                 
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Ativo')

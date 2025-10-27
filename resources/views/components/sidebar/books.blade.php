@@ -9,7 +9,7 @@ $widgetConfig = App\Models\SidebarConfig::getWidgetConfig('books');
     <div class="widget-header" 
          style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
         <h5 class="widget-title">
-            <i class="fas fa-book me-2"></i>LIVROS RECOMENDADOS
+            <i class="fas fa-book me-2"></i>{{ $widgetConfig?->display_name ?? 'LIVROS RECOMENDADOS' }}
         </h5>
     </div>
     
@@ -149,7 +149,7 @@ $widgetConfig = App\Models\SidebarConfig::getWidgetConfig('books');
     <div class="widget-header" 
          style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
         <h5 class="widget-title">
-            <i class="fas fa-book me-2"></i>LIVROS RECOMENDADOS
+            <i class="fas fa-book me-2"></i>{{ $widgetConfig?->display_name ?? 'LIVROS RECOMENDADOS' }}
         </h5>
     </div>
     

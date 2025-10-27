@@ -19,7 +19,7 @@ $widgetConfig = App\Models\SidebarConfig::getWidgetConfig('tags');
     <div class="widget-header" 
          style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
         <h5 class="widget-title">
-            <i class="fas fa-tags me-2"></i>TAGS
+            <i class="fas fa-tags me-2"></i>{{ $widgetConfig?->display_name ?? 'TAGS' }}
         </h5>
     </div>
     

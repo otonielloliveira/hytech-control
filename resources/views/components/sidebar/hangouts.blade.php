@@ -1,5 +1,6 @@
 @php
 $widgetConfig = App\Models\SidebarConfig::getWidgetConfig('hangouts');
+//dd($widgetConfig->display_name);
 @endphp
 
 @if($hangouts && $hangouts->count() > 0)
@@ -9,7 +10,7 @@ $widgetConfig = App\Models\SidebarConfig::getWidgetConfig('hangouts');
     <div class="widget-header" 
          style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
         <h5 class="widget-title">
-            <i class="fas fa-video me-2"></i>HANGOUTS
+            <i class="fas fa-video me-2"></i>{{ $widgetConfig->display_name ?? 'HANGOUTss   S' }}
         </h5>
     </div>
     
@@ -218,7 +219,7 @@ function toggleMeetingInfo(hangoutId) {
     <div class="widget-header" 
          style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
         <h5 class="widget-title">
-            <i class="fas fa-video me-2"></i>HANGOUTS
+            <i class="fas fa-video me-2"></i>{{ $widgetConfig?->display_name ?? 'HANGOUTS' }}
         </h5>
     </div>
     
@@ -228,7 +229,7 @@ function toggleMeetingInfo(hangoutId) {
                 <i class="fas fa-video" style="font-size: 2.5rem; opacity: 0.3;"></i>
             </div>
             <p class="text-muted small mb-0">
-                Nenhum hangout agendado no momento
+                Nenhuma {{ $widgetConfig?->display_name ?? 'HANGOUT' }} agendado no momento
             </p>
         </div>
     </div>

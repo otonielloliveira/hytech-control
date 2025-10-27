@@ -15,7 +15,7 @@ if ($activePoll && request()->ip()) {
     <div class="widget-header" 
          style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
         <h5 class="widget-title">
-            <i class="fas fa-chart-bar me-2"></i>ENQUETES
+            <i class="fas fa-chart-bar me-2"></i>{{ $widgetConfig?->display_name ?? 'ENQUETES' }}
         </h5>
     </div>
     
@@ -359,7 +359,7 @@ document.getElementById('revote-form').addEventListener('submit', function(e) {
     <div class="widget-header" 
          style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
         <h5 class="widget-title">
-            <i class="fas fa-chart-bar me-2"></i>ENQUETES
+            <i class="fas fa-chart-bar me-2"></i>{{ $widgetConfig?->display_name ?? 'ENQUETES' }}
         </h5>
     </div>
     

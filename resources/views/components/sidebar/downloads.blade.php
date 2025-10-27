@@ -10,7 +10,7 @@ $widgetConfig = App\Models\SidebarConfig::getWidgetConfig('downloads');
     <div class="widget-header" 
          style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
         <h5 class="widget-title">
-            <i class="fas fa-download me-2"></i>DOWNLOADS
+            <i class="fas fa-download me-2"></i>{{ $widgetConfig?->display_name ?? 'DOWNLOADS' }}
         </h5>
     </div>
     
@@ -164,7 +164,7 @@ $widgetConfig = App\Models\SidebarConfig::getWidgetConfig('downloads');
     <div class="widget-header" 
          style="background-color: {{ $widgetConfig?->title_color ?? '#1e40af' }};">
         <h5 class="widget-title">
-            <i class="fas fa-download me-2"></i>DOWNLOADS
+            <i class="fas fa-download me-2"></i>{{ $widgetConfig?->display_name ?? 'DOWNLOADS' }}
         </h5>
     </div>
     
