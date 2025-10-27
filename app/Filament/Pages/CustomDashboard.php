@@ -8,7 +8,11 @@ class CustomDashboard extends BaseDashboard
 {
     protected static ?string $navigationIcon = 'heroicon-o-home';
     
-    protected static string $view = 'filament.pages.dashboard';
+    protected static string $routePath = 'dashboard';
+    
+    protected static ?string $navigationLabel = 'Dashboard';
+    
+    protected static ?int $navigationSort = -2;
     
     public function getTitle(): string
     {

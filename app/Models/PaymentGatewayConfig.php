@@ -88,6 +88,7 @@ class PaymentGatewayConfig extends Model
     {
         return [
             'asaas' => 'ASAAS',
+            'pix_manual' => 'PIX Manual (Chave Própria)',
             'mercadopago' => 'MercadoPago',
             'efipay' => 'EFI Pay (PIX)',
             'pagseguro' => 'PagSeguro',
@@ -121,6 +122,7 @@ class PaymentGatewayConfig extends Model
     {
         return match($this->gateway) {
             'asaas' => ['api_key'],
+            'pix_manual' => ['pix_key', 'pix_key_type'],
             'mercadopago' => ['access_token'],
             'efipay' => ['client_id', 'client_secret'],
             'pagseguro' => ['email', 'token'],

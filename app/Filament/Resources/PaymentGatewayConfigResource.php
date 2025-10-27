@@ -53,12 +53,22 @@ class PaymentGatewayConfigResource extends Resource
                             ->label('Ativo')
                             ->helperText('Apenas um gateway pode estar ativo por vez')
                             ->reactive()
-                            ->afterStateUpdated(function ($state, $record) {
-                                if ($state && $record) {
-                                    // Desativar outros gateways
+                            ->afterStateUpdated(function ($state, $record, callable $set) {
+                                if ($state) {
+                                    // Desativar outros gateways quando este for ativado
+                                    if ($record && $record->exists) {
+                                        PaymentGatewayConfig::where('id', '!=', $record->id)
+                                            ->update(['is_active' => false]);
+                                    }
+                                }
+                            })
+                            ->dehydrateStateUsing(function ($state, $record) {
+                                // Se estiver ativando, desativa os outros antes de salvar
+                                if ($state && $record && $record->exists) {
                                     PaymentGatewayConfig::where('id', '!=', $record->id)
                                         ->update(['is_active' => false]);
                                 }
+                                return $state;
                             }),
                         
                         Forms\Components\Toggle::make('is_sandbox')
@@ -74,6 +84,57 @@ class PaymentGatewayConfigResource extends Resource
 
                 Forms\Components\Section::make('Credenciais')
                     ->schema([
+                        // ASAAS
+                        Forms\Components\TextInput::make('credentials.api_key')
+                            ->label('API Key')
+                            ->password()
+                            ->revealable()
+                            ->visible(fn ($get) => $get('gateway') === 'asaas')
+                            ->required(fn ($get) => $get('gateway') === 'asaas')
+                            ->helperText('Chave API do ASAAS'),
+                        
+                        // PIX Manual
+                        Forms\Components\Select::make('credentials.pix_key_type')
+                            ->label('Tipo de Chave PIX')
+                            ->options([
+                                'cpf' => 'CPF',
+                                'cnpj' => 'CNPJ',
+                                'email' => 'Email',
+                                'phone' => 'Telefone',
+                                'random' => 'Chave Aleatória',
+                            ])
+                            ->visible(fn ($get) => $get('gateway') === 'pix_manual')
+                            ->required(fn ($get) => $get('gateway') === 'pix_manual')
+                            ->helperText('Tipo da sua chave PIX'),
+                        
+                        Forms\Components\TextInput::make('credentials.pix_key')
+                            ->label('Chave PIX')
+                            ->visible(fn ($get) => $get('gateway') === 'pix_manual')
+                            ->required(fn ($get) => $get('gateway') === 'pix_manual')
+                            ->helperText('Digite sua chave PIX conforme o tipo selecionado')
+                            ->rules(function ($get) {
+                                if ($get('gateway') !== 'pix_manual') {
+                                    return [];
+                                }
+                                
+                                $keyType = $get('credentials.pix_key_type');
+                                
+                                return match($keyType) {
+                                    'cpf' => ['regex:/^\d{3}\.\d{3}\.\d{3}-\d{2}$|^\d{11}$/'],
+                                    'cnpj' => ['regex:/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$|^\d{14}$/'],
+                                    'email' => ['email'],
+                                    'phone' => ['regex:/^\+?\d{10,15}$/'],
+                                    'random' => ['min:32', 'max:32'],
+                                    default => [],
+                                };
+                            }),
+                        
+                        Forms\Components\TextInput::make('credentials.pix_beneficiary_name')
+                            ->label('Nome do Beneficiário')
+                            ->visible(fn ($get) => $get('gateway') === 'pix_manual')
+                            ->required(fn ($get) => $get('gateway') === 'pix_manual')
+                            ->helperText('Nome que aparecerá no PIX'),
+                        
                         // MercadoPago
                         Forms\Components\TextInput::make('credentials.access_token')
                             ->label('Access Token')
@@ -140,9 +201,11 @@ class PaymentGatewayConfigResource extends Resource
                     ->label('Gateway')
                     ->formatStateUsing(fn ($state) => PaymentGatewayConfig::getAvailableGateways()[$state] ?? $state)
                     ->colors([
+                        'info' => 'asaas',
+                        'success' => 'pix_manual',
                         'primary' => 'mercadopago',
-                        'success' => 'efipay',
-                        'warning' => 'pagseguro',
+                        'warning' => 'efipay',
+                        'danger' => 'pagseguro',
                     ]),
 
                 Tables\Columns\IconColumn::make('is_active')
