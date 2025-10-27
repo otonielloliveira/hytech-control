@@ -35,7 +35,10 @@ class DatabaseSeeder extends Seeder
             // 7. Vídeos e tutoriais
             VideoSeeder::class,
             
-            // 8. Loja (produtos, métodos de pagamento, frete)
+            // 8. Álbuns e fotos
+            AlbumSeeder::class,
+            
+            // 9. Loja (produtos, métodos de pagamento, frete)
             StoreSeeder::class,
         ]);
         
@@ -51,7 +54,8 @@ class DatabaseSeeder extends Seeder
         $this->command->info('📝 Blog com categorias, posts e banners');
         $this->command->info('🎓 Cursos de exemplo criados');
         $this->command->info('🎥 Vídeos e tutoriais disponíveis');
-        $this->command->info('🛒 Loja com produtos de exemplo');
+        $this->command->info('� Álbuns de fotos criados');
+        $this->command->info('�🛒 Loja com produtos de exemplo');
         $this->command->info('⚙️  Configurações de seções e sidebar');
     }
 }

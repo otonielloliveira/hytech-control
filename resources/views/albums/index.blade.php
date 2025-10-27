@@ -13,7 +13,7 @@
                 @if($albums->count() > 0)
                 <div class="row g-4">
                     @foreach($albums as $album)
-                        <div class="col-lg-6 col-md-6">
+                        <div class="col-lg-3 col-md-6 col-sm-6">
                             <div class="card h-100 shadow-sm album-card">
                                 <div class="position-relative album-cover">
                                     @if($album->cover_image_url)
@@ -21,12 +21,12 @@
                                             <img src="{{ $album->cover_image_url }}" 
                                                  class="card-img-top album-cover-image" 
                                                  alt="{{ $album->title }}"
-                                                 style="height: 300px; object-fit: cover;">
+                                                 style="height: 250px; object-fit: cover;">
                                         </a>
                                     @else
                                         <a href="{{ route('albums.show', $album) }}">
                                             <div class="bg-light d-flex align-items-center justify-content-center album-placeholder" 
-                                                 style="height: 300px;">
+                                                 style="height: 250px;">
                                                 <i class="fas fa-images fa-3x text-muted"></i>
                                             </div>
                                         </a>

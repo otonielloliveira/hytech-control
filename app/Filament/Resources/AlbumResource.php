@@ -37,7 +37,21 @@ class AlbumResource extends Resource
                         Forms\Components\TextInput::make('title')
                             ->label('Título')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state, callable $set, $get) {
+                                if (! $get('slug')) {
+                                    $set('slug', \Illuminate\Support\Str::slug($state));
+                                }
+                            }),
+                            
+                        Forms\Components\TextInput::make('slug')
+                            ->label('Slug (URL amigável)')
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(255)
+                            ->helperText('URL amigável gerada automaticamente. Você pode editá-la se necessário.')
+                            ->alphaDash(),
                             
                         Forms\Components\Textarea::make('description')
                             ->label('Descrição')

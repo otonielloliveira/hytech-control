@@ -43,7 +43,7 @@ class VideoController extends Controller
         $relatedVideos = collect();
         
         if (is_array($video->tags) && count($video->tags) > 0) {
-            // Find videos that share at least one tag
+            // Find videos that share at least one tag - randomized
             $relatedVideos = Video::active()
                 ->where('id', '!=', $video->id)
                 ->where(function ($query) use ($video) {
@@ -51,26 +51,26 @@ class VideoController extends Controller
                         $query->orWhereJsonContains('tags', $tag);
                     }
                 })
-                ->ordered()
+                ->inRandomOrder()
                 ->take(6)
                 ->get();
         }
         
-        // If no videos with similar tags, fallback to same category
+        // If no videos with similar tags, fallback to same category - randomized
         if ($relatedVideos->isEmpty() && $video->category) {
             $relatedVideos = Video::active()
                 ->where('id', '!=', $video->id)
                 ->byCategory($video->category)
-                ->ordered()
+                ->inRandomOrder()
                 ->take(6)
                 ->get();
         }
         
-        // If still no videos, just get latest videos
+        // If still no videos, just get random videos
         if ($relatedVideos->isEmpty()) {
             $relatedVideos = Video::active()
                 ->where('id', '!=', $video->id)
-                ->ordered()
+                ->inRandomOrder()
                 ->take(6)
                 ->get();
         }

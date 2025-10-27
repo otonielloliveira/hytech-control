@@ -12,6 +12,7 @@ class Album extends Model
 
     protected $fillable = [
         'title',
+        'slug',
         'description',
         'cover_image',
         'event_date',
@@ -63,6 +64,12 @@ class Album extends Model
         return $this->event_date ? $this->event_date->format('d/m/Y') : null;
     }
 
+    // Route binding
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function updatePhotoCount(): void
     {
         $this->update(['photo_count' => $this->photos()->count()]);
@@ -77,5 +84,37 @@ class Album extends Model
             }])
             ->take($limit)
             ->get();
+    }
+
+    // Events
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($album) {
+            if (empty($album->slug)) {
+                $album->slug = $album->generateUniqueSlug($album->title);
+            }
+        });
+
+        static::updating(function ($album) {
+            if ($album->isDirty('title') && empty($album->slug)) {
+                $album->slug = $album->generateUniqueSlug($album->title);
+            }
+        });
+    }
+
+    protected function generateUniqueSlug(string $title): string
+    {
+        $slug = \Illuminate\Support\Str::slug($title);
+        $originalSlug = $slug;
+        $count = 1;
+
+        while (static::where('slug', $slug)->where('id', '!=', $this->id ?? 0)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
+        return $slug;
     }
 }

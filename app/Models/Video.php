@@ -12,6 +12,7 @@ class Video extends Model
 
     protected $fillable = [
         'title',
+        'slug',
         'description',
         'video_url',
         'video_platform',
@@ -87,6 +88,12 @@ class Video extends Model
         return $this->description ? Str::limit($this->description, 120) : '';
     }
 
+    // Route binding
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     // Methods
     public function incrementViews(): void
     {
@@ -139,10 +146,36 @@ class Video extends Model
     {
         parent::boot();
 
+        static::creating(function ($video) {
+            if (empty($video->slug)) {
+                $video->slug = $video->generateUniqueSlug($video->title);
+            }
+        });
+
+        static::updating(function ($video) {
+            if ($video->isDirty('title') && empty($video->slug)) {
+                $video->slug = $video->generateUniqueSlug($video->title);
+            }
+        });
+
         static::saving(function ($video) {
             if ($video->isDirty('video_url')) {
                 $video->extractVideoId();
             }
         });
+    }
+
+    protected function generateUniqueSlug(string $title): string
+    {
+        $slug = Str::slug($title);
+        $originalSlug = $slug;
+        $count = 1;
+
+        while (static::where('slug', $slug)->where('id', '!=', $this->id ?? 0)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
+        return $slug;
     }
 }
