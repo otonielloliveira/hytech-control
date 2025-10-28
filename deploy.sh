@@ -7,6 +7,7 @@ echo "🚀 Iniciando deploy do Laravel na Locaweb..."
 # Definir diretórios
 ROOT_DIR=/home/cehdec1
 DEPLOY_TEMP=$ROOT_DIR/deploy_temp
+APP_DIR=$ROOT_DIR/app
 PUBLIC_HTML=$ROOT_DIR/public_html
 BACKUP_DIR=$ROOT_DIR/backups/$(date +%Y%m%d_%H%M%S)
 
@@ -15,16 +16,16 @@ echo "📦 Criando backup..."
 mkdir -p $BACKUP_DIR
 
 # Backup de arquivos críticos (exceto storage e .env que serão preservados)
-if [ -d "$PUBLIC_HTML" ]; then
+if [ -d "$APP_DIR" ]; then
     # Backup do .env atual
-    if [ -f "$PUBLIC_HTML/.env" ]; then
-        cp $PUBLIC_HTML/.env $BACKUP_DIR/.env
+    if [ -f "$APP_DIR/.env" ]; then
+        cp $APP_DIR/.env $BACKUP_DIR/.env
         echo "✅ Backup do .env criado"
     fi
     
     # Backup da pasta storage (preservar uploads e arquivos)
-    if [ -d "$PUBLIC_HTML/storage/app/public" ]; then
-        cp -r $PUBLIC_HTML/storage/app/public $BACKUP_DIR/storage_public
+    if [ -d "$APP_DIR/storage/app/public" ]; then
+        cp -r $APP_DIR/storage/app/public $BACKUP_DIR/storage_public
         echo "✅ Backup do storage criado"
     fi
 fi
@@ -41,7 +42,7 @@ if [ -f "$BACKUP_DIR/.env" ]; then
 fi
 
 # Criar estrutura de diretórios se não existir
-mkdir -p $PUBLIC_HTML
+mkdir -p $APP_DIR
 
 # Sincronizar arquivos (exceto storage/app/public)
 echo "🔄 Sincronizando arquivos..."
@@ -52,18 +53,18 @@ rsync -av --delete \
     --exclude='storage/framework/sessions/*' \
     --exclude='storage/framework/views/*' \
     --exclude='storage/logs/*' \
-    ./ $PUBLIC_HTML/
+    ./ $APP_DIR/
 
 # Restaurar storage/app/public se existir backup
 if [ -d "$BACKUP_DIR/storage_public" ]; then
-    mkdir -p $PUBLIC_HTML/storage/app/public
-    cp -r $BACKUP_DIR/storage_public/* $PUBLIC_HTML/storage/app/public/
+    mkdir -p $APP_DIR/storage/app/public
+    cp -r $BACKUP_DIR/storage_public/* $APP_DIR/storage/app/public/
     echo "✅ Storage restaurado"
 fi
 
 # Criar diretórios necessários
 echo "📁 Criando estrutura de diretórios..."
-cd $PUBLIC_HTML
+cd $APP_DIR
 mkdir -p storage/framework/cache
 mkdir -p storage/framework/sessions
 mkdir -p storage/framework/views
@@ -81,9 +82,22 @@ echo "📦 Instalando dependências do Composer..."
 php83 composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Criar symlink do storage se não existir
-if [ ! -L "$PUBLIC_HTML/public/storage" ]; then
-    ln -s $PUBLIC_HTML/storage/app/public $PUBLIC_HTML/public/storage
+if [ ! -L "$APP_DIR/public/storage" ]; then
+    ln -s $APP_DIR/storage/app/public $APP_DIR/public/storage
     echo "✅ Symlink do storage criado"
+fi
+
+# Criar symlink do public_html para a pasta public do Laravel
+echo "🔗 Criando symlink public_html → app/public..."
+cd $ROOT_DIR
+# Remover public_html se for diretório comum (não symlink)
+if [ -d "$PUBLIC_HTML" ] && [ ! -L "$PUBLIC_HTML" ]; then
+    rm -rf $PUBLIC_HTML
+fi
+# Criar symlink se não existir
+if [ ! -L "$PUBLIC_HTML" ]; then
+    ln -s $APP_DIR/public $PUBLIC_HTML
+    echo "✅ Symlink public_html criado"
 fi
 
 # Otimizações do Laravel
@@ -104,6 +118,7 @@ php83 artisan optimize:clear
 echo "✅ Deploy concluído com sucesso!"
 echo "📊 Estatísticas:"
 echo "   - Backup salvo em: $BACKUP_DIR"
-echo "   - Aplicação em: $PUBLIC_HTML"
+echo "   - Aplicação em: $APP_DIR"
+echo "   - Public HTML: $PUBLIC_HTML → $APP_DIR/public"
 echo "   - Storage preservado: ✅"
 echo "   - .env preservado: ✅"
