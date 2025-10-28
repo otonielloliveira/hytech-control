@@ -75,6 +75,15 @@ echo "🔐 Configurando permissões..."
 chmod -R 755 storage bootstrap/cache
 chmod -R 775 storage/app/public
 
+# Instalar dependências do Composer
+echo "📦 Instalando dependências do Composer..."
+composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+# Instalar dependências do Node e build
+echo "🎨 Compilando assets do frontend..."
+npm ci --production=false
+npm run build
+
 # Criar symlink do storage se não existir
 if [ ! -L "$PUBLIC_HTML/public/storage" ]; then
     ln -s $PUBLIC_HTML/storage/app/public $PUBLIC_HTML/public/storage
