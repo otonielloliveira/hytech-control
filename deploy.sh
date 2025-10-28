@@ -78,12 +78,7 @@ chmod -R 775 storage/app/public
 
 # Instalar dependências do Composer
 echo "📦 Instalando dependências do Composer..."
-composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-
-# Instalar dependências do Node e build
-echo "🎨 Compilando assets do frontend..."
-npm ci --production=false
-npm run build
+php83 composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Criar symlink do storage se não existir
 if [ ! -L "$PUBLIC_HTML/public/storage" ]; then
@@ -93,18 +88,18 @@ fi
 
 # Otimizações do Laravel
 echo "⚡ Otimizando aplicação..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-php artisan filament:cache-components
+php83 artisan config:cache
+php83 artisan route:cache
+php83 artisan view:cache
+php83 artisan filament:cache-components
 
 # Executar migrations (com cuidado)
 echo "🗄️  Executando migrations..."
-php artisan migrate --force
+php83 artisan migrate --force
 
 # Limpar caches antigos
-php artisan cache:clear
-php artisan optimize:clear
+php83 artisan cache:clear
+php83 artisan optimize:clear
 
 echo "✅ Deploy concluído com sucesso!"
 echo "📊 Estatísticas:"

@@ -21,6 +21,11 @@ jobs:
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, iconv, json, mbstring, pdo, zip
           coverage: none
 
+      - name: Install Node dependencies and build assets
+        run: |
+          npm ci
+          npm run build
+
       - name: Create deployment archive
         run: |
           tar -czf /tmp/deploy.tar.gz \
@@ -37,7 +42,6 @@ jobs:
             --exclude='storage/framework/testing/*' \
             --exclude='storage/framework/views/*' \
             --exclude='storage/logs/*' \
-            --exclude='public/build' \
             --exclude='public/hot' \
             --exclude='deploy.tar.gz' \
             .
