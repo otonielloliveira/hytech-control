@@ -108,7 +108,7 @@ class DonationController extends Controller
                 ]
             );
         } catch (\Exception $e) {
-            \Log::error('Erro ao criar pagamento PIX:', [
+            Log::error('Erro ao criar pagamento PIX:', [
                 'donation_id' => $donation->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
