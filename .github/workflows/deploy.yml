@@ -67,7 +67,7 @@ jobs:
           script: |
             cd /home/cehdec1/deploy_temp
             chmod +x deploy.sh
-            ./deploy.sh
+            bash deploy.sh
             rm -rf /home/cehdec1/deploy_temp
 
       - name: Notify deployment success
