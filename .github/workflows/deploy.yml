@@ -31,7 +31,7 @@ jobs:
 
       - name: Create deployment archive
         run: |
-          tar -czf deploy.tar.gz \
+          tar -czf /tmp/deploy.tar.gz \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='node_modules' \
@@ -43,7 +43,9 @@ jobs:
             --exclude='storage/framework/testing/*' \
             --exclude='storage/framework/views/*' \
             --exclude='storage/logs/*' \
+            --exclude='deploy.tar.gz' \
             .
+          mv /tmp/deploy.tar.gz .
 
       - name: Deploy to Locaweb via SSH
         uses: appleboy/scp-action@master
