@@ -5,9 +5,10 @@ set -e
 echo "🚀 Iniciando deploy do Laravel na Locaweb..."
 
 # Definir diretórios
-DEPLOY_TEMP=~/deploy_temp
-PUBLIC_HTML=~/public_html
-BACKUP_DIR=~/backups/$(date +%Y%m%d_%H%M%S)
+ROOT_DIR=/home/cehdec1
+DEPLOY_TEMP=$ROOT_DIR/deploy_temp
+PUBLIC_HTML=$ROOT_DIR/public_html
+BACKUP_DIR=$ROOT_DIR/backups/$(date +%Y%m%d_%H%M%S)
 
 # Criar diretório de backup
 echo "📦 Criando backup..."
