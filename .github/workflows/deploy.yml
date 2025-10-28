@@ -22,7 +22,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+        run: composer install --no-dev --no-interaction --prefer-dist
 
       - name: Install Node dependencies and build assets
         run: |

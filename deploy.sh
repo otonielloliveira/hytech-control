@@ -82,7 +82,7 @@ chmod -R 775 storage/app/public
 
 # Instalar dependências do Composer
 echo "📦 Instalando dependências do Composer..."
-php83 /home/cehdec1/composer.phar install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+php83 /home/cehdec1/composer.phar install --no-dev --no-interaction --prefer-dist
 
 # Criar symlink do storage se não existir
 if [ ! -L "$APP_DIR/public/storage" ]; then
