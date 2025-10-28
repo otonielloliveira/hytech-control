@@ -57,10 +57,12 @@ rsync -av --delete \
     ./ $APP_DIR/
 
 # Restaurar storage/app/public se existir backup
-if [ -d "$BACKUP_DIR/storage_public" ]; then
+if [ -d "$BACKUP_DIR/storage_public" ] && [ "$(ls -A $BACKUP_DIR/storage_public 2>/dev/null)" ]; then
     mkdir -p $APP_DIR/storage/app/public
     cp -r $BACKUP_DIR/storage_public/* $APP_DIR/storage/app/public/
     echo "✅ Storage restaurado"
+else
+    echo "ℹ️  Nenhum backup de storage encontrado (primeiro deploy)"
 fi
 
 # Criar diretórios necessários
