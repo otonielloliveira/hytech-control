@@ -53,6 +53,7 @@ rsync -av --delete \
     --exclude='storage/framework/sessions/*' \
     --exclude='storage/framework/views/*' \
     --exclude='storage/logs/*' \
+    --exclude='composer.phar' \
     ./ $APP_DIR/
 
 # Restaurar storage/app/public se existir backup
@@ -79,7 +80,7 @@ chmod -R 775 storage/app/public
 
 # Instalar dependências do Composer
 echo "📦 Instalando dependências do Composer..."
-php83 composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+php83 /home/cehdec1/composer.phar install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Criar symlink do storage se não existir
 if [ ! -L "$APP_DIR/public/storage" ]; then
