@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class Video extends Model
 {
@@ -72,8 +73,21 @@ class Video extends Model
         }
 
         return match ($this->video_platform) {
-            'youtube' => "https://img.youtube.com/vi/{$this->video_id}/maxresdefault.jpg",
+            'youtube' => "https://img.youtube.com/vi/{$this->video_id}/hqdefault.jpg",
             'vimeo' => "https://vumbnail.com/{$this->video_id}.jpg",
+            default => asset('images/video-placeholder.jpg'),
+        };
+    }
+
+    public function getHighQualityThumbnailAttribute(): string
+    {
+        if ($this->thumbnail_url) {
+            return $this->thumbnail_url;
+        }
+
+        return match ($this->video_platform) {
+            'youtube' => "https://img.youtube.com/vi/{$this->video_id}/maxresdefault.jpg",
+            'vimeo' => "https://vumbnail.com/{$this->video_id}_640x360.jpg",
             default => asset('images/video-placeholder.jpg'),
         };
     }
@@ -110,14 +124,116 @@ class Video extends Model
         if (preg_match('/youtube\.com\/watch\?v=([^&]+)/', $this->video_url, $matches)) {
             $this->video_id = $matches[1];
             $this->video_platform = 'youtube';
+            $this->fetchYoutubeDuration();
         } elseif (preg_match('/youtu\.be\/([^?]+)/', $this->video_url, $matches)) {
             $this->video_id = $matches[1];
             $this->video_platform = 'youtube';
+            $this->fetchYoutubeDuration();
         }
         // Vimeo patterns
         elseif (preg_match('/vimeo\.com\/(\d+)/', $this->video_url, $matches)) {
             $this->video_id = $matches[1];
             $this->video_platform = 'vimeo';
+            $this->fetchVimeoDuration();
+        }
+    }
+
+    public function fetchYoutubeDuration(): void
+    {
+        if (!$this->video_id || $this->video_platform !== 'youtube') {
+            return;
+        }
+
+        try {
+            // Usando oEmbed API do YouTube para obter informações
+            $oembedUrl = "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={$this->video_id}&format=json";
+            
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 10,
+                    'user_agent' => 'Mozilla/5.0 (compatible; VideoFetcher/1.0)'
+                ]
+            ]);
+            
+            $response = file_get_contents($oembedUrl, false, $context);
+            
+            if ($response) {
+                $data = json_decode($response, true);
+                
+                // Tentar obter duração de uma página diretamente
+                $this->fetchYoutubeDurationFromPage();
+            }
+        } catch (\Exception $e) {
+            Log::warning("Erro ao buscar duração do YouTube: " . $e->getMessage());
+        }
+    }
+
+    private function fetchYoutubeDurationFromPage(): void
+    {
+        try {
+            $videoUrl = "https://www.youtube.com/watch?v={$this->video_id}";
+            
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 10,
+                    'user_agent' => 'Mozilla/5.0 (compatible; VideoFetcher/1.0)'
+                ]
+            ]);
+            
+            $html = file_get_contents($videoUrl, false, $context);
+            
+            if ($html) {
+                // Procurar por duração na página
+                if (preg_match('/"lengthSeconds":"(\d+)"/', $html, $matches)) {
+                    $seconds = (int)$matches[1];
+                    $this->duration = $this->formatDuration($seconds);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning("Erro ao buscar duração da página do YouTube: " . $e->getMessage());
+        }
+    }
+
+    public function fetchVimeoDuration(): void
+    {
+        if (!$this->video_id || $this->video_platform !== 'vimeo') {
+            return;
+        }
+
+        try {
+            $oembedUrl = "https://vimeo.com/api/oembed.json?url=https://vimeo.com/{$this->video_id}";
+            
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 10,
+                    'user_agent' => 'Mozilla/5.0 (compatible; VideoFetcher/1.0)'
+                ]
+            ]);
+            
+            $response = file_get_contents($oembedUrl, false, $context);
+            
+            if ($response) {
+                $data = json_decode($response, true);
+                
+                if (isset($data['duration'])) {
+                    $this->duration = $this->formatDuration($data['duration']);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning("Erro ao buscar duração do Vimeo: " . $e->getMessage());
+        }
+    }
+
+    private function formatDuration(int $seconds): string
+    {
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        $seconds = $seconds % 60;
+
+        if ($hours > 0) {
+            return sprintf('%d:%02d:%02d', $hours, $minutes, $seconds);
+        } else {
+            return sprintf('%d:%02d', $minutes, $seconds);
         }
     }
 

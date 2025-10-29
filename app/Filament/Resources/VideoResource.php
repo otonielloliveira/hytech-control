@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\VideoResource\Pages;
 use App\Filament\Resources\VideoResource\RelationManagers;
 use App\Models\Video;
+use App\Models\Category;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -70,21 +71,49 @@ class VideoResource extends Resource
                             ->live(onBlur: true)
                             ->afterStateUpdated(function ($state, callable $set) {
                                 if ($state) {
+                                    // Criar instância temporária do modelo para extrair informações
+                                    $video = new Video(['video_url' => $state]);
+                                    $video->extractVideoId();
+                                    
                                     // Extrair ID do YouTube
                                     if (preg_match('/youtube\.com\/watch\?v=([^&]+)/', $state, $matches)) {
                                         $set('video_id', $matches[1]);
                                         $set('video_platform', 'youtube');
                                         $set('thumbnail_url', "https://img.youtube.com/vi/{$matches[1]}/maxresdefault.jpg");
+                                        
+                                        // Buscar duração
+                                        $video->video_id = $matches[1];
+                                        $video->video_platform = 'youtube';
+                                        $video->fetchYoutubeDuration();
+                                        if ($video->duration) {
+                                            $set('duration', $video->duration);
+                                        }
                                     } elseif (preg_match('/youtu\.be\/([^?]+)/', $state, $matches)) {
                                         $set('video_id', $matches[1]);
                                         $set('video_platform', 'youtube');
                                         $set('thumbnail_url', "https://img.youtube.com/vi/{$matches[1]}/maxresdefault.jpg");
+                                        
+                                        // Buscar duração
+                                        $video->video_id = $matches[1];
+                                        $video->video_platform = 'youtube';
+                                        $video->fetchYoutubeDuration();
+                                        if ($video->duration) {
+                                            $set('duration', $video->duration);
+                                        }
                                     }
                                     // Extrair ID do Vimeo
                                     elseif (preg_match('/vimeo\.com\/(\d+)/', $state, $matches)) {
                                         $set('video_id', $matches[1]);
                                         $set('video_platform', 'vimeo');
                                         $set('thumbnail_url', "https://vumbnail.com/{$matches[1]}.jpg");
+                                        
+                                        // Buscar duração
+                                        $video->video_id = $matches[1];
+                                        $video->video_platform = 'vimeo';
+                                        $video->fetchVimeoDuration();
+                                        if ($video->duration) {
+                                            $set('duration', $video->duration);
+                                        }
                                     }
                                 }
                             })
@@ -110,7 +139,37 @@ class VideoResource extends Resource
                                 Forms\Components\TextInput::make('duration')
                                     ->label('Duração')
                                     ->placeholder('Ex: 5:30')
-                                    ->helperText('Formato: mm:ss ou hh:mm:ss'),
+                                    ->helperText('Formato: mm:ss ou hh:mm:ss. Preenchido automaticamente.')
+                                    ->suffixAction(
+                                        Forms\Components\Actions\Action::make('fetchDuration')
+                                            ->icon('heroicon-o-clock')
+                                            ->tooltip('Buscar duração automaticamente')
+                                            ->action(function ($get, $set) {
+                                                $videoUrl = $get('video_url');
+                                                $videoId = $get('video_id');
+                                                $platform = $get('video_platform');
+                                                
+                                                if (!$videoUrl || !$videoId || !$platform) {
+                                                    return;
+                                                }
+                                                
+                                                $video = new Video([
+                                                    'video_url' => $videoUrl,
+                                                    'video_id' => $videoId,
+                                                    'video_platform' => $platform
+                                                ]);
+                                                
+                                                if ($platform === 'youtube') {
+                                                    $video->fetchYoutubeDuration();
+                                                } elseif ($platform === 'vimeo') {
+                                                    $video->fetchVimeoDuration();
+                                                }
+                                                
+                                                if ($video->duration) {
+                                                    $set('duration', $video->duration);
+                                                }
+                                            })
+                                    ),
                             ]),
                     ]),
                     
@@ -140,17 +199,10 @@ class VideoResource extends Resource
                             ->schema([
                                 Forms\Components\TextInput::make('category')
                                     ->label('Categoria')
-                                    ->datalist([
-                                        'entrevistas' => 'Entrevistas',
-                                        'palestras' => 'Palestras', 
-                                        'eventos' => 'Eventos',
-                                        'tutoriais' => 'Tutoriais',
-                                        'debates' => 'Debates',
-                                        'documentarios' => 'Documentários',
-                                        'noticias' => 'Notícias',
-                                        'educativo' => 'Educativo',
-                                    ])
-                                    ->helperText('Digite ou selecione uma categoria'),
+                                    ->datalist(function () {
+
+                                    })
+                                    ->helperText('Digite uma categoria ou selecione uma das sugestões'),
                                     
                                 Forms\Components\DatePicker::make('published_date')
                                     ->label('Data de Publicação')
@@ -229,7 +281,16 @@ class VideoResource extends Resource
                     
                 Tables\Columns\TextColumn::make('duration')
                     ->label('Duração')
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->badge()
+                    ->color('gray')
+                    ->formatStateUsing(function (?string $state): string {
+                        if (!$state) {
+                            return 'N/A';
+                        }
+                        return $state;
+                    })
+                    ->icon('heroicon-o-clock'),
                     
                 Tables\Columns\TextColumn::make('views_count')
                     ->label('Visualizações')
@@ -310,6 +371,35 @@ class VideoResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('fetchDurations')
+                        ->label('Buscar Durações')
+                        ->icon('heroicon-o-clock')
+                        ->action(function ($records) {
+                            $updated = 0;
+                            foreach ($records as $record) {
+                                $originalDuration = $record->duration;
+                                
+                                if ($record->video_platform === 'youtube') {
+                                    $record->fetchYoutubeDuration();
+                                } elseif ($record->video_platform === 'vimeo') {
+                                    $record->fetchVimeoDuration();
+                                }
+                                
+                                if ($record->duration && $record->duration !== $originalDuration) {
+                                    $record->save();
+                                    $updated++;
+                                }
+                            }
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title("Durações atualizadas: {$updated}")
+                                ->success()
+                                ->send();
+                        })
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Buscar Durações Automaticamente')
+                        ->modalDescription('Esta ação tentará buscar as durações dos vídeos selecionados automaticamente do YouTube/Vimeo. Isto pode levar alguns segundos.'),
                     Tables\Actions\BulkAction::make('activate')
                         ->label('Ativar Selecionados')
                         ->icon('heroicon-o-check')

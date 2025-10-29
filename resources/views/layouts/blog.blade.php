@@ -15,13 +15,18 @@
     <meta property="og:description" content="@yield('description', $config->meta_description ?? $config->site_description)">
     <meta property="og:image" content="@yield('og_image', $config->logo_url)">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    @stack('og_meta')
 
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:card" content="@yield('twitter_card', 'summary_large_image')">
     <meta name="twitter:title" content="@yield('title', $config->meta_title ?? $config->site_name)">
     <meta name="twitter:description" content="@yield('description', $config->meta_description ?? $config->site_description)">
     <meta name="twitter:image" content="@yield('og_image', $config->logo_url)">
+    @stack('twitter_meta')
+
+    @stack('meta')
+    @stack('schema')>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ $config->favicon_url }}">

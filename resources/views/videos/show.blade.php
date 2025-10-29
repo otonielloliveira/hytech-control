@@ -1,6 +1,57 @@
 @extends('layouts.blog')
 
 @section('title', $video->title . ' - Vídeos')
+@section('description', $video->description ? Str::limit(strip_tags($video->description), 160) : 'Assista ao vídeo: ' . $video->title)
+@section('og_image', $video->high_quality_thumbnail)
+@section('og_type', 'video.other')
+@section('twitter_card', 'player')
+
+@push('og_meta')
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:height" content="720">
+    <meta property="og:image:type" content="image/jpeg">
+    @if($video->embed_url)
+        <meta property="og:video" content="{{ $video->embed_url }}">
+        <meta property="og:video:secure_url" content="{{ $video->embed_url }}">
+        <meta property="og:video:type" content="text/html">
+        <meta property="og:video:width" content="1280">
+        <meta property="og:video:height" content="720">
+    @endif
+    <meta property="og:site_name" content="{{ config('app.name') }}">
+@endpush
+
+@push('twitter_meta')
+    @if($video->embed_url)
+        <meta name="twitter:player" content="{{ $video->embed_url }}">
+        <meta name="twitter:player:width" content="1280">
+        <meta name="twitter:player:height" content="720">
+    @endif
+@endpush
+
+@push('schema')
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        "name": "{{ $video->title }}",
+        "description": "{{ $video->description ? strip_tags($video->description) : 'Assista ao vídeo: ' . $video->title }}",
+        "thumbnailUrl": "{{ $video->high_quality_thumbnail }}",
+        "uploadDate": "{{ $video->created_at->toISOString() }}",
+        "contentUrl": "{{ route('videos.show', $video) }}",
+        @if($video->embed_url)
+        "embedUrl": "{{ $video->embed_url }}",
+        @endif
+        "publisher": {
+            "@type": "Organization",
+            "name": "{{ config('app.name') }}",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "{{ $config->logo_url ?? asset('images/logo.png') }}"
+            }
+        }
+    }
+    </script>
+@endpush
 
 @section('content')
     <div class="video-page-container">

@@ -30,6 +30,9 @@ class AppServiceProvider extends ServiceProvider
             'blog.*'
         ], BlogComposer::class);
         
+        // Register observers
+        \App\Models\Video::observe(\App\Observers\VideoObserver::class);
+        
         // Register event listeners
         \Illuminate\Support\Facades\Event::listen(
             \Illuminate\Auth\Events\Login::class,

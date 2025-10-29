@@ -11,7 +11,7 @@ class EditLecture extends EditRecord
 {
     protected static string $resource = LectureResource::class;
 
-    protected static ?string $title = 'Editar Prédio';
+    protected static ?string $title = 'Editar Palestra';
 
     protected function getHeaderActions(): array
     {

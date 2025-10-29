@@ -1,0 +1,252 @@
+/* Estilos customizados para o Banner Builder - Filament */
+
+/* Melhorias no Builder - Drag and Drop Visual */
+.fi-fo-builder-block {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent !important;
+}
+
+.fi-fo-builder-block:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-2px);
+}
+
+/* Cores para cada tipo de bloco */
+.fi-fo-builder-block[data-block-type="text"] {
+    border-left-color: #3b82f6 !important;
+    background: linear-gradient(to right, rgba(59, 130, 246, 0.03), transparent);
+}
+
+.fi-fo-builder-block[data-block-type="button"] {
+    border-left-color: #10b981 !important;
+    background: linear-gradient(to right, rgba(16, 185, 129, 0.03), transparent);
+}
+
+.fi-fo-builder-block[data-block-type="image"] {
+    border-left-color: #8b5cf6 !important;
+    background: linear-gradient(to right, rgba(139, 92, 246, 0.03), transparent);
+}
+
+.fi-fo-builder-block[data-block-type="badge"] {
+    border-left-color: #f59e0b !important;
+    background: linear-gradient(to right, rgba(245, 158, 11, 0.03), transparent);
+}
+
+.fi-fo-builder-block[data-block-type="spacer"] {
+    border-left-color: #6b7280 !important;
+    background: linear-gradient(to right, rgba(107, 114, 128, 0.03), transparent);
+}
+
+/* Indicador de drag ativo */
+.fi-fo-builder-block.sortable-ghost {
+    opacity: 0.4;
+    background: #f3f4f6 !important;
+}
+
+.fi-fo-builder-block.sortable-drag {
+    opacity: 0.8;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+    transform: scale(1.02) rotate(2deg);
+    cursor: grabbing !important;
+}
+
+/* Header do bloco mais visual */
+.fi-fo-builder-block-header {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%) !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.fi-fo-builder-block-label {
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+/* Botão de adicionar bloco */
+.fi-fo-builder-block-picker-ctn button {
+    background: linear-gradient(135deg, #c41e3a 0%, #8b1428 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 15px rgba(196, 30, 58, 0.3) !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+}
+
+.fi-fo-builder-block-picker-ctn button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(196, 30, 58, 0.4) !important;
+}
+
+/* Dropdown de seleção de bloco */
+.fi-dropdown-list {
+    border-radius: 8px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+.fi-dropdown-list-item {
+    transition: all 0.2s ease !important;
+}
+
+.fi-dropdown-list-item:hover {
+    background: #f3f4f6 !important;
+    transform: translateX(4px) !important;
+}
+
+/* Icons nos labels dos blocos */
+.fi-fo-builder-block[data-block-type="text"] .fi-fo-builder-block-label::before {
+    content: "📄";
+    font-size: 18px;
+}
+
+.fi-fo-builder-block[data-block-type="button"] .fi-fo-builder-block-label::before {
+    content: "🔘";
+    font-size: 18px;
+}
+
+.fi-fo-builder-block[data-block-type="image"] .fi-fo-builder-block-label::before {
+    content: "🖼️";
+    font-size: 18px;
+}
+
+.fi-fo-builder-block[data-block-type="badge"] .fi-fo-builder-block-label::before {
+    content: "🏷️";
+    font-size: 18px;
+}
+
+.fi-fo-builder-block[data-block-type="spacer"] .fi-fo-builder-block-label::before {
+    content: "↕️";
+    font-size: 18px;
+}
+
+/* Animação ao adicionar novo bloco */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fi-fo-builder-block:last-child {
+    animation: slideInDown 0.3s ease;
+}
+
+/* Cursor grab para drag */
+.fi-fo-builder-block-header {
+    cursor: grab;
+}
+
+.fi-fo-builder-block-header:active {
+    cursor: grabbing;
+}
+
+/* Indicador visual de reordenação */
+.fi-fo-builder-blocks {
+    position: relative;
+}
+
+.fi-fo-builder-blocks::before {
+    content: "⬆️⬇️ Arraste para reordenar";
+    display: block;
+    text-align: center;
+    padding: 0.5rem;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.fi-fo-builder-blocks:empty::before {
+    content: "➕ Clique em 'Adicionar Elemento' para começar";
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Tooltips informativos */
+.fi-fo-builder-block-actions button {
+    position: relative;
+}
+
+.fi-fo-builder-block-actions button:hover::after {
+    content: attr(aria-label);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    margin-bottom: 0.5rem;
+    z-index: 1000;
+}
+
+/* Melhorias no FileUpload */
+.fi-fo-file-upload {
+    border: 2px dashed #d1d5db !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+.fi-fo-file-upload:hover {
+    border-color: #c41e3a !important;
+    background: #fef2f2 !important;
+}
+
+/* Melhorias no ColorPicker */
+.fi-fo-color-picker input {
+    border-radius: 8px !important;
+    border: 2px solid #e5e7eb !important;
+    transition: all 0.2s ease !important;
+}
+
+.fi-fo-color-picker input:focus {
+    border-color: #c41e3a !important;
+    box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1) !important;
+}
+
+/* Tabs mais visuais */
+.fi-tabs-item {
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+.fi-tabs-item[aria-selected="true"] {
+    background: linear-gradient(135deg, #c41e3a 0%, #8b1428 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3) !important;
+}
+
+/* Seções colapsáveis */
+.fi-section-header {
+    transition: all 0.2s ease !important;
+}
+
+.fi-section-header:hover {
+    background: #f9fafb !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .fi-fo-builder-block {
+        margin: 0.5rem 0 !important;
+    }
+    
+    .fi-fo-builder-blocks::before {
+        font-size: 11px;
+        padding: 0.4rem;
+    }
+}

@@ -22,7 +22,7 @@
 
                                 @if ($lecture->description)
                                     <div class="lecture-description">
-                                        {!! nl2br(e($lecture->description)) !!}
+                                        {!! $lecture->formatted_description !!}
                                     </div>
                                 @endif
 
@@ -144,6 +144,61 @@
             font-size: 1.1rem;
             line-height: 1.8;
             margin-bottom: 2rem;
+        }
+
+        .lecture-description p {
+            margin-bottom: 1rem;
+        }
+
+        .lecture-description h1,
+        .lecture-description h2,
+        .lecture-description h3,
+        .lecture-description h4,
+        .lecture-description h5,
+        .lecture-description h6 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .lecture-description ul,
+        .lecture-description ol {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+
+        .lecture-description li {
+            margin-bottom: 0.5rem;
+        }
+
+        .lecture-description blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .lecture-description strong,
+        .lecture-description b {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .lecture-description em,
+        .lecture-description i {
+            font-style: italic;
+        }
+
+        .lecture-description a {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .lecture-description a:hover {
+            text-decoration: none;
         }
 
         .detail-item {

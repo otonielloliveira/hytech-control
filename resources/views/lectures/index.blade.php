@@ -50,7 +50,7 @@
                                     </div>
 
                                     @if ($lecture->description)
-                                        <p class="card-text">{{ Str::limit($lecture->description, 120) }}</p>
+                                          {!! $lecture->formatted_description !!}
                                     @endif
                                 </div>
 

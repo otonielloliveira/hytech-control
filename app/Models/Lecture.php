@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use App\Helpers\HtmlHelper;
 
 class Lecture extends Model
 {
@@ -56,6 +57,11 @@ class Lecture extends Model
     public function getFormattedStartDateAttribute(): ?string
     {
         return $this->date_time ? $this->date_time->format('d/m/Y H:i') : null;
+    }
+
+    public function getFormattedDescriptionAttribute(): ?string
+    {
+        return HtmlHelper::processContent($this->description);
     }
 
     public static function getActiveLectures(int $limit = 3)
