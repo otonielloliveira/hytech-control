@@ -1442,6 +1442,7 @@
 
         // Handle login form submission
         $('#loginForm').on('submit', function(e) {
+         
             e.preventDefault();
 
             const form = $(this);
@@ -1477,6 +1478,7 @@
                     }
                 },
                 error: function(xhr) {
+                 
                     if (xhr.status === 422) {
                         const errors = xhr.responseJSON.errors;
                         for (const field in errors) {

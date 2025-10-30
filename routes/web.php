@@ -179,3 +179,6 @@ Route::prefix('doacoes')->name('donations.')->group(function () {
     // Webhook for payment notifications
     Route::post('/webhook', [DonationController::class, 'webhook'])->name('webhook');
 });
+
+// Filament Admin Logout (custom, não afeta sessão do cliente)
+Route::post('/admin/logout', [\App\Http\Controllers\AdminLogoutController::class, 'logout'])->name('admin.logout');

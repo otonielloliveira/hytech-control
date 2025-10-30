@@ -26,7 +26,7 @@
     @stack('twitter_meta')
 
     @stack('meta')
-    @stack('schema')>
+    @stack('schema')
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ $config->favicon_url }}">
@@ -1637,122 +1637,7 @@
             loginModal.show();
         }
 
-        // Handle login form submission
-        document.getElementById('loginForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const form = this;
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            
-            // Clear previous errors
-            form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-            form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
-            
-            // Disable submit button
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Entrando...';
-            
-            fetch('{{ route("client.auth.login") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    email: form.email.value,
-                    password: form.password.value,
-                    remember: form.remember.checked
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Login realizado!',
-                        text: data.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = data.redirect;
-                    });
-                } else {
-                    throw new Error(data.message || 'Erro ao fazer login');
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro!',
-                    text: error.message || 'Ocorreu um erro. Tente novamente.'
-                });
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            });
-        });
-
-        // Handle register form submission
-        document.getElementById('registerForm')?.addEventListener('submit', function(e) {
-             e.preventDefault();
-
-            const form = $(this);
-            const submitBtn = form.find('button[type="submit"]');
-            const originalText = submitBtn.html();
-
-            // Clear previous errors
-            form.find('.is-invalid').removeClass('is-invalid');
-            form.find('.invalid-feedback').text('');
-
-            // Disable submit button
-            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Criando conta...');
-
-            $.ajax({
-                url: '{{ route('client.auth.register') }}',
-                type: 'POST',
-                data: form.serialize(),
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Show success message
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Conta criada!',
-                            text: response.message,
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            window.location.href = response.redirect;
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    console.log(xhr);
-                    if (xhr.status === 422) {
-                        const errors = xhr.responseJSON.errors;
-                        for (const field in errors) {
-                            const input = form.find(`[name="${field}"]`);
-                            input.addClass('is-invalid');
-                            input.siblings('.invalid-feedback').text(errors[field][0]);
-                        }
-                        return;
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro!',
-                            text: 'Ocorreu um erro. Tente novamente.'
-                        });
-                    }
-                },
-                complete: function() {
-                    submitBtn.prop('disabled', false).html(originalText);
-                }
-            });
-        });
+        
     </script>
 
     @yield('scripts')

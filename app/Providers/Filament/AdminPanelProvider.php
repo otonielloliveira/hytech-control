@@ -24,6 +24,7 @@ use App\Models\BlogConfig;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Support\Facades\Blade;
 use Filament\View\PanelsRenderHook;
+use Filament\Navigation\MenuItem;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -102,7 +103,14 @@ class AdminPanelProvider extends PanelProvider
                     ->formPanelPosition('right'),
                 ApiServicePlugin::make(), //Plugin que cria o serviço de API RESTful para o painel admin do Filament
                 FilamentNordThemePlugin::make(), //Plugin que aplica o tema Nord ao painel admin do Filament
-            ])->viteTheme('resources/css/filament/admin/theme.css'); //Não alterar essa linha
+            ])->viteTheme('resources/css/filament/admin/theme.css') //Não alterar essa linha
+            ->userMenuItems([
+                'logout' => MenuItem::make()
+                    ->label('Sair')
+                    ->url('/admin/logout')
+                    ->icon('heroicon-o-arrow-left-on-rectangle')
+                    ->color('danger'),
+            ]);
     }
     
     public function boot(): void

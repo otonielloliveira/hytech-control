@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
-class AuthController extends Controller
+class   AuthController extends Controller
 {
     public function showLoginForm()
     {
@@ -40,7 +40,6 @@ class AuthController extends Controller
                     'errors' => $e->errors()
                 ], 422);
             }
-            throw $e;
         }
 
         $client = Client::where('email', $request->email)->first();
